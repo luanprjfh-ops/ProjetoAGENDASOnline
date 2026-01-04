@@ -28,16 +28,10 @@
         var(--bg);
       min-height:100vh;
     }
-    .center{
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-    }
+    .center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
     .card{
       width:100%;
-      max-width:520px;
+      max-width:540px;
       background:rgba(255,255,255,.95);
       border:1px solid var(--border);
       border-radius:var(--radius);
@@ -54,12 +48,7 @@
       -webkit-text-fill-color:transparent;
     }
     p{color:var(--muted);margin:6px 0 16px}
-    label{
-      font-size:12px;
-      color:var(--muted);
-      display:block;
-      margin-top:12px;
-    }
+    label{font-size:12px;color:var(--muted);display:block;margin-top:12px}
     select,input{
       width:100%;
       padding:12px 14px;
@@ -75,7 +64,7 @@
     }
     .slots{
       display:grid;
-      grid-template-columns: repeat(auto-fill, minmax(90px,1fr));
+      grid-template-columns: repeat(auto-fill, minmax(92px,1fr));
       gap:10px;
       margin-top:14px;
     }
@@ -86,7 +75,8 @@
       background:#fff;
       text-align:center;
       cursor:pointer;
-      font-weight:700;
+      font-weight:800;
+      user-select:none;
     }
     .slot:hover{background:#faf5ff}
     .slot.active{
@@ -113,16 +103,9 @@
       font-size:14px;
       display:none;
     }
-    .ok{
-      background:#ecfdf5;
-      color:#065f46;
-      border:1px solid #a7f3d0;
-    }
-    .err{
-      background:#fff1f2;
-      color:#be123c;
-      border:1px solid #fecdd3;
-    }
+    .ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .err{background:#fff1f2;color:#be123c;border:1px solid #fecdd3}
+    .mini{font-size:12px;color:var(--muted);margin-top:12px;text-align:center}
   </style>
 </head>
 
@@ -153,23 +136,18 @@
 
     <div id="msgOk" class="msg ok"></div>
     <div id="msgErr" class="msg err"></div>
+
+    <div class="mini">LEP Sistemas • Agenda Online</div>
   </div>
 </div>
 
-<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // =========================
-  // COLE SUAS CHAVES AQUI
-  // =========================
-  const SUPABASE_URL = "SUPABASE_URL_AQUI";
-  const SUPABASE_ANON_KEY = "SUPABASE_ANON_KEY_AQUI";
+  // FIXO (já preenchido com seus dados)
+  const SUPABASE_URL = "https://lbjkxslawyqbuncrnmbl.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_a6VPFRKUWl4iQsrz6LVFMA_qYLJ4p-L";
 
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  // ⚠️ empresa fixa (por enquanto)
-  // depois você pode trocar pelo slug via URL
-  let COMPANY_ID = null;
 
   const serviceSel = document.getElementById("service");
   const profSel = document.getElementById("professional");
@@ -180,6 +158,7 @@
   const msgErr = document.getElementById("msgErr");
 
   let selectedSlot = null;
+  let COMPANY_ID = null;
 
   function showOk(t){ msgOk.style.display="block"; msgOk.textContent=t; msgErr.style.display="none"; }
   function showErr(t){ msgErr.style.display="block"; msgErr.textContent=t; msgOk.style.display="none"; }
@@ -190,52 +169,89 @@
   }
 
   async function loadCompany(){
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("companies")
-      .select("id")
+      .select("id,status,paid_until")
       .eq("slug","empresa-demo")
       .single();
+
+    if (error || !data) {
+      showErr("Empresa não encontrada (slug empresa-demo).");
+      return;
+    }
+
     COMPANY_ID = data.id;
+
+    // Se a empresa estiver inativa/vencida, o RPC já bloqueia também,
+    // mas aqui já avisamos visualmente.
+    if (data.status !== "active") {
+      showErr("Empresa está inativa no momento.");
+    }
+    if (data.paid_until && new Date(data.paid_until) < new Date(new Date().toISOString().slice(0,10))) {
+      showErr("Empresa está com pagamento vencido.");
+    }
   }
 
   async function loadServices(){
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("services")
       .select("id,name")
-      .eq("active",true);
+      .eq("active",true)
+      .order("name",{ascending:true});
+
+    if (error) { showErr("Erro ao carregar serviços."); return; }
+
     serviceSel.innerHTML = `<option value="">Selecione</option>`;
-    data.forEach(s=>{
+    (data||[]).forEach(s=>{
       serviceSel.innerHTML += `<option value="${s.id}">${s.name}</option>`;
     });
   }
 
   async function loadProfessionals(){
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("professionals")
       .select("id,name")
-      .eq("active",true);
+      .eq("active",true)
+      .order("name",{ascending:true});
+
+    if (error) { showErr("Erro ao carregar profissionais."); return; }
+
     profSel.innerHTML = `<option value="">Selecione</option>`;
-    data.forEach(p=>{
+    (data||[]).forEach(p=>{
       profSel.innerHTML += `<option value="${p.id}">${p.name}</option>`;
     });
   }
 
   async function loadSlots(){
+    msgOk.style.display = "none";
+    msgErr.style.display = "none";
+
     slotsDiv.innerHTML = "";
     selectedSlot = null;
     btnConfirm.disabled = true;
 
-    if(!serviceSel.value || !profSel.value || !dateInput.value) return;
+    if(!COMPANY_ID) return;
+
+    const serviceId = serviceSel.value;
+    const profId = profSel.value;
+    const date = dateInput.value;
+
+    if(!serviceId || !profId || !date) return;
 
     const { data, error } = await supabase.rpc("get_available_slots",{
       p_company_id: COMPANY_ID,
-      p_professional_id: profSel.value,
-      p_service_id: serviceSel.value,
-      p_date: dateInput.value
+      p_professional_id: profId,
+      p_service_id: serviceId,
+      p_date: date
     });
 
-    if(error || !data.length){
-      slotsDiv.innerHTML = "<p style='grid-column:1/-1;color:#888'>Sem horários disponíveis</p>";
+    if (error) {
+      showErr("Erro ao buscar horários.");
+      return;
+    }
+
+    if(!data || !data.length){
+      slotsDiv.innerHTML = "<div style='grid-column:1/-1;color:#888'>Sem horários disponíveis</div>";
       return;
     }
 
@@ -255,32 +271,41 @@
 
   btnConfirm.onclick = async ()=>{
     const name = document.getElementById("customerName").value.trim();
-    if(name.length < 2) return showErr("Informe seu nome.");
+    const phone = document.getElementById("customerPhone").value.trim();
 
-    const { error } = await supabase.rpc("create_public_appointment",{
+    if(name.length < 2) return showErr("Informe seu nome.");
+    if(!selectedSlot) return showErr("Selecione um horário.");
+
+    btnConfirm.disabled = true;
+
+    const { data, error } = await supabase.rpc("create_public_appointment",{
       p_company_id: COMPANY_ID,
       p_professional_id: profSel.value,
       p_service_id: serviceSel.value,
       p_customer_name: name,
-      p_customer_phone: document.getElementById("customerPhone").value,
+      p_customer_phone: phone,
       p_starts_at: selectedSlot
     });
 
-    if(error) return showErr(error.message);
+    if (error) {
+      btnConfirm.disabled = false;
+      return showErr(error.message);
+    }
+
     showOk("Agendamento confirmado com sucesso!");
-    btnConfirm.disabled = true;
+    // Recarrega slots para remover o horário que acabou de ser ocupado
+    await loadSlots();
   };
 
   serviceSel.onchange = loadSlots;
   profSel.onchange = loadSlots;
   dateInput.onchange = loadSlots;
 
-  // INIT
   (async ()=>{
+    dateInput.value = new Date().toISOString().slice(0,10);
     await loadCompany();
     await loadServices();
     await loadProfessionals();
-    dateInput.value = new Date().toISOString().slice(0,10);
   })();
 </script>
 </body>
