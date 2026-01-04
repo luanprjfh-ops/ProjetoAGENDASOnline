@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Agenda Online</title>
+
+  <style>
+    :root{
+      --bg:#fbf7fb;
+      --card:#ffffff;
+      --primary:#ec4899;
+      --primary2:#a855f7;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --border:#f1e7f5;
+      --shadow:0 18px 50px rgba(17,24,39,.10);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, #fde2f3, transparent 40%),
+        radial-gradient(circle at bottom right, #e9d5ff, transparent 40%),
+        var(--bg);
+      min-height:100vh;
+    }
+    .center{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+    .card{
+      width:100%;
+      max-width:520px;
+      background:rgba(255,255,255,.95);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:22px;
+      backdrop-filter: blur(10px);
+    }
+    h1{
+      margin:0;
+      font-size:30px;
+      font-weight:900;
+      background:linear-gradient(90deg,var(--primary),var(--primary2));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+    p{color:var(--muted);margin:6px 0 16px}
+    label{
+      font-size:12px;
+      color:var(--muted);
+      display:block;
+      margin-top:12px;
+    }
+    select,input{
+      width:100%;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      margin-top:6px;
+      font-size:14px;
+      outline:none;
+    }
+    input:focus,select:focus{
+      border-color:#d8b4fe;
+      box-shadow:0 0 0 4px rgba(168,85,247,.12);
+    }
+    .slots{
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px,1fr));
+      gap:10px;
+      margin-top:14px;
+    }
+    .slot{
+      padding:10px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#fff;
+      text-align:center;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .slot:hover{background:#faf5ff}
+    .slot.active{
+      background:linear-gradient(90deg,var(--primary),var(--primary2));
+      color:#fff;
+      border-color:transparent;
+    }
+    .btn{
+      width:100%;
+      border:0;
+      padding:14px;
+      border-radius:14px;
+      font-weight:900;
+      cursor:pointer;
+      color:#fff;
+      background:linear-gradient(90deg,var(--primary),var(--primary2));
+      margin-top:16px;
+    }
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .msg{
+      margin-top:12px;
+      padding:12px;
+      border-radius:14px;
+      font-size:14px;
+      display:none;
+    }
+    .ok{
+      background:#ecfdf5;
+      color:#065f46;
+      border:1px solid #a7f3d0;
+    }
+    .err{
+      background:#fff1f2;
+      color:#be123c;
+      border:1px solid #fecdd3;
+    }
+  </style>
+</head>
+
+<body>
+<div class="center">
+  <div class="card">
+    <h1>Agende seu horário</h1>
+    <p>Escolha o serviço, profissional e horário disponível.</p>
+
+    <label>Serviço</label>
+    <select id="service"></select>
+
+    <label>Profissional</label>
+    <select id="professional"></select>
+
+    <label>Data</label>
+    <input type="date" id="date" />
+
+    <div id="slots" class="slots"></div>
+
+    <label>Seu nome</label>
+    <input id="customerName" placeholder="Ex: Maria Silva" />
+
+    <label>Telefone / WhatsApp</label>
+    <input id="customerPhone" placeholder="(00) 00000-0000" />
+
+    <button id="btnConfirm" class="btn" disabled>Confirmar agendamento</button>
+
+    <div id="msgOk" class="msg ok"></div>
+    <div id="msgErr" class="msg err"></div>
+  </div>
+</div>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // =========================
+  // COLE SUAS CHAVES AQUI
+  // =========================
+  const SUPABASE_URL = "SUPABASE_URL_AQUI";
+  const SUPABASE_ANON_KEY = "SUPABASE_ANON_KEY_AQUI";
+
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ⚠️ empresa fixa (por enquanto)
+  // depois você pode trocar pelo slug via URL
+  let COMPANY_ID = null;
+
+  const serviceSel = document.getElementById("service");
+  const profSel = document.getElementById("professional");
+  const dateInput = document.getElementById("date");
+  const slotsDiv = document.getElementById("slots");
+  const btnConfirm = document.getElementById("btnConfirm");
+  const msgOk = document.getElementById("msgOk");
+  const msgErr = document.getElementById("msgErr");
+
+  let selectedSlot = null;
+
+  function showOk(t){ msgOk.style.display="block"; msgOk.textContent=t; msgErr.style.display="none"; }
+  function showErr(t){ msgErr.style.display="block"; msgErr.textContent=t; msgOk.style.display="none"; }
+
+  function fmtTime(iso){
+    const d = new Date(iso);
+    return d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  }
+
+  async function loadCompany(){
+    const { data } = await supabase
+      .from("companies")
+      .select("id")
+      .eq("slug","empresa-demo")
+      .single();
+    COMPANY_ID = data.id;
+  }
+
+  async function loadServices(){
+    const { data } = await supabase
+      .from("services")
+      .select("id,name")
+      .eq("active",true);
+    serviceSel.innerHTML = `<option value="">Selecione</option>`;
+    data.forEach(s=>{
+      serviceSel.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+    });
+  }
+
+  async function loadProfessionals(){
+    const { data } = await supabase
+      .from("professionals")
+      .select("id,name")
+      .eq("active",true);
+    profSel.innerHTML = `<option value="">Selecione</option>`;
+    data.forEach(p=>{
+      profSel.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+    });
+  }
+
+  async function loadSlots(){
+    slotsDiv.innerHTML = "";
+    selectedSlot = null;
+    btnConfirm.disabled = true;
+
+    if(!serviceSel.value || !profSel.value || !dateInput.value) return;
+
+    const { data, error } = await supabase.rpc("get_available_slots",{
+      p_company_id: COMPANY_ID,
+      p_professional_id: profSel.value,
+      p_service_id: serviceSel.value,
+      p_date: dateInput.value
+    });
+
+    if(error || !data.length){
+      slotsDiv.innerHTML = "<p style='grid-column:1/-1;color:#888'>Sem horários disponíveis</p>";
+      return;
+    }
+
+    data.forEach(s=>{
+      const b = document.createElement("div");
+      b.className="slot";
+      b.textContent = fmtTime(s.slot_start);
+      b.onclick = ()=>{
+        document.querySelectorAll(".slot").forEach(x=>x.classList.remove("active"));
+        b.classList.add("active");
+        selectedSlot = s.slot_start;
+        btnConfirm.disabled = false;
+      };
+      slotsDiv.appendChild(b);
+    });
+  }
+
+  btnConfirm.onclick = async ()=>{
+    const name = document.getElementById("customerName").value.trim();
+    if(name.length < 2) return showErr("Informe seu nome.");
+
+    const { error } = await supabase.rpc("create_public_appointment",{
+      p_company_id: COMPANY_ID,
+      p_professional_id: profSel.value,
+      p_service_id: serviceSel.value,
+      p_customer_name: name,
+      p_customer_phone: document.getElementById("customerPhone").value,
+      p_starts_at: selectedSlot
+    });
+
+    if(error) return showErr(error.message);
+    showOk("Agendamento confirmado com sucesso!");
+    btnConfirm.disabled = true;
+  };
+
+  serviceSel.onchange = loadSlots;
+  profSel.onchange = loadSlots;
+  dateInput.onchange = loadSlots;
+
+  // INIT
+  (async ()=>{
+    await loadCompany();
+    await loadServices();
+    await loadProfessionals();
+    dateInput.value = new Date().toISOString().slice(0,10);
+  })();
+</script>
+</body>
+</html>
