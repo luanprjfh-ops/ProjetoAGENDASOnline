@@ -127,6 +127,7 @@
       background:rgba(255,255,255,.95);
       box-shadow:var(--shadow);
       display:none;
+      z-index:9999;
     }
     .toast.ok{border-color:#bbf7d0}
     .toast.err{border-color:#fecdd3}
@@ -223,6 +224,7 @@
       align-items:center;
       justify-content:center;
       padding:18px;
+      z-index:9998;
     }
     .modal{width:100%;max-width:560px;padding:16px}
     .modalHeader{display:flex;justify-content:space-between;gap:10px;align-items:center}
@@ -430,7 +432,7 @@
           </div>
         </section>
 
-        <!-- HORÁRIOS (NOVO) -->
+        <!-- HORÁRIOS -->
         <section id="tab-horarios" class="card section hidden">
           <h2>Horários</h2>
           <p>Defina dias e horários disponíveis por profissional.</p>
@@ -593,6 +595,21 @@
       return a[Number(w)] ?? String(w);
     };
 
+    function resetState(){
+      state = { user:null, profile:null, company:null, role:"staff", isAdmin:false, pros:[], serv:[], prosMap:{}, servMap:{} };
+      who.textContent = "—";
+      companyPill.textContent = "Empresa: —";
+      roleBox.textContent = "—";
+      kpiToday.textContent="—"; kpiConf.textContent="—"; kpiCanc.textContent="—"; kpiDone.textContent="—";
+      badgeToday.textContent="—"; badgeAgenda.textContent="—"; badgeClientes.textContent="—"; badgePros.textContent="—"; badgeServ.textContent="—"; badgeHours.textContent="—";
+      tbodyNext.innerHTML=""; tbodyAgenda.innerHTML=""; tbodyCustomers.innerHTML=""; tbodyPros.innerHTML=""; tbodyServ.innerHTML=""; tbodyHours.innerHTML="";
+      agendaPro.innerHTML=""; whPro.innerHTML="";
+      document.querySelectorAll(".menu button").forEach(b=>b.classList.remove("active"));
+      document.querySelector('.menu button[data-tab="dash"]').classList.add("active");
+      document.querySelectorAll("main section").forEach(sec=>sec.classList.add("hidden"));
+      document.getElementById("tab-dash").classList.remove("hidden");
+    }
+
     function showLogin(){ appView.classList.add("hidden"); loginView.classList.remove("hidden"); }
     function showApp(){ loginView.classList.add("hidden"); appView.classList.remove("hidden"); }
     function showError(msg){ err.style.display="block"; err.textContent=msg; }
@@ -652,15 +669,30 @@
       btnLogin.textContent = "Entrando...";
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
+
       const { error } = await sb.auth.signInWithPassword({ email, password });
+
       btnLogin.disabled = false;
       btnLogin.textContent = "Entrar";
       if (error) return showError("E-mail ou senha inválidos.");
+
       await bootstrap();
     };
 
-    btnLogout.onclick = async ()=>{ await sb.auth.signOut(); showLogin(); };
-    btnRefresh.onclick = async ()=>{ await refreshAll(); toastMsg("ok","Atualizado."); };
+    btnLogout.onclick = async ()=>{
+      try{
+        await sb.auth.signOut();
+      } finally {
+        resetState();
+        showLogin();
+        toastMsg("ok","Sessão encerrada.");
+      }
+    };
+
+    btnRefresh.onclick = async ()=>{
+      await refreshAll();
+      toastMsg("ok","Atualizado.");
+    };
 
     quickNewCustomer.onclick = ()=> openCustomerModal();
     quickNewPro.onclick = ()=> openProModal();
@@ -687,6 +719,11 @@
     // Working hours actions
     btnWhReload.onclick = loadWorkingHours;
 
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // IMPORTANTÍSSIMO MULTI-EMPRESA:
+    // Todos inserts/updates usam state.profile.company_id
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
     btnWhAdd.onclick = async ()=>{
       const professional_id = whPro.value;
       const weekday = Number(whWeekday.value);
@@ -698,11 +735,19 @@
       if(!start_time || !end_time) return toastMsg("err","Informe início e fim.");
       if(start_time >= end_time) return toastMsg("err","Início deve ser menor que fim.");
       if(slot_minutes < 10 || slot_minutes > 180) return toastMsg("err","Slot inválido.");
+      if(!state?.profile?.company_id) return toastMsg("err","Sessão inválida (sem company_id).");
 
-      const payload = { professional_id, weekday, start_time, end_time, slot_minutes };
+      const payload = {
+        company_id: state.profile.company_id,
+        professional_id,
+        weekday,
+        start_time,
+        end_time,
+        slot_minutes
+      };
 
       const { error } = await sb.from("working_hours").insert(payload);
-      if(error) return toastMsg("err","Erro ao salvar horário.");
+      if(error) return toastMsg("err", "Erro ao salvar horário.");
       toastMsg("ok","Horário salvo.");
       await loadWorkingHours();
     };
@@ -710,11 +755,13 @@
     btnWhDefault.onclick = async ()=>{
       const professional_id = whPro.value;
       if(!professional_id) return toastMsg("err","Selecione um profissional.");
+      if(!state?.profile?.company_id) return toastMsg("err","Sessão inválida (sem company_id).");
 
       const ok = confirm("Aplicar padrão Seg–Sex 09:00–18:00 (slot 30) para este profissional? Isso adiciona novos horários.");
       if(!ok) return;
 
       const rows = [1,2,3,4,5].map(weekday=>({
+        company_id: state.profile.company_id,
         professional_id,
         weekday,
         start_time: "09:00",
@@ -729,6 +776,8 @@
     };
 
     async function bootstrap(){
+      resetState();
+
       const { data: sess } = await sb.auth.getSession();
       if(!sess.session){ showLogin(); return; }
       showApp();
@@ -741,12 +790,16 @@
         .from("profiles")
         .select("company_id, role, display_name")
         .eq("user_id", state.user.id)
-        .single();
+        .maybeSingle();
 
       if(e1 || !prof){
-        showError("Usuário sem vínculo no profiles. Verifique o insert em profiles.");
+        showError("Usuário sem vínculo no profiles. (Seu SQL já deveria ter criado esse vínculo).");
+        await sb.auth.signOut();
+        resetState();
+        showLogin();
         return;
       }
+
       state.profile = prof;
       state.role = prof.role || "staff";
       state.isAdmin = state.role === "admin";
@@ -757,12 +810,16 @@
         .from("companies")
         .select("name, slug, status, paid_until")
         .eq("id", prof.company_id)
-        .single();
+        .maybeSingle();
 
       if(e2 || !comp){
         showError("Empresa não encontrada para este usuário.");
+        await sb.auth.signOut();
+        resetState();
+        showLogin();
         return;
       }
+
       state.company = comp;
 
       who.textContent = `Usuário: ${prof.display_name || state.user.email} • Perfil: ${state.role}`;
@@ -789,13 +846,11 @@
       state.prosMap = Object.fromEntries((pros||[]).map(p=>[p.id, p.name]));
       state.servMap = Object.fromEntries((serv||[]).map(s=>[s.id, s.name]));
 
-      // agenda filter
       agendaPro.innerHTML = `<option value="">Todos os profissionais</option>`;
       (pros||[]).forEach(p=>{ if(p.active) agendaPro.innerHTML += `<option value="${p.id}">${p.name}</option>`; });
     }
 
     async function fillWorkingHoursPros(){
-      // select de profissionais na aba Horários
       whPro.innerHTML = `<option value="">Selecione um profissional</option>`;
       (state.pros || []).forEach(p=>{
         if(p.active) whPro.innerHTML += `<option value="${p.id}">${p.name}</option>`;
@@ -816,8 +871,9 @@
       badgeServ.textContent = cServ ?? "0";
       badgeHours.textContent = cWh ?? "0";
 
-      const start = agendaDate.value + "T00:00:00";
-      const end   = agendaDate.value + "T23:59:59";
+      const d = agendaDate.value || todayISO();
+      const start = d + "T00:00:00";
+      const end   = d + "T23:59:59";
       const { count: cToday } = await sb
         .from("appointments")
         .select("id",{count:"exact",head:true})
@@ -947,6 +1003,7 @@
       if(act==="cancel") status = "cancelled";
       if(act==="done") status = "done";
       if(act==="confirm") status = "confirmed";
+
       const { error } = await sb.from("appointments").update({ status }).eq("id", id);
       if(error) return toastMsg("err","Erro ao atualizar status.");
       toastMsg("ok","Status atualizado.");
@@ -1106,7 +1163,7 @@
       await loadCounts();
     }
 
-    // ----- MODAIS / CRUD (clientes, pros, serviços, horários) -----
+    // ----- MODAIS / CRUD -----
     function esc(s){
       return String(s||"")
         .replaceAll("&","&amp;")
@@ -1147,7 +1204,10 @@
     };
 
     window.saveCustomer = async (id)=>{
+      if(!state?.profile?.company_id) return toastMsg("err","Sessão inválida (sem company_id).");
+
       const payload = {
+        company_id: state.profile.company_id,
         full_name: document.getElementById("c_full_name").value.trim(),
         phone: document.getElementById("c_phone").value.trim() || null,
         email: document.getElementById("c_email").value.trim() || null,
@@ -1159,8 +1219,12 @@
       if(payload.full_name.length < 2) return toastMsg("err","Nome inválido.");
 
       let res;
-      if(id) res = await sb.from("customers").update(payload).eq("id", id);
-      else res = await sb.from("customers").insert(payload);
+      if(id){
+        // update não precisa regravar company_id, mas não atrapalha
+        res = await sb.from("customers").update(payload).eq("id", id);
+      } else {
+        res = await sb.from("customers").insert(payload);
+      }
 
       if(res.error) return toastMsg("err","Erro ao salvar cliente.");
       toastMsg("ok", id ? "Cliente atualizado." : "Cliente cadastrado.");
@@ -1205,13 +1269,18 @@
     };
 
     window.savePro = async (id)=>{
+      if(!state?.profile?.company_id) return toastMsg("err","Sessão inválida (sem company_id).");
+
       const name = document.getElementById("p_name").value.trim();
       const active = document.getElementById("p_active").value === "true";
       if(name.length < 2) return toastMsg("err","Nome inválido.");
 
       let res;
-      if(id) res = await sb.from("professionals").update({ name, active }).eq("id", id);
-      else res = await sb.from("professionals").insert({ name, active });
+      if(id){
+        res = await sb.from("professionals").update({ name, active }).eq("id", id);
+      } else {
+        res = await sb.from("professionals").insert({ company_id: state.profile.company_id, name, active });
+      }
 
       if(res.error) return toastMsg("err","Erro ao salvar profissional.");
       toastMsg("ok", id ? "Profissional atualizado." : "Profissional cadastrado.");
@@ -1267,6 +1336,8 @@
     };
 
     window.saveService = async (id)=>{
+      if(!state?.profile?.company_id) return toastMsg("err","Sessão inválida (sem company_id).");
+
       const name = document.getElementById("s_name").value.trim();
       const duration_minutes = Number(document.getElementById("s_dur").value || 30);
       const price = Number(document.getElementById("s_price").value || 0);
@@ -1277,8 +1348,11 @@
       if(duration_minutes < 10 || duration_minutes > 480) return toastMsg("err","Duração inválida.");
 
       let res;
-      if(id) res = await sb.from("services").update({ name, duration_minutes, price_cents, active }).eq("id", id);
-      else res = await sb.from("services").insert({ name, duration_minutes, price_cents, active });
+      if(id){
+        res = await sb.from("services").update({ name, duration_minutes, price_cents, active }).eq("id", id);
+      } else {
+        res = await sb.from("services").insert({ company_id: state.profile.company_id, name, duration_minutes, price_cents, active });
+      }
 
       if(res.error) return toastMsg("err","Erro ao salvar serviço.");
       toastMsg("ok", id ? "Serviço atualizado." : "Serviço cadastrado.");
@@ -1306,7 +1380,7 @@
     window.editWH = async (id)=>{
       const { data, error } = await sb.from("working_hours")
         .select("id, professional_id, weekday, start_time, end_time, slot_minutes")
-        .eq("id", id).single();
+        .eq("id", id).maybeSingle();
 
       if(error || !data) return toastMsg("err","Erro ao abrir horário.");
 
@@ -1341,6 +1415,8 @@
     };
 
     window.saveWH = async (id)=>{
+      if(!state?.profile?.company_id) return toastMsg("err","Sessão inválida (sem company_id).");
+
       const professional_id = document.getElementById("wh_e_pro").value;
       const weekday = Number(document.getElementById("wh_e_day").value);
       const start_time = document.getElementById("wh_e_start").value;
@@ -1372,7 +1448,15 @@
     window.__closeModal = closeModal;
 
     // Auto start
-    (async ()=>{ await bootstrap(); })();
+    (async ()=>{
+      const { data: sess } = await sb.auth.getSession();
+      if(sess?.session){
+        await bootstrap();
+      } else {
+        resetState();
+        showLogin();
+      }
+    })();
   </script>
 </body>
 </html>
