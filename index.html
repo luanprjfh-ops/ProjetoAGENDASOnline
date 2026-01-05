@@ -3,63 +3,250 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Painel ADM • Agenda</title>
+  <title>Painel ADM • AgendaPro</title>
+
   <style>
     :root{
-      --bg:#fbf7fb; --card:#ffffff; --primary:#a855f7; --primary2:#ec4899;
-      --text:#1f2937; --muted:#6b7280; --border:#f1e7f5;
-      --shadow: 0 18px 50px rgba(17,24,39,.10); --radius: 18px;
+      --bg:#fbf7fb;
+      --card:#ffffff;
+      --primary:#a855f7;
+      --primary2:#ec4899;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --border:#f1e7f5;
+      --shadow: 0 18px 55px rgba(17,24,39,.11);
+      --radius: 18px;
+
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --soft:#faf5ff;
     }
     *{box-sizing:border-box}
     body{
-      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; color:var(--text);
-      background: radial-gradient(circle at top left, #fde2f3, transparent 40%),
-                  radial-gradient(circle at bottom right, #e9d5ff, transparent 40%),
-                  var(--bg);
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, #fde2f3, transparent 40%),
+        radial-gradient(circle at bottom right, #e9d5ff, transparent 40%),
+        var(--bg);
       min-height:100vh;
     }
-    .wrap{max-width:1100px;margin:0 auto;padding:22px}
-    .card{background:rgba(255,255,255,.92);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter: blur(10px);}
-    .brand{font-weight:900;font-size:28px;margin:0;background: linear-gradient(90deg,var(--primary),var(--primary2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+    .hidden{display:none!important}
+    .wrap{max-width:1200px;margin:0 auto;padding:22px}
+    .card{
+      background:rgba(255,255,255,.92);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    .brand{
+      font-weight:900;
+      font-size:24px;
+      margin:0;
+      background: linear-gradient(90deg,var(--primary),var(--primary2));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
     .muted{color:var(--muted)}
-    .row{display:flex;gap:16px;flex-wrap:wrap}
+    .pill{
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:linear-gradient(90deg,#fce7f3,#ede9fe);
+      font-weight:800;
+      font-size:13px;
+      white-space:nowrap;
+    }
+
+    /* LOGIN */
     .center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
     .login{width:420px;padding:24px}
     label{font-size:12px;color:var(--muted);display:block;margin-top:10px}
-    input{width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--border);outline:none;margin-top:6px;font-size:14px;background:#fff;}
-    input:focus{border-color:#d8b4fe;box-shadow:0 0 0 4px rgba(168,85,247,.12)}
-    .btn{width:100%;border:0;padding:12px 14px;border-radius:14px;font-weight:800;cursor:pointer;color:#fff;background:linear-gradient(90deg,var(--primary),var(--primary2));margin-top:14px;transition:.15s;}
+    input, select{
+      width:100%;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      outline:none;
+      margin-top:6px;
+      font-size:14px;
+      background:#fff;
+    }
+    input:focus, select:focus{border-color:#d8b4fe;box-shadow:0 0 0 4px rgba(168,85,247,.12)}
+    .btn{
+      border:0;
+      padding:12px 14px;
+      border-radius:14px;
+      font-weight:900;
+      cursor:pointer;
+      color:#fff;
+      background:linear-gradient(90deg,var(--primary),var(--primary2));
+      transition:.15s;
+    }
     .btn:hover{transform:translateY(-1px);opacity:.95}
     .btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
-    .error{display:none;margin-top:10px;padding:10px 12px;border-radius:14px;background:#fff1f2;border:1px solid #fecdd3;color:#be123c;font-size:13px;}
-    .hidden{display:none !important}
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;margin-top:14px}
-    .pill{padding:8px 12px;border-radius:999px;border:1px solid var(--border);background:linear-gradient(90deg,#fce7f3,#ede9fe);font-weight:700;font-size:13px;}
-    .sidebar{width:260px;padding:16px;background:rgba(255,255,255,.85);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);}
+
+    .btn2{
+      border:1px solid var(--border);
+      background:#fff;
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:900;
+    }
+    .btn2:hover{background:var(--soft)}
+    .btnDanger{
+      border:1px solid #fecdd3;
+      background:#fff1f2;
+      color:#be123c;
+    }
+    .btnDanger:hover{background:#ffe4e6}
+
+    .error{
+      display:none;
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      background:#fff1f2;
+      border:1px solid #fecdd3;
+      color:#be123c;
+      font-size:13px;
+    }
+    .toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      min-width:260px;
+      max-width:380px;
+      padding:12px 14px;
+      border-radius:16px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.95);
+      box-shadow:var(--shadow);
+      display:none;
+    }
+    .toast.ok{border-color:#bbf7d0}
+    .toast.err{border-color:#fecdd3}
+
+    /* LAYOUT */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:16px 18px;
+      margin-top:14px;
+      gap:10px;
+    }
+    .row{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px}
+    .sidebar{
+      width:280px;
+      padding:16px;
+      background:rgba(255,255,255,.85);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
     .menu{margin-top:14px;display:flex;flex-direction:column;gap:8px}
-    .menu button{text-align:left;border:1px solid transparent;background:transparent;padding:12px;border-radius:14px;font-weight:700;cursor:pointer;}
-    .menu button:hover{background:#faf5ff;border-color:#f3e8ff}
-    .menu .active{background:#faf5ff;border-color:#f3e8ff}
-    .content{flex:1}
-    .grid{display:grid;grid-template-columns: repeat(3, minmax(0,1fr));gap:14px;margin-top:14px;}
-    @media (max-width:980px){.grid{grid-template-columns:1fr}}
+    .menu button{
+      text-align:left;
+      border:1px solid transparent;
+      background:transparent;
+      padding:12px;
+      border-radius:14px;
+      font-weight:900;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .menu button:hover{background:var(--soft);border-color:#f3e8ff}
+    .menu .active{background:var(--soft);border-color:#f3e8ff}
+    .content{flex:1;min-width:300px}
+
+    .section{padding:16px}
+    .section h2{margin:0 0 6px 0}
+    .section p{margin:0 0 12px 0;color:var(--muted)}
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap:14px;
+    }
+    @media (max-width:1100px){.grid{grid-template-columns: repeat(2, minmax(0,1fr));}}
+    @media (max-width:760px){.grid{grid-template-columns: 1fr;}.sidebar{width:100%}}
+
     .kpi{padding:16px}
-    .kpi h3{margin:0 0 6px 0;font-size:14px;color:var(--muted)}
-    .kpi .big{font-size:28px;font-weight:900;margin:0}
-    .table{margin-top:14px;padding:16px}
+    .kpi h3{margin:0 0 6px 0;font-size:13px;color:var(--muted)}
+    .kpi .big{font-size:28px;font-weight:1000;margin:0}
+
+    .toolbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      margin:10px 0 12px;
+    }
+    .toolbar .left,.toolbar .right{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .miniInput{width:auto;min-width:220px}
+
     table{width:100%;border-collapse:separate;border-spacing:0 10px}
     th{font-size:12px;color:var(--muted);text-align:left;padding:0 10px}
-    td{background:#fff;border:1px solid var(--border);padding:12px 10px;}
+    td{
+      background:#fff;
+      border:1px solid var(--border);
+      padding:12px 10px;
+      vertical-align:middle;
+    }
     td:first-child{border-radius:14px 0 0 14px}
     td:last-child{border-radius:0 14px 14px 0}
-    .smallbtn{border:1px solid var(--border);background:#fff;padding:8px 10px;border-radius:12px;cursor:pointer;font-weight:700;}
+    .tag{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:900;
+      border:1px solid var(--border);
+      background:#fff;
+    }
+    .tag.ok{border-color:#bbf7d0;background:#ecfdf5;color:#166534}
+    .tag.bad{border-color:#fecdd3;background:#fff1f2;color:#be123c}
+    .tag.warn{border-color:#fde68a;background:#fffbeb;color:#92400e}
+    .tag.done{border-color:#c7d2fe;background:#eef2ff;color:#3730a3}
+
+    /* MODAL */
+    .modalBack{
+      position:fixed; inset:0;
+      background: rgba(17,24,39,.35);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+    .modal{
+      width:100%;
+      max-width:560px;
+      padding:16px;
+    }
+    .modalHeader{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .modalHeader h3{margin:0}
+    .modalBody{margin-top:10px}
+    .modalBody .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:640px){.modalBody .row2{grid-template-columns:1fr}}
+    .modalFooter{display:flex;gap:10px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
   </style>
 </head>
 
 <body>
+
+  <!-- LOGIN -->
   <div id="loginView" class="center">
     <div class="card login">
-      <h1 class="brand">Painel Administrativo</h1>
+      <h1 class="brand" style="font-size:28px">Painel Administrativo</h1>
       <p class="muted" style="margin:6px 0 14px 0;">Acesse para gerenciar sua agenda.</p>
 
       <label>E-mail</label>
@@ -70,7 +257,7 @@
 
       <div id="err" class="error"></div>
 
-      <button id="btnLogin" class="btn">Entrar</button>
+      <button id="btnLogin" class="btn" style="width:100%">Entrar</button>
 
       <p class="muted" style="margin:14px 0 0 0;font-size:12px;text-align:center">
         LEP Sistemas • Agenda Online
@@ -78,113 +265,345 @@
     </div>
   </div>
 
-  <div id="panelView" class="wrap hidden">
+  <!-- APP -->
+  <div id="appView" class="wrap hidden">
     <div class="topbar card">
       <div>
-        <div class="brand" style="font-size:22px">AgendaPro</div>
+        <div class="brand">AgendaPro</div>
         <div class="muted" id="who" style="font-size:13px;margin-top:2px;">—</div>
       </div>
-      <div style="display:flex;gap:10px;align-items:center">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
         <span class="pill" id="companyPill">Empresa: —</span>
-        <button class="smallbtn" id="btnLogout">Sair</button>
+        <button class="btn2" id="btnRefresh">Atualizar</button>
+        <button class="btn2" id="btnLogout">Sair</button>
       </div>
     </div>
 
-    <div class="row" style="margin-top:14px">
+    <div class="row">
       <aside class="sidebar">
         <div class="pill">Menu</div>
         <div class="menu">
-          <button class="active" data-tab="dash">Dashboard</button>
-          <button data-tab="agenda">Agenda (Hoje)</button>
-          <button data-tab="clientes">Clientes</button>
-          <button data-tab="profissionais">Profissionais</button>
-          <button data-tab="servicos">Serviços</button>
+          <button class="active" data-tab="dash"><span>Dashboard</span><span class="tag" id="badgeToday">—</span></button>
+          <button data-tab="agenda"><span>Agenda</span><span class="tag" id="badgeAgenda">—</span></button>
+          <button data-tab="clientes"><span>Clientes</span><span class="tag" id="badgeClientes">—</span></button>
+          <button data-tab="profissionais"><span>Profissionais</span><span class="tag" id="badgePros">—</span></button>
+          <button data-tab="servicos"><span>Serviços</span><span class="tag" id="badgeServ">—</span></button>
+        </div>
+
+        <div style="margin-top:14px" class="muted">
+          <div style="font-weight:900;color:var(--text)">Ações rápidas</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+            <button class="btn2" id="quickNewCustomer">+ Cliente</button>
+            <button class="btn2" id="quickNewPro">+ Profissional</button>
+            <button class="btn2" id="quickNewService">+ Serviço</button>
+          </div>
+        </div>
+
+        <div style="margin-top:14px" class="muted">
+          <div style="font-weight:900;color:var(--text)">Permissão</div>
+          <div id="roleBox" class="pill" style="margin-top:8px;display:inline-block">—</div>
         </div>
       </aside>
 
       <main class="content">
-        <section id="tab-dash" class="card" style="padding:16px">
-          <h2 style="margin:0 0 6px 0">Dashboard</h2>
-          <p class="muted" style="margin:0 0 10px 0">Resumo rápido do dia.</p>
+        <!-- DASH -->
+        <section id="tab-dash" class="card section">
+          <h2>Dashboard</h2>
+          <p>Resumo do dia e próximos agendamentos.</p>
 
           <div class="grid">
-            <div class="card kpi"><h3>Agendamentos hoje</h3><p class="big" id="kpiToday">—</p></div>
+            <div class="card kpi"><h3>Hoje</h3><p class="big" id="kpiToday">—</p></div>
             <div class="card kpi"><h3>Confirmados</h3><p class="big" id="kpiConf">—</p></div>
             <div class="card kpi"><h3>Cancelados</h3><p class="big" id="kpiCanc">—</p></div>
+            <div class="card kpi"><h3>Concluídos</h3><p class="big" id="kpiDone">—</p></div>
+          </div>
+
+          <div style="margin-top:14px" class="card section">
+            <div class="toolbar">
+              <div class="left">
+                <div style="font-weight:1000">Próximos agendamentos</div>
+                <span class="muted" style="font-size:13px">até 20 itens</span>
+              </div>
+              <div class="right">
+                <button class="btn2" id="btnGoAgenda">Abrir Agenda</button>
+              </div>
+            </div>
+
+            <div style="overflow:auto">
+              <table>
+                <thead>
+                  <tr><th>Data/Hora</th><th>Profissional</th><th>Serviço</th><th>Cliente</th><th>Status</th></tr>
+                </thead>
+                <tbody id="tbodyNext"></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
-        <section id="tab-agenda" class="card hidden table">
-          <h2 style="margin:0 0 6px 0">Agenda de hoje</h2>
-          <p class="muted" style="margin:0 0 12px 0">Lista dos agendamentos (hoje).</p>
+        <!-- AGENDA -->
+        <section id="tab-agenda" class="card section hidden">
+          <h2>Agenda</h2>
+          <p>Filtre por data e profissional, altere status e gerencie agendamentos.</p>
+
+          <div class="toolbar">
+            <div class="left">
+              <input class="miniInput" id="agendaDate" type="date" />
+              <select class="miniInput" id="agendaPro"></select>
+            </div>
+            <div class="right">
+              <button class="btn2" id="btnAgendaReload">Recarregar</button>
+            </div>
+          </div>
+
           <div style="overflow:auto">
             <table>
               <thead>
-                <tr><th>Hora</th><th>Profissional</th><th>Serviço</th><th>Cliente</th><th>Status</th></tr>
+                <tr><th>Hora</th><th>Profissional</th><th>Serviço</th><th>Cliente</th><th>Telefone</th><th>Status</th><th>Ações</th></tr>
               </thead>
               <tbody id="tbodyAgenda"></tbody>
             </table>
           </div>
         </section>
 
-        <section id="tab-clientes" class="card hidden" style="padding:16px">
-          <h2 style="margin:0 0 6px 0">Clientes</h2>
-          <p class="muted" style="margin:0">Depois a gente liga com o banco (customers).</p>
+        <!-- CLIENTES -->
+        <section id="tab-clientes" class="card section hidden">
+          <h2>Clientes</h2>
+          <p>Cadastre, edite e busque clientes.</p>
+
+          <div class="toolbar">
+            <div class="left">
+              <input class="miniInput" id="searchCustomer" placeholder="Buscar por nome/telefone..." />
+            </div>
+            <div class="right">
+              <button class="btn2" id="btnNewCustomer">+ Novo Cliente</button>
+              <button class="btn2" id="btnCustomersReload">Recarregar</button>
+            </div>
+          </div>
+
+          <div style="overflow:auto">
+            <table>
+              <thead>
+                <tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Documento</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="tbodyCustomers"></tbody>
+            </table>
+          </div>
         </section>
 
-        <section id="tab-profissionais" class="card hidden" style="padding:16px">
-          <h2 style="margin:0 0 6px 0">Profissionais</h2>
-          <p class="muted" style="margin:0">Depois a gente liga com o banco (professionals).</p>
+        <!-- PROFISSIONAIS -->
+        <section id="tab-profissionais" class="card section hidden">
+          <h2>Profissionais</h2>
+          <p>Gerencie equipe e disponibilidade.</p>
+
+          <div class="toolbar">
+            <div class="left"></div>
+            <div class="right">
+              <button class="btn2" id="btnNewPro">+ Novo Profissional</button>
+              <button class="btn2" id="btnProsReload">Recarregar</button>
+            </div>
+          </div>
+
+          <div style="overflow:auto">
+            <table>
+              <thead>
+                <tr><th>Nome</th><th>Status</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="tbodyPros"></tbody>
+            </table>
+          </div>
         </section>
 
-        <section id="tab-servicos" class="card hidden" style="padding:16px">
-          <h2 style="margin:0 0 6px 0">Serviços</h2>
-          <p class="muted" style="margin:0">Depois a gente liga com o banco (services).</p>
+        <!-- SERVIÇOS -->
+        <section id="tab-servicos" class="card section hidden">
+          <h2>Serviços</h2>
+          <p>Cadastre serviços com duração e preço.</p>
+
+          <div class="toolbar">
+            <div class="left"></div>
+            <div class="right">
+              <button class="btn2" id="btnNewService">+ Novo Serviço</button>
+              <button class="btn2" id="btnServReload">Recarregar</button>
+            </div>
+          </div>
+
+          <div style="overflow:auto">
+            <table>
+              <thead>
+                <tr><th>Serviço</th><th>Duração</th><th>Preço</th><th>Status</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="tbodyServ"></tbody>
+            </table>
+          </div>
         </section>
       </main>
     </div>
   </div>
 
+  <!-- MODAL -->
+  <div id="modalBack" class="modalBack">
+    <div class="card modal">
+      <div class="modalHeader">
+        <h3 id="modalTitle">—</h3>
+        <button class="btn2" id="modalClose">Fechar</button>
+      </div>
+      <div class="modalBody" id="modalBody"></div>
+      <div class="modalFooter" id="modalFooter"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // Seus dados (fixos)
+    // Suas chaves fixas
     const SB_URL = "https://lbjkxslawyqbuncrnmbl.supabase.co";
     const SB_KEY = "sb_publishable_a6VPFRKUWl4iQsrz6LVFMA_qYLJ4p-L";
 
-    // Evita "já declarado" mesmo se o script for carregado 2x
+    // Client singleton para não quebrar
     const sb = window.__sb || (window.__sb = window.supabase.createClient(SB_URL, SB_KEY));
 
+    // UI refs
     const loginView = document.getElementById("loginView");
-    const panelView = document.getElementById("panelView");
+    const appView = document.getElementById("appView");
     const btnLogin = document.getElementById("btnLogin");
     const btnLogout = document.getElementById("btnLogout");
+    const btnRefresh = document.getElementById("btnRefresh");
     const err = document.getElementById("err");
 
     const who = document.getElementById("who");
     const companyPill = document.getElementById("companyPill");
+    const roleBox = document.getElementById("roleBox");
 
     const kpiToday = document.getElementById("kpiToday");
-    const kpiConf = document.getElementById("kpiConf");
-    const kpiCanc = document.getElementById("kpiCanc");
+    const kpiConf  = document.getElementById("kpiConf");
+    const kpiCanc  = document.getElementById("kpiCanc");
+    const kpiDone  = document.getElementById("kpiDone");
+
+    const badgeToday = document.getElementById("badgeToday");
+    const badgeAgenda = document.getElementById("badgeAgenda");
+    const badgeClientes = document.getElementById("badgeClientes");
+    const badgePros = document.getElementById("badgePros");
+    const badgeServ = document.getElementById("badgeServ");
+
+    const tbodyNext = document.getElementById("tbodyNext");
     const tbodyAgenda = document.getElementById("tbodyAgenda");
+    const agendaDate = document.getElementById("agendaDate");
+    const agendaPro = document.getElementById("agendaPro");
+
+    const tbodyCustomers = document.getElementById("tbodyCustomers");
+    const searchCustomer = document.getElementById("searchCustomer");
+
+    const tbodyPros = document.getElementById("tbodyPros");
+    const tbodyServ = document.getElementById("tbodyServ");
+
+    const btnGoAgenda = document.getElementById("btnGoAgenda");
+    const btnAgendaReload = document.getElementById("btnAgendaReload");
+
+    const btnNewCustomer = document.getElementById("btnNewCustomer");
+    const btnCustomersReload = document.getElementById("btnCustomersReload");
+
+    const btnNewPro = document.getElementById("btnNewPro");
+    const btnProsReload = document.getElementById("btnProsReload");
+
+    const btnNewService = document.getElementById("btnNewService");
+    const btnServReload = document.getElementById("btnServReload");
+
+    const quickNewCustomer = document.getElementById("quickNewCustomer");
+    const quickNewPro = document.getElementById("quickNewPro");
+    const quickNewService = document.getElementById("quickNewService");
+
+    // Modal
+    const modalBack = document.getElementById("modalBack");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalBody = document.getElementById("modalBody");
+    const modalFooter = document.getElementById("modalFooter");
+    const modalClose = document.getElementById("modalClose");
+
+    // Toast
+    const toast = document.getElementById("toast");
+
+    // State
+    let state = {
+      user: null,
+      profile: null,   // { company_id, role, display_name }
+      company: null,   // { name, slug }
+      role: "staff",
+      prosMap: {},
+      servMap: {},
+      isAdmin: false
+    };
+
+    // Helpers
+    const pad2 = (n)=>String(n).padStart(2,"0");
+    const todayISO = ()=> {
+      const d = new Date();
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    };
+    const fmtTime = (iso)=> new Date(iso).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+    const fmtDateTime = (iso)=> new Date(iso).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+    const money = (cents)=>{
+      if (cents===null || cents===undefined || cents==="") return "—";
+      return (Number(cents)/100).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+    };
+
+    function showLogin(){ appView.classList.add("hidden"); loginView.classList.remove("hidden"); }
+    function showApp(){ loginView.classList.add("hidden"); appView.classList.remove("hidden"); }
 
     function showError(msg){ err.style.display="block"; err.textContent=msg; }
     function clearError(){ err.style.display="none"; err.textContent=""; }
 
-    function showPanel(){ loginView.classList.add("hidden"); panelView.classList.remove("hidden"); }
-    function showLogin(){ panelView.classList.add("hidden"); loginView.classList.remove("hidden"); }
+    function toastMsg(type, msg){
+      toast.className = "toast " + (type==="ok" ? "ok" : "err");
+      toast.textContent = msg;
+      toast.style.display = "block";
+      setTimeout(()=> toast.style.display="none", 2600);
+    }
 
+    function tagStatus(status){
+      if(status==="confirmed") return `<span class="tag ok">Confirmado</span>`;
+      if(status==="cancelled") return `<span class="tag bad">Cancelado</span>`;
+      if(status==="done") return `<span class="tag done">Concluído</span>`;
+      return `<span class="tag warn">${status}</span>`;
+    }
+
+    function openModal(title, bodyHTML, footerHTML){
+      modalTitle.textContent = title;
+      modalBody.innerHTML = bodyHTML;
+      modalFooter.innerHTML = footerHTML || "";
+      modalBack.style.display = "flex";
+    }
+    function closeModal(){ modalBack.style.display = "none"; }
+    modalClose.onclick = closeModal;
+    modalBack.addEventListener("click",(e)=>{ if(e.target===modalBack) closeModal(); });
+
+    // Menu tabs
     document.querySelectorAll(".menu button").forEach(btn=>{
       btn.addEventListener("click", ()=>{
         document.querySelectorAll(".menu button").forEach(b=>b.classList.remove("active"));
         btn.classList.add("active");
+
         const tab = btn.dataset.tab;
         document.querySelectorAll("main section").forEach(sec=>sec.classList.add("hidden"));
         document.getElementById("tab-" + tab).classList.remove("hidden");
+
+        // carregamento inteligente por aba
+        if(tab==="agenda") loadAgenda();
+        if(tab==="clientes") loadCustomers();
+        if(tab==="profissionais") loadProfessionals();
+        if(tab==="servicos") loadServices();
       });
     });
 
-    btnLogin.addEventListener("click", async () => {
+    btnGoAgenda.onclick = ()=>{
+      document.querySelectorAll(".menu button").forEach(b=>b.classList.remove("active"));
+      document.querySelector('.menu button[data-tab="agenda"]').classList.add("active");
+      document.querySelectorAll("main section").forEach(sec=>sec.classList.add("hidden"));
+      document.getElementById("tab-agenda").classList.remove("hidden");
+      loadAgenda();
+    };
+
+    // Login
+    btnLogin.onclick = async ()=>{
       clearError();
       btnLogin.disabled = true;
       btnLogin.textContent = "Entrando...";
@@ -199,51 +618,146 @@
 
       if (error) return showError("E-mail ou senha inválidos.");
       await bootstrap();
-    });
+    };
 
-    btnLogout.addEventListener("click", async () => {
+    btnLogout.onclick = async ()=>{
       await sb.auth.signOut();
-      await showLogin();
-    });
+      showLogin();
+    };
 
-    function fmtTime(iso){
-      const d = new Date(iso);
-      return d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-    }
+    btnRefresh.onclick = async ()=>{
+      await refreshAll();
+      toastMsg("ok","Atualizado.");
+    };
 
-    async function loadProfileCompany(){
+    // Quick actions
+    quickNewCustomer.onclick = ()=> openCustomerModal();
+    quickNewPro.onclick = ()=> openProModal();
+    quickNewService.onclick = ()=> openServiceModal();
+
+    // Reload buttons
+    btnAgendaReload.onclick = loadAgenda;
+    btnCustomersReload.onclick = loadCustomers;
+    btnProsReload.onclick = loadProfessionals;
+    btnServReload.onclick = loadServices;
+
+    btnNewCustomer.onclick = ()=> openCustomerModal();
+    btnNewPro.onclick = ()=> openProModal();
+    btnNewService.onclick = ()=> openServiceModal();
+
+    // Agenda filters
+    agendaDate.onchange = loadAgenda;
+    agendaPro.onchange = loadAgenda;
+
+    // Search customers
+    let searchTimer = null;
+    searchCustomer.oninput = ()=>{
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(loadCustomers, 250);
+    };
+
+    // Bootstrap
+    async function bootstrap(){
+      const { data: sess } = await sb.auth.getSession();
+      if(!sess.session){ showLogin(); return; }
+
+      showApp();
+
+      // User
       const { data: u } = await sb.auth.getUser();
-      const user = u?.user;
-      if(!user) return null;
+      state.user = u?.user || null;
+      if(!state.user){ showLogin(); return; }
 
+      // Profile
       const { data: prof, error: e1 } = await sb
         .from("profiles")
         .select("company_id, role, display_name")
-        .eq("user_id", user.id)
+        .eq("user_id", state.user.id)
         .single();
 
-      if(e1 || !prof) return null;
+      if(e1 || !prof){
+        showError("Usuário sem vínculo no profiles. Verifique o insert em profiles.");
+        return;
+      }
+      state.profile = prof;
+      state.role = prof.role || "staff";
+      state.isAdmin = state.role === "admin";
 
+      roleBox.textContent = state.isAdmin ? "ADMIN" : "STAFF";
+
+      // Company
       const { data: comp, error: e2 } = await sb
         .from("companies")
-        .select("name, slug")
+        .select("name, slug, status, paid_until")
         .eq("id", prof.company_id)
         .single();
 
-      if(e2 || !comp) return null;
+      if(e2 || !comp){
+        showError("Empresa não encontrada para este usuário.");
+        return;
+      }
+      state.company = comp;
 
-      who.textContent = `Usuário: ${prof.display_name || user.email} • Perfil: ${prof.role}`;
+      who.textContent = `Usuário: ${prof.display_name || state.user.email} • Perfil: ${state.role}`;
       companyPill.textContent = `Empresa: ${comp.name}`;
-      return { prof, comp };
+
+      // Defaults
+      agendaDate.value = todayISO();
+
+      // Load everything
+      await refreshAll();
     }
 
-    async function loadKPIs(){
-      const today = new Date();
-      const y = today.getFullYear();
-      const m = String(today.getMonth()+1).padStart(2,'0');
-      const d = String(today.getDate()).padStart(2,'0');
-      const start = `${y}-${m}-${d}T00:00:00`;
-      const end   = `${y}-${m}-${d}T23:59:59`;
+    async function refreshAll(){
+      await loadMaps();
+      await loadCounts();
+      await loadDashboard();
+    }
+
+    async function loadMaps(){
+      // profissionais e serviços para mapear ids -> nomes
+      const { data: pros } = await sb.from("professionals").select("id,name,active").order("name",{ascending:true});
+      const { data: serv } = await sb.from("services").select("id,name,active,duration_minutes,price_cents").order("name",{ascending:true});
+
+      state.prosMap = Object.fromEntries((pros||[]).map(p=>[p.id, p.name]));
+      state.servMap = Object.fromEntries((serv||[]).map(s=>[s.id, s.name]));
+
+      // preencher filtro de profissional na agenda
+      agendaPro.innerHTML = `<option value="">Todos os profissionais</option>`;
+      (pros||[]).forEach(p=>{
+        if(p.active) agendaPro.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+      });
+    }
+
+    async function loadCounts(){
+      // badges
+      const { count: cAppt } = await sb.from("appointments").select("id",{count:"exact",head:true});
+      const { count: cCust } = await sb.from("customers").select("id",{count:"exact",head:true});
+      const { count: cPros } = await sb.from("professionals").select("id",{count:"exact",head:true});
+      const { count: cServ } = await sb.from("services").select("id",{count:"exact",head:true});
+
+      badgeAgenda.textContent = cAppt ?? "0";
+      badgeClientes.textContent = cCust ?? "0";
+      badgePros.textContent = cPros ?? "0";
+      badgeServ.textContent = cServ ?? "0";
+
+      // badgeToday = total de hoje
+      const start = agendaDate.value + "T00:00:00";
+      const end   = agendaDate.value + "T23:59:59";
+      const { count: cToday } = await sb
+        .from("appointments")
+        .select("id",{count:"exact",head:true})
+        .gte("starts_at", start)
+        .lte("starts_at", end);
+
+      badgeToday.textContent = cToday ?? "0";
+    }
+
+    async function loadDashboard(){
+      // KPIs de hoje
+      const d = todayISO();
+      const start = d + "T00:00:00";
+      const end   = d + "T23:59:59";
 
       const { data, error } = await sb
         .from("appointments")
@@ -251,73 +765,546 @@
         .gte("starts_at", start)
         .lte("starts_at", end);
 
-      if (error) { kpiToday.textContent="—"; kpiConf.textContent="—"; kpiCanc.textContent="—"; return; }
+      if(error){
+        kpiToday.textContent="—"; kpiConf.textContent="—"; kpiCanc.textContent="—"; kpiDone.textContent="—";
+      } else {
+        const total = data.length;
+        const conf = data.filter(x=>x.status==="confirmed").length;
+        const canc = data.filter(x=>x.status==="cancelled").length;
+        const done = data.filter(x=>x.status==="done").length;
+        kpiToday.textContent = total;
+        kpiConf.textContent = conf;
+        kpiCanc.textContent = canc;
+        kpiDone.textContent = done;
+      }
 
-      const total = data.length;
-      const conf = data.filter(x=>x.status==="confirmed").length;
-      const canc = data.filter(x=>x.status==="cancelled").length;
-
-      kpiToday.textContent = total;
-      kpiConf.textContent = conf;
-      kpiCanc.textContent = canc;
-    }
-
-    async function loadAgendaToday(){
-      tbodyAgenda.innerHTML = "";
-
-      const today = new Date();
-      const y = today.getFullYear();
-      const m = String(today.getMonth()+1).padStart(2,'0');
-      const d = String(today.getDate()).padStart(2,'0');
-      const start = `${y}-${m}-${d}T00:00:00`;
-      const end   = `${y}-${m}-${d}T23:59:59`;
-
-      const { data, error } = await sb
+      // próximos 20 agendamentos
+      const now = new Date().toISOString();
+      const { data: next, error: e2 } = await sb
         .from("appointments")
-        .select("starts_at, status, customer_name, professional_id, service_id")
-        .gte("starts_at", start)
-        .lte("starts_at", end)
-        .order("starts_at", { ascending: true });
+        .select("id, starts_at, status, customer_name, customer_phone, professional_id, service_id")
+        .gte("starts_at", now)
+        .order("starts_at",{ascending:true})
+        .limit(20);
 
-      if (error) { tbodyAgenda.innerHTML = `<tr><td colspan="5">Erro ao carregar agenda (RLS/profiles).</td></tr>`; return; }
-      if (!data.length) { tbodyAgenda.innerHTML = `<tr><td colspan="5">Nenhum agendamento para hoje.</td></tr>`; return; }
-
-      const { data: pros } = await sb.from("professionals").select("id,name");
-      const { data: serv } = await sb.from("services").select("id,name");
-
-      const proMap = Object.fromEntries((pros||[]).map(p=>[p.id,p.name]));
-      const srvMap = Object.fromEntries((serv||[]).map(s=>[s.id,s.name]));
-
-      for (const a of data) {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${fmtTime(a.starts_at)}</td>
-          <td>${proMap[a.professional_id] || "—"}</td>
-          <td>${srvMap[a.service_id] || "—"}</td>
-          <td>${a.customer_name || "—"}</td>
-          <td>${a.status}</td>
-        `;
-        tbodyAgenda.appendChild(tr);
+      tbodyNext.innerHTML = "";
+      if(e2 || !next || !next.length){
+        tbodyNext.innerHTML = `<tr><td colspan="5">Nenhum agendamento futuro.</td></tr>`;
+      } else {
+        next.forEach(a=>{
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${fmtDateTime(a.starts_at)}</td>
+            <td>${state.prosMap[a.professional_id] || "—"}</td>
+            <td>${state.servMap[a.service_id] || "—"}</td>
+            <td>${a.customer_name || "—"}</td>
+            <td>${tagStatus(a.status)}</td>
+          `;
+          tbodyNext.appendChild(tr);
+        });
       }
     }
 
-    async function bootstrap(){
-      const { data } = await sb.auth.getSession();
-      if(!data.session){ await showLogin(); return; }
+    async function loadAgenda(){
+      const date = agendaDate.value || todayISO();
+      const start = date + "T00:00:00";
+      const end   = date + "T23:59:59";
+      const proId = agendaPro.value;
 
-      showPanel();
+      let q = sb
+        .from("appointments")
+        .select("id, starts_at, status, customer_name, customer_phone, professional_id, service_id")
+        .gte("starts_at", start)
+        .lte("starts_at", end)
+        .order("starts_at",{ascending:true});
 
-      const ok = await loadProfileCompany();
-      if(!ok){
-        showError("Usuário sem vínculo no profiles. Rode o SQL que insere profiles e tente novamente.");
+      if(proId) q = q.eq("professional_id", proId);
+
+      const { data, error } = await q;
+
+      tbodyAgenda.innerHTML = "";
+      if(error){
+        tbodyAgenda.innerHTML = `<tr><td colspan="7">Erro ao carregar agenda.</td></tr>`;
+        return;
+      }
+      if(!data.length){
+        tbodyAgenda.innerHTML = `<tr><td colspan="7">Nenhum agendamento para este filtro.</td></tr>`;
         return;
       }
 
-      await loadKPIs();
-      await loadAgendaToday();
+      data.forEach(a=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${fmtTime(a.starts_at)}</td>
+          <td>${state.prosMap[a.professional_id] || "—"}</td>
+          <td>${state.servMap[a.service_id] || "—"}</td>
+          <td>${a.customer_name || "—"}</td>
+          <td>${a.customer_phone || "—"}</td>
+          <td>${tagStatus(a.status)}</td>
+          <td>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn2" data-act="confirm" data-id="${a.id}">Confirmar</button>
+              <button class="btn2" data-act="done" data-id="${a.id}">Concluir</button>
+              <button class="btn2 btnDanger" data-act="cancel" data-id="${a.id}">Cancelar</button>
+              ${state.isAdmin ? `<button class="btn2 btnDanger" data-act="del" data-id="${a.id}">Excluir</button>` : ""}
+            </div>
+          </td>
+        `;
+        tbodyAgenda.appendChild(tr);
+      });
+
+      // bind actions
+      tbodyAgenda.querySelectorAll("button[data-act]").forEach(b=>{
+        b.onclick = ()=> onAgendaAction(b.dataset.act, b.dataset.id);
+      });
+
+      await loadCounts();
     }
 
-    bootstrap();
+    async function onAgendaAction(act, id){
+      if(act==="del" && !state.isAdmin){
+        return toastMsg("err","Apenas ADMIN pode excluir.");
+      }
+
+      if(act==="del"){
+        const ok = confirm("Excluir este agendamento? Essa ação não pode ser desfeita.");
+        if(!ok) return;
+        const { error } = await sb.from("appointments").delete().eq("id", id);
+        if(error) return toastMsg("err","Erro ao excluir.");
+        toastMsg("ok","Agendamento excluído.");
+        await loadAgenda();
+        await loadDashboard();
+        return;
+      }
+
+      let status = "confirmed";
+      if(act==="cancel") status = "cancelled";
+      if(act==="done") status = "done";
+      if(act==="confirm") status = "confirmed";
+
+      const { error } = await sb.from("appointments").update({ status }).eq("id", id);
+      if(error) return toastMsg("err","Erro ao atualizar status.");
+      toastMsg("ok","Status atualizado.");
+      await loadAgenda();
+      await loadDashboard();
+    }
+
+    async function loadCustomers(){
+      const term = (searchCustomer.value || "").trim().toLowerCase();
+
+      let q = sb
+        .from("customers")
+        .select("id, full_name, phone, email, document")
+        .order("full_name",{ascending:true})
+        .limit(200);
+
+      const { data, error } = await q;
+
+      tbodyCustomers.innerHTML = "";
+      if(error){
+        tbodyCustomers.innerHTML = `<tr><td colspan="5">Erro ao carregar clientes.</td></tr>`;
+        return;
+      }
+
+      let list = data || [];
+      if(term){
+        list = list.filter(c =>
+          (c.full_name||"").toLowerCase().includes(term) ||
+          (c.phone||"").toLowerCase().includes(term)
+        );
+      }
+
+      if(!list.length){
+        tbodyCustomers.innerHTML = `<tr><td colspan="5">Nenhum cliente encontrado.</td></tr>`;
+        badgeClientes.textContent = "0";
+        return;
+      }
+
+      badgeClientes.textContent = String(list.length);
+
+      list.forEach(c=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${c.full_name || "—"}</td>
+          <td>${c.phone || "—"}</td>
+          <td>${c.email || "—"}</td>
+          <td>${c.document || "—"}</td>
+          <td>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn2" data-act="edit" data-id="${c.id}">Editar</button>
+              ${state.isAdmin ? `<button class="btn2 btnDanger" data-act="del" data-id="${c.id}">Excluir</button>` : ""}
+            </div>
+          </td>
+        `;
+        tbodyCustomers.appendChild(tr);
+      });
+
+      tbodyCustomers.querySelectorAll("button[data-act]").forEach(b=>{
+        b.onclick = ()=> onCustomerAction(b.dataset.act, b.dataset.id);
+      });
+    }
+
+    async function onCustomerAction(act, id){
+      if(act==="del" && !state.isAdmin) return toastMsg("err","Apenas ADMIN pode excluir.");
+
+      if(act==="del"){
+        const ok = confirm("Excluir cliente?");
+        if(!ok) return;
+        const { error } = await sb.from("customers").delete().eq("id", id);
+        if(error) return toastMsg("err","Erro ao excluir cliente.");
+        toastMsg("ok","Cliente excluído.");
+        await loadCustomers();
+        await loadCounts();
+        return;
+      }
+
+      // edit
+      const { data: c, error } = await sb.from("customers")
+        .select("id, full_name, phone, email, document, birth_date, address, notes")
+        .eq("id", id)
+        .single();
+
+      if(error || !c) return toastMsg("err","Erro ao abrir cliente.");
+
+      openCustomerModal(c);
+    }
+
+    function openCustomerModal(customer){
+      const isEdit = !!customer;
+      const c = customer || {
+        id:null, full_name:"", phone:"", email:"", document:"",
+        birth_date:"", address:"", notes:""
+      };
+
+      openModal(
+        isEdit ? "Editar Cliente" : "Novo Cliente",
+        `
+          <div class="row2">
+            <div>
+              <label>Nome completo</label>
+              <input id="c_full_name" value="${escapeHtml(c.full_name)}" />
+            </div>
+            <div>
+              <label>Telefone</label>
+              <input id="c_phone" value="${escapeHtml(c.phone || "")}" />
+            </div>
+          </div>
+          <div class="row2">
+            <div>
+              <label>E-mail</label>
+              <input id="c_email" value="${escapeHtml(c.email || "")}" />
+            </div>
+            <div>
+              <label>Documento</label>
+              <input id="c_document" value="${escapeHtml(c.document || "")}" />
+            </div>
+          </div>
+          <div class="row2">
+            <div>
+              <label>Data de nascimento</label>
+              <input id="c_birth" type="date" value="${c.birth_date || ""}" />
+            </div>
+            <div>
+              <label>Endereço</label>
+              <input id="c_address" value="${escapeHtml(c.address || "")}" />
+            </div>
+          </div>
+          <div>
+            <label>Observações</label>
+            <input id="c_notes" value="${escapeHtml(c.notes || "")}" />
+          </div>
+        `,
+        `
+          <button class="btn2" onclick="window.__closeModal()">Cancelar</button>
+          <button class="btn" onclick="window.__saveCustomer('${c.id || ""}')">${isEdit ? "Salvar" : "Cadastrar"}</button>
+        `
+      );
+    }
+
+    async function loadProfessionals(){
+      const { data, error } = await sb
+        .from("professionals")
+        .select("id,name,active")
+        .order("name",{ascending:true});
+
+      tbodyPros.innerHTML = "";
+      if(error){ tbodyPros.innerHTML = `<tr><td colspan="3">Erro ao carregar profissionais.</td></tr>`; return; }
+      if(!data.length){ tbodyPros.innerHTML = `<tr><td colspan="3">Nenhum profissional cadastrado.</td></tr>`; return; }
+
+      badgePros.textContent = String(data.length);
+
+      data.forEach(p=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${p.name}</td>
+          <td>${p.active ? `<span class="tag ok">Ativo</span>` : `<span class="tag bad">Inativo</span>`}</td>
+          <td>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn2" data-act="edit" data-id="${p.id}">Editar</button>
+              <button class="btn2" data-act="toggle" data-id="${p.id}" data-active="${p.active}">${p.active ? "Inativar" : "Ativar"}</button>
+              ${state.isAdmin ? `<button class="btn2 btnDanger" data-act="del" data-id="${p.id}">Excluir</button>` : ""}
+            </div>
+          </td>
+        `;
+        tbodyPros.appendChild(tr);
+      });
+
+      tbodyPros.querySelectorAll("button[data-act]").forEach(b=>{
+        b.onclick = ()=> onProAction(b.dataset.act, b.dataset.id, b.dataset.active);
+      });
+
+      await loadMaps();
+    }
+
+    async function onProAction(act, id, active){
+      if(act==="del" && !state.isAdmin) return toastMsg("err","Apenas ADMIN pode excluir.");
+
+      if(act==="del"){
+        const ok = confirm("Excluir profissional?");
+        if(!ok) return;
+        const { error } = await sb.from("professionals").delete().eq("id", id);
+        if(error) return toastMsg("err","Erro ao excluir profissional.");
+        toastMsg("ok","Profissional excluído.");
+        await loadProfessionals();
+        await loadCounts();
+        return;
+      }
+
+      if(act==="toggle"){
+        const newActive = !(active === "true");
+        const { error } = await sb.from("professionals").update({ active: newActive }).eq("id", id);
+        if(error) return toastMsg("err","Erro ao atualizar.");
+        toastMsg("ok","Atualizado.");
+        await loadProfessionals();
+        await loadCounts();
+        return;
+      }
+
+      if(act==="edit"){
+        const { data: p, error } = await sb.from("professionals").select("id,name,active").eq("id", id).single();
+        if(error || !p) return toastMsg("err","Erro ao abrir profissional.");
+        openProModal(p);
+      }
+    }
+
+    function openProModal(pro){
+      const isEdit = !!pro;
+      const p = pro || { id:null, name:"", active:true };
+
+      openModal(
+        isEdit ? "Editar Profissional" : "Novo Profissional",
+        `
+          <div class="row2">
+            <div>
+              <label>Nome</label>
+              <input id="p_name" value="${escapeHtml(p.name)}" />
+            </div>
+            <div>
+              <label>Status</label>
+              <select id="p_active">
+                <option value="true" ${p.active ? "selected" : ""}>Ativo</option>
+                <option value="false" ${!p.active ? "selected" : ""}>Inativo</option>
+              </select>
+            </div>
+          </div>
+        `,
+        `
+          <button class="btn2" onclick="window.__closeModal()">Cancelar</button>
+          <button class="btn" onclick="window.__savePro('${p.id || ""}')">${isEdit ? "Salvar" : "Cadastrar"}</button>
+        `
+      );
+    }
+
+    async function loadServices(){
+      const { data, error } = await sb
+        .from("services")
+        .select("id,name,duration_minutes,price_cents,active")
+        .order("name",{ascending:true});
+
+      tbodyServ.innerHTML = "";
+      if(error){ tbodyServ.innerHTML = `<tr><td colspan="5">Erro ao carregar serviços.</td></tr>`; return; }
+      if(!data.length){ tbodyServ.innerHTML = `<tr><td colspan="5">Nenhum serviço cadastrado.</td></tr>`; return; }
+
+      badgeServ.textContent = String(data.length);
+
+      data.forEach(s=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${s.name}</td>
+          <td>${s.duration_minutes} min</td>
+          <td>${money(s.price_cents)}</td>
+          <td>${s.active ? `<span class="tag ok">Ativo</span>` : `<span class="tag bad">Inativo</span>`}</td>
+          <td>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn2" data-act="edit" data-id="${s.id}">Editar</button>
+              <button class="btn2" data-act="toggle" data-id="${s.id}" data-active="${s.active}">${s.active ? "Inativar" : "Ativar"}</button>
+              ${state.isAdmin ? `<button class="btn2 btnDanger" data-act="del" data-id="${s.id}">Excluir</button>` : ""}
+            </div>
+          </td>
+        `;
+        tbodyServ.appendChild(tr);
+      });
+
+      tbodyServ.querySelectorAll("button[data-act]").forEach(b=>{
+        b.onclick = ()=> onServiceAction(b.dataset.act, b.dataset.id, b.dataset.active);
+      });
+
+      await loadMaps();
+    }
+
+    async function onServiceAction(act, id, active){
+      if(act==="del" && !state.isAdmin) return toastMsg("err","Apenas ADMIN pode excluir.");
+
+      if(act==="del"){
+        const ok = confirm("Excluir serviço?");
+        if(!ok) return;
+        const { error } = await sb.from("services").delete().eq("id", id);
+        if(error) return toastMsg("err","Erro ao excluir serviço.");
+        toastMsg("ok","Serviço excluído.");
+        await loadServices();
+        await loadCounts();
+        return;
+      }
+
+      if(act==="toggle"){
+        const newActive = !(active === "true");
+        const { error } = await sb.from("services").update({ active: newActive }).eq("id", id);
+        if(error) return toastMsg("err","Erro ao atualizar.");
+        toastMsg("ok","Atualizado.");
+        await loadServices();
+        await loadCounts();
+        return;
+      }
+
+      if(act==="edit"){
+        const { data: s, error } = await sb.from("services").select("id,name,duration_minutes,price_cents,active").eq("id", id).single();
+        if(error || !s) return toastMsg("err","Erro ao abrir serviço.");
+        openServiceModal(s);
+      }
+    }
+
+    function openServiceModal(serv){
+      const isEdit = !!serv;
+      const s = serv || { id:null, name:"", duration_minutes:30, price_cents:0, active:true };
+
+      openModal(
+        isEdit ? "Editar Serviço" : "Novo Serviço",
+        `
+          <div class="row2">
+            <div>
+              <label>Nome do serviço</label>
+              <input id="s_name" value="${escapeHtml(s.name)}" />
+            </div>
+            <div>
+              <label>Duração (min)</label>
+              <input id="s_dur" type="number" min="10" max="480" value="${Number(s.duration_minutes||30)}" />
+            </div>
+          </div>
+          <div class="row2">
+            <div>
+              <label>Preço (R$)</label>
+              <input id="s_price" type="number" step="0.01" value="${(Number(s.price_cents||0)/100).toFixed(2)}" />
+            </div>
+            <div>
+              <label>Status</label>
+              <select id="s_active">
+                <option value="true" ${s.active ? "selected" : ""}>Ativo</option>
+                <option value="false" ${!s.active ? "selected" : ""}>Inativo</option>
+              </select>
+            </div>
+          </div>
+        `,
+        `
+          <button class="btn2" onclick="window.__closeModal()">Cancelar</button>
+          <button class="btn" onclick="window.__saveService('${s.id || ""}')">${isEdit ? "Salvar" : "Cadastrar"}</button>
+        `
+      );
+    }
+
+    // Expose modal handlers to inline onclick
+    window.__closeModal = closeModal;
+
+    window.__saveCustomer = async (id)=>{
+      const payload = {
+        full_name: document.getElementById("c_full_name").value.trim(),
+        phone: document.getElementById("c_phone").value.trim() || null,
+        email: document.getElementById("c_email").value.trim() || null,
+        document: document.getElementById("c_document").value.trim() || null,
+        birth_date: document.getElementById("c_birth").value || null,
+        address: document.getElementById("c_address").value.trim() || null,
+        notes: document.getElementById("c_notes").value.trim() || null
+      };
+
+      if(payload.full_name.length < 2) return toastMsg("err","Nome inválido.");
+
+      let res;
+      if(id){
+        res = await sb.from("customers").update(payload).eq("id", id);
+      }else{
+        res = await sb.from("customers").insert(payload);
+      }
+
+      if(res.error) return toastMsg("err","Erro ao salvar cliente.");
+      toastMsg("ok", id ? "Cliente atualizado." : "Cliente cadastrado.");
+      closeModal();
+      await loadCustomers();
+      await loadCounts();
+    };
+
+    window.__savePro = async (id)=>{
+      const name = document.getElementById("p_name").value.trim();
+      const active = document.getElementById("p_active").value === "true";
+      if(name.length < 2) return toastMsg("err","Nome inválido.");
+
+      let res;
+      if(id){
+        res = await sb.from("professionals").update({ name, active }).eq("id", id);
+      }else{
+        res = await sb.from("professionals").insert({ name, active });
+      }
+
+      if(res.error) return toastMsg("err","Erro ao salvar profissional.");
+      toastMsg("ok", id ? "Profissional atualizado." : "Profissional cadastrado.");
+      closeModal();
+      await loadProfessionals();
+      await loadCounts();
+    };
+
+    window.__saveService = async (id)=>{
+      const name = document.getElementById("s_name").value.trim();
+      const duration_minutes = Number(document.getElementById("s_dur").value || 30);
+      const price = Number(document.getElementById("s_price").value || 0);
+      const price_cents = Math.round(price * 100);
+      const active = document.getElementById("s_active").value === "true";
+
+      if(name.length < 2) return toastMsg("err","Nome inválido.");
+      if(duration_minutes < 10 || duration_minutes > 480) return toastMsg("err","Duração inválida.");
+
+      let res;
+      if(id){
+        res = await sb.from("services").update({ name, duration_minutes, price_cents, active }).eq("id", id);
+      }else{
+        res = await sb.from("services").insert({ name, duration_minutes, price_cents, active });
+      }
+
+      if(res.error) return toastMsg("err","Erro ao salvar serviço.");
+      toastMsg("ok", id ? "Serviço atualizado." : "Serviço cadastrado.");
+      closeModal();
+      await loadServices();
+      await loadCounts();
+    };
+
+    function escapeHtml(s){
+      return String(s||"")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    // Auto start
+    (async ()=>{ await bootstrap(); })();
   </script>
 </body>
 </html>
