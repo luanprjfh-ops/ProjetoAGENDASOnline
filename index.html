@@ -3,29 +3,24 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Agenda Online</title>
+  <title>Painel ADM • AgendaPro</title>
 
   <style>
     :root{
       --bg:#fbf7fb;
       --card:#ffffff;
-
-      /* Mais roxo no visual */
-      --primary:#ec4899;   /* rosa */
-      --primary2:#7c3aed;  /* roxo mais forte */
-      --primary3:#a855f7;  /* roxo */
-      --purpleGlow: rgba(124,58,237,.18);
-
-      --text:#111827;
+      --primary:#a855f7;
+      --primary2:#ec4899;
+      --text:#1f2937;
       --muted:#6b7280;
-      --border:#efe7ff;
-      --shadow:0 18px 50px rgba(17,24,39,.10);
-      --radius:18px;
+      --border:#f1e7f5;
+      --shadow: 0 18px 55px rgba(17,24,39,.11);
+      --radius: 18px;
+      --soft:#faf5ff;
 
-      --okbg:#ecfdf5; --oktx:#065f46; --okbd:#a7f3d0;
-      --erbg:#fff1f2; --ertx:#be123c; --erbd:#fecdd3;
-      --infbg:#eff6ff; --inftx:#1d4ed8; --infbd:#bfdbfe;
-      --warnbg:#fffbeb; --warntx:#92400e; --warnbd:#fde68a;
+      --ok:#16a34a;
+      --bad:#ef4444;
+      --done:#3730a3;
     }
     *{box-sizing:border-box}
     body{
@@ -33,889 +28,1351 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
       color:var(--text);
       background:
-        radial-gradient(circle at top left, rgba(124,58,237,.25), transparent 45%),
-        radial-gradient(circle at bottom right, rgba(168,85,247,.22), transparent 45%),
-        radial-gradient(circle at 20% 30%, rgba(236,72,153,.16), transparent 40%),
+        radial-gradient(circle at top left, #fde2f3, transparent 40%),
+        radial-gradient(circle at bottom right, #e9d5ff, transparent 40%),
         var(--bg);
       min-height:100vh;
     }
-    .center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
+    .hidden{display:none!important}
+    .wrap{max-width:1200px;margin:0 auto;padding:22px}
     .card{
-      width:100%;
-      max-width:680px;
-      background:rgba(255,255,255,.95);
+      background:rgba(255,255,255,.92);
       border:1px solid var(--border);
-      border-radius:calc(var(--radius) + 2px);
+      border-radius:var(--radius);
       box-shadow:var(--shadow);
-      padding:22px;
       backdrop-filter: blur(10px);
     }
-
-    .top{
-      display:flex;
-      gap:14px;
-      align-items:flex-start;
-      justify-content:space-between;
-      margin-bottom:10px;
-    }
-    .brand{display:flex;align-items:center;gap:10px}
-    .logoDot{
-      width:14px;height:14px;border-radius:999px;
-      background:linear-gradient(90deg,var(--primary2),var(--primary3));
-      box-shadow:0 18px 40px var(--purpleGlow);
-      flex:0 0 auto;
-      margin-top:6px;
-    }
-    h1{
+    .brand{
+      font-weight:900;
+      font-size:24px;
       margin:0;
-      font-size:30px;
-      font-weight:950;
-      line-height:1.05;
-      background:linear-gradient(90deg,var(--primary2),var(--primary3),var(--primary));
+      background: linear-gradient(90deg,var(--primary),var(--primary2));
       -webkit-background-clip:text;
       -webkit-text-fill-color:transparent;
     }
-    .sub{
-      color:var(--muted);
-      margin:8px 0 0;
-      font-size:14px;
-      line-height:1.45;
-    }
-
+    .muted{color:var(--muted)}
     .pill{
-      border:1px solid var(--border);
+      padding:8px 12px;
       border-radius:999px;
-      padding:8px 10px;
-      font-size:12px;
-      color:var(--muted);
-      background:rgba(255,255,255,.75);
-      display:flex;
-      align-items:center;
-      gap:8px;
+      border:1px solid var(--border);
+      background:linear-gradient(90deg,#fce7f3,#ede9fe);
+      font-weight:800;
+      font-size:13px;
       white-space:nowrap;
-      height:fit-content;
-      box-shadow:0 10px 30px rgba(124,58,237,.08);
-    }
-    .lock{
-      width:10px;height:10px;border-radius:3px;
-      background:linear-gradient(90deg,var(--primary2),var(--primary3));
-      display:inline-block;
     }
 
-    .benefits{
-      margin:14px 0 16px;
-      border:1px solid var(--border);
-      background:linear-gradient(180deg, rgba(124,58,237,.06), rgba(255,255,255,.7));
-      border-radius:16px;
-      padding:12px;
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-    .benefit{
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      padding:10px;
-      border-radius:14px;
-      border:1px dashed rgba(124,58,237,.18);
-      background:rgba(255,255,255,.88);
-    }
-    .ico{
-      width:30px;height:30px;border-radius:12px;
-      display:flex;align-items:center;justify-content:center;
-      background:linear-gradient(90deg,rgba(124,58,237,.14),rgba(168,85,247,.14));
-      border:1px solid rgba(124,58,237,.15);
-      flex:0 0 auto;
-      font-weight:900;
-      color:#6d28d9;
-    }
-    .benefit b{display:block;font-size:13px}
-    .benefit span{display:block;color:var(--muted);font-size:12px;margin-top:2px}
-
-    .section{
-      margin-top:14px;
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:14px;
-      background:linear-gradient(180deg, rgba(124,58,237,.05), rgba(255,255,255,.78));
-    }
-    .sectionTitle{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:6px;
-    }
-    .sectionTitle h2{
-      margin:0;
-      font-size:14px;
-      font-weight:950;
-      color:#111827;
-      letter-spacing:.2px;
-    }
-    .hint{font-size:12px;color:var(--muted)}
-
-    .grid2{display:grid;grid-template-columns: 1fr 1fr;gap:12px}
-    @media (max-width:640px){
-      .benefits{grid-template-columns:1fr}
-      .grid2{grid-template-columns:1fr}
-      .top{flex-direction:column;align-items:flex-start}
-      .pill{width:100%;justify-content:center}
-    }
-
+    /* LOGIN */
+    .center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
+    .login{width:420px;padding:24px}
     label{font-size:12px;color:var(--muted);display:block;margin-top:10px}
-    select,input{
+    input, select{
       width:100%;
       padding:12px 14px;
       border-radius:14px;
       border:1px solid var(--border);
+      outline:none;
       margin-top:6px;
       font-size:14px;
-      outline:none;
       background:#fff;
     }
-    input:focus,select:focus{
-      border-color:#c4b5fd;
-      box-shadow:0 0 0 4px rgba(124,58,237,.12);
+    input:focus, select:focus{border-color:#d8b4fe;box-shadow:0 0 0 4px rgba(168,85,247,.12)}
+    .btn{
+      border:0;
+      padding:12px 14px;
+      border-radius:14px;
+      font-weight:900;
+      cursor:pointer;
+      color:#fff;
+      background:linear-gradient(90deg,var(--primary),var(--primary2));
+      transition:.15s;
     }
+    .btn:hover{transform:translateY(-1px);opacity:.95}
+    .btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
 
-    .helperRow{
+    .btn2{
+      border:1px solid var(--border);
+      background:#fff;
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:900;
+    }
+    .btn2:hover{background:var(--soft)}
+    .btnDanger{
+      border:1px solid #fecdd3;
+      background:#fff1f2;
+      color:#be123c;
+    }
+    .btnDanger:hover{background:#ffe4e6}
+
+    .error{
+      display:none;
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      background:#fff1f2;
+      border:1px solid #fecdd3;
+      color:#be123c;
+      font-size:13px;
+    }
+    .toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      min-width:260px;
+      max-width:380px;
+      padding:12px 14px;
+      border-radius:16px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.95);
+      box-shadow:var(--shadow);
+      display:none;
+    }
+    .toast.ok{border-color:#bbf7d0}
+    .toast.err{border-color:#fecdd3}
+
+    /* LAYOUT */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:16px 18px;
+      margin-top:14px;
+      gap:10px;
+    }
+    .row{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px}
+    .sidebar{
+      width:280px;
+      padding:16px;
+      background:rgba(255,255,255,.85);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    .menu{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+    .menu button{
+      text-align:left;
+      border:1px solid transparent;
+      background:transparent;
+      padding:12px;
+      border-radius:14px;
+      font-weight:900;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .menu button:hover{background:var(--soft);border-color:#f3e8ff}
+    .menu .active{background:var(--soft);border-color:#f3e8ff}
+    .content{flex:1;min-width:300px}
+
+    .section{padding:16px}
+    .section h2{margin:0 0 6px 0}
+    .section p{margin:0 0 12px 0;color:var(--muted)}
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap:14px;
+    }
+    @media (max-width:1100px){.grid{grid-template-columns: repeat(2, minmax(0,1fr));}}
+    @media (max-width:760px){.grid{grid-template-columns: 1fr;}.sidebar{width:100%}}
+    .kpi{padding:16px}
+    .kpi h3{margin:0 0 6px 0;font-size:13px;color:var(--muted)}
+    .kpi .big{font-size:28px;font-weight:1000;margin:0}
+
+    .toolbar{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
-      margin-top:10px;
       align-items:center;
       justify-content:space-between;
+      margin:10px 0 12px;
     }
-    .meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .badge{
-      font-size:12px;
-      padding:8px 10px;
+    .toolbar .left,.toolbar .right{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .miniInput{width:auto;min-width:220px}
+
+    table{width:100%;border-collapse:separate;border-spacing:0 10px}
+    th{font-size:12px;color:var(--muted);text-align:left;padding:0 10px}
+    td{
+      background:#fff;
+      border:1px solid var(--border);
+      padding:12px 10px;
+      vertical-align:middle;
+    }
+    td:first-child{border-radius:14px 0 0 14px}
+    td:last-child{border-radius:0 14px 14px 0}
+    .tag{
+      display:inline-block;
+      padding:6px 10px;
       border-radius:999px;
-      border:1px solid rgba(124,58,237,.18);
-      color:#374151;
-      background:rgba(255,255,255,.9);
+      font-size:12px;
+      font-weight:900;
+      border:1px solid var(--border);
+      background:#fff;
     }
-    .badge strong{font-weight:950}
-    .badge.muted{color:var(--muted);border-color:var(--border)}
-    .badge .star{color:#f59e0b}
+    .tag.ok{border-color:#bbf7d0;background:#ecfdf5;color:#166534}
+    .tag.bad{border-color:#fecdd3;background:#fff1f2;color:#be123c}
+    .tag.done{border-color:#c7d2fe;background:#eef2ff;color:var(--done)}
 
-    /* Dias disponíveis (chips) */
-    .daysBar{
-      margin-top:10px;
-      border:1px solid rgba(124,58,237,.18);
-      border-radius:16px;
-      background:rgba(255,255,255,.88);
-      padding:10px;
-    }
-    .daysTop{
-      display:flex;
+    /* MODAL */
+    .modalBack{
+      position:fixed; inset:0;
+      background: rgba(17,24,39,.35);
+      display:none;
       align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:10px;
+      justify-content:center;
+      padding:18px;
     }
-    .daysTop b{
-      font-size:12px;
-      color:#111827;
-    }
-    .daysHint{
-      font-size:12px;
-      color:var(--muted);
-    }
-    .daysChips{
-      display:flex;
-      gap:8px;
-      overflow:auto;
-      padding-bottom:2px;
-      scrollbar-width: thin;
-    }
-    .dayChip{
-      border:1px solid var(--border);
-      background:#fff;
-      border-radius:14px;
-      padding:10px 10px;
-      min-width:112px;
-      cursor:pointer;
-      user-select:none;
-      transition: transform .06s ease, background .12s ease, border-color .12s ease;
-    }
-    .dayChip:hover{transform: translateY(-1px);border-color:rgba(124,58,237,.30)}
-    .dayChip .d1{font-weight:950;font-size:12px;color:#111827}
-    .dayChip .d2{font-size:12px;color:var(--muted);margin-top:2px}
-    .dayChip .d3{font-size:12px;margin-top:6px;color:#6d28d9;font-weight:900}
-    .dayChip.disabled{
-      opacity:.55;
-      cursor:not-allowed;
-    }
-    .dayChip.active{
-      border-color:transparent;
-      background:linear-gradient(90deg,var(--primary2),var(--primary3));
-      box-shadow:0 16px 40px rgba(124,58,237,.18);
-    }
-    .dayChip.active .d1,
-    .dayChip.active .d2,
-    .dayChip.active .d3{color:#fff}
-
-    .slots{
-      display:grid;
-      grid-template-columns: repeat(auto-fill, minmax(98px,1fr));
-      gap:10px;
-      margin-top:12px;
-    }
-    .slot{
-      padding:10px;
-      border-radius:12px;
-      border:1px solid var(--border);
-      background:#fff;
-      text-align:center;
-      cursor:pointer;
-      font-weight:950;
-      user-select:none;
-      transition: transform .06s ease, background .12s ease;
-    }
-    .slot:hover{background:#faf5ff;transform: translateY(-1px)}
-    .slot.active{
-      background:linear-gradient(90deg,var(--primary2),var(--primary3));
-      color:#fff;
-      border-color:transparent;
-    }
-
-    .btn{
-      width:100%;
-      border:0;
-      padding:14px;
-      border-radius:14px;
-      font-weight:950;
-      cursor:pointer;
-      color:#fff;
-      background:linear-gradient(90deg,var(--primary2),var(--primary3),var(--primary));
-      margin-top:14px;
-      letter-spacing:.2px;
-      box-shadow:0 16px 35px rgba(124,58,237,.18);
-    }
-    .btn:disabled{opacity:.6;cursor:not-allowed;box-shadow:none}
-
-    .msg{
-      margin-top:12px;
-      padding:12px;
-      border-radius:14px;
-      font-size:14px;
-      display:none;
-      border:1px solid transparent;
-      line-height:1.4;
-    }
-    .ok{background:var(--okbg);color:var(--oktx);border-color:var(--okbd)}
-    .err{background:var(--erbg);color:var(--ertx);border-color:var(--erbd)}
-    .info{background:var(--infbg);color:var(--inftx);border-color:var(--infbd)}
-    .warn{background:var(--warnbg);color:var(--warntx);border-color:var(--warnbd)}
-    .mini{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:12px;
-      text-align:center;
-      line-height:1.4;
-    }
-
-    .summary{
-      margin-top:12px;
-      border:1px solid rgba(124,58,237,.18);
-      border-radius:16px;
-      padding:12px;
-      background:rgba(255,255,255,.9);
-      display:none;
-    }
-    .summary h3{
-      margin:0 0 8px;
-      font-size:13px;
-      font-weight:950;
-    }
-    .sumGrid{display:grid;grid-template-columns: 1fr 1fr;gap:10px}
-    .sumItem{
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:10px;
-      background:#fff;
-      font-size:12px;
-      color:#374151;
-    }
-    .sumItem b{display:block;font-size:12px;color:#111827;margin-bottom:3px}
-    @media (max-width:640px){ .sumGrid{grid-template-columns:1fr} }
-
-    .smallNote{font-size:12px;color:var(--muted);margin-top:10px}
+    .modal{width:100%;max-width:560px;padding:16px}
+    .modalHeader{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .modalHeader h3{margin:0}
+    .modalBody{margin-top:10px}
+    .modalBody .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:640px){.modalBody .row2{grid-template-columns:1fr}}
+    .modalFooter{display:flex;gap:10px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
   </style>
 </head>
 
 <body>
-<div class="center">
-  <div class="card">
 
-    <div class="top">
-      <div class="brand">
-        <span class="logoDot"></span>
-        <div>
-          <h1>Agende seu atendimento com praticidade e inovação</h1>
-          <div class="sub">
-            Escolha o serviço, o profissional ideal e o melhor horário em poucos cliques.
-            Rápido, simples e totalmente online.
+  <!-- LOGIN -->
+  <div id="loginView" class="center">
+    <div class="card login">
+      <h1 class="brand" style="font-size:28px">Painel Administrativo</h1>
+      <p class="muted" style="margin:6px 0 14px 0;">Acesse para gerenciar sua agenda.</p>
+
+      <label>E-mail</label>
+      <input id="email" placeholder="admin@lep.local" />
+
+      <label>Senha</label>
+      <input id="password" type="password" placeholder="••••••••" />
+
+      <div id="err" class="error"></div>
+
+      <button id="btnLogin" class="btn" style="width:100%">Entrar</button>
+
+      <p class="muted" style="margin:14px 0 0 0;font-size:12px;text-align:center">
+        LEP Sistemas • Agenda Online
+      </p>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="appView" class="wrap hidden">
+    <div class="topbar card">
+      <div>
+        <div class="brand">AgendaPro</div>
+        <div class="muted" id="who" style="font-size:13px;margin-top:2px;">—</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+        <span class="pill" id="companyPill">Empresa: —</span>
+        <button class="btn2" id="btnRefresh">Atualizar</button>
+        <button class="btn2" id="btnLogout">Sair</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <aside class="sidebar">
+        <div class="pill">Menu</div>
+        <div class="menu">
+          <button class="active" data-tab="dash"><span>Dashboard</span><span class="tag" id="badgeToday">—</span></button>
+          <button data-tab="agenda"><span>Agenda</span><span class="tag" id="badgeAgenda">—</span></button>
+          <button data-tab="clientes"><span>Clientes</span><span class="tag" id="badgeClientes">—</span></button>
+          <button data-tab="profissionais"><span>Profissionais</span><span class="tag" id="badgePros">—</span></button>
+          <button data-tab="servicos"><span>Serviços</span><span class="tag" id="badgeServ">—</span></button>
+          <button data-tab="horarios"><span>Horários</span><span class="tag" id="badgeHours">—</span></button>
+        </div>
+
+        <div style="margin-top:14px" class="muted">
+          <div style="font-weight:900;color:var(--text)">Ações rápidas</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+            <button class="btn2" id="quickNewCustomer">+ Cliente</button>
+            <button class="btn2" id="quickNewPro">+ Profissional</button>
+            <button class="btn2" id="quickNewService">+ Serviço</button>
           </div>
         </div>
-      </div>
 
-      <div class="pill" title="Segurança e privacidade">
-        <span class="lock"></span>
-        Seus dados estão protegidos
-      </div>
+        <div style="margin-top:14px" class="muted">
+          <div style="font-weight:900;color:var(--text)">Permissão</div>
+          <div id="roleBox" class="pill" style="margin-top:8px;display:inline-block">—</div>
+        </div>
+      </aside>
+
+      <main class="content">
+        <!-- DASH -->
+        <section id="tab-dash" class="card section">
+          <h2>Dashboard</h2>
+          <p>Resumo do dia e próximos agendamentos.</p>
+
+          <div class="grid">
+            <div class="card kpi"><h3>Hoje</h3><p class="big" id="kpiToday">—</p></div>
+            <div class="card kpi"><h3>Confirmados</h3><p class="big" id="kpiConf">—</p></div>
+            <div class="card kpi"><h3>Cancelados</h3><p class="big" id="kpiCanc">—</p></div>
+            <div class="card kpi"><h3>Concluídos</h3><p class="big" id="kpiDone">—</p></div>
+          </div>
+
+          <div style="margin-top:14px" class="card section">
+            <div class="toolbar">
+              <div class="left">
+                <div style="font-weight:1000">Próximos agendamentos</div>
+                <span class="muted" style="font-size:13px">até 20 itens</span>
+              </div>
+              <div class="right">
+                <button class="btn2" id="btnGoAgenda">Abrir Agenda</button>
+              </div>
+            </div>
+
+            <div style="overflow:auto">
+              <table>
+                <thead>
+                  <tr><th>Data/Hora</th><th>Profissional</th><th>Serviço</th><th>Cliente</th><th>Status</th></tr>
+                </thead>
+                <tbody id="tbodyNext"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- AGENDA -->
+        <section id="tab-agenda" class="card section hidden">
+          <h2>Agenda</h2>
+          <p>Filtre por data e profissional, altere status e gerencie agendamentos.</p>
+
+          <div class="toolbar">
+            <div class="left">
+              <input class="miniInput" id="agendaDate" type="date" />
+              <select class="miniInput" id="agendaPro"></select>
+            </div>
+            <div class="right">
+              <button class="btn2" id="btnAgendaReload">Recarregar</button>
+            </div>
+          </div>
+
+          <div style="overflow:auto">
+            <table>
+              <thead>
+                <tr><th>Hora</th><th>Profissional</th><th>Serviço</th><th>Cliente</th><th>Telefone</th><th>Status</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="tbodyAgenda"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- CLIENTES -->
+        <section id="tab-clientes" class="card section hidden">
+          <h2>Clientes</h2>
+          <p>Cadastre, edite e busque clientes.</p>
+
+          <div class="toolbar">
+            <div class="left">
+              <input class="miniInput" id="searchCustomer" placeholder="Buscar por nome/telefone..." />
+            </div>
+            <div class="right">
+              <button class="btn2" id="btnNewCustomer">+ Novo Cliente</button>
+              <button class="btn2" id="btnCustomersReload">Recarregar</button>
+            </div>
+          </div>
+
+          <div style="overflow:auto">
+            <table>
+              <thead>
+                <tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Documento</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="tbodyCustomers"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- PROFISSIONAIS -->
+        <section id="tab-profissionais" class="card section hidden">
+          <h2>Profissionais</h2>
+          <p>Gerencie equipe.</p>
+
+          <div class="toolbar">
+            <div class="left"></div>
+            <div class="right">
+              <button class="btn2" id="btnNewPro">+ Novo Profissional</button>
+              <button class="btn2" id="btnProsReload">Recarregar</button>
+            </div>
+          </div>
+
+          <div style="overflow:auto">
+            <table>
+              <thead>
+                <tr><th>Nome</th><th>Status</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="tbodyPros"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- SERVIÇOS -->
+        <section id="tab-servicos" class="card section hidden">
+          <h2>Serviços</h2>
+          <p>Cadastre serviços com duração e preço.</p>
+
+          <div class="toolbar">
+            <div class="left"></div>
+            <div class="right">
+              <button class="btn2" id="btnNewService">+ Novo Serviço</button>
+              <button class="btn2" id="btnServReload">Recarregar</button>
+            </div>
+          </div>
+
+          <div style="overflow:auto">
+            <table>
+              <thead>
+                <tr><th>Serviço</th><th>Duração</th><th>Preço</th><th>Status</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="tbodyServ"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- HORÁRIOS (NOVO) -->
+        <section id="tab-horarios" class="card section hidden">
+          <h2>Horários</h2>
+          <p>Defina dias e horários disponíveis por profissional.</p>
+
+          <div class="toolbar">
+            <div class="left" style="gap:10px">
+              <select class="miniInput" id="whPro"></select>
+              <select id="whWeekday" class="miniInput">
+                <option value="0">Domingo</option>
+                <option value="1">Segunda</option>
+                <option value="2">Terça</option>
+                <option value="3">Quarta</option>
+                <option value="4">Quinta</option>
+                <option value="5">Sexta</option>
+                <option value="6">Sábado</option>
+              </select>
+              <input id="whStart" class="miniInput" type="time" value="09:00" />
+              <input id="whEnd" class="miniInput" type="time" value="18:00" />
+              <input id="whSlot" class="miniInput" type="number" min="10" max="180" value="30" />
+            </div>
+            <div class="right">
+              <button class="btn2" id="btnWhAdd">Salvar Horário</button>
+              <button class="btn2" id="btnWhDefault">Aplicar Seg–Sex 09:00–18:00</button>
+              <button class="btn2" id="btnWhReload">Recarregar</button>
+            </div>
+          </div>
+
+          <div style="overflow:auto">
+            <table>
+              <thead>
+                <tr><th>Profissional</th><th>Dia</th><th>Início</th><th>Fim</th><th>Slot</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="tbodyHours"></tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
     </div>
-
-    <div class="benefits">
-      <div class="benefit">
-        <div class="ico">⏱</div>
-        <div><b>Agendamento rápido</b><span>Fluxo simples e objetivo, sem complicações.</span></div>
-      </div>
-      <div class="benefit">
-        <div class="ico">📅</div>
-        <div><b>Horários em tempo real</b><span>Mostramos apenas horários disponíveis.</span></div>
-      </div>
-      <div class="benefit">
-        <div class="ico">✅</div>
-        <div><b>Confirmação imediata</b><span>Ao confirmar, o sistema registra e reserva o horário.</span></div>
-      </div>
-      <div class="benefit">
-        <div class="ico">📲</div>
-        <div><b>WhatsApp para confirmação</b><span>Usamos seu número apenas para confirmar.</span></div>
-      </div>
-    </div>
-
-    <!-- SEÇÃO 1 -->
-    <div class="section">
-      <div class="sectionTitle">
-        <h2>1) Sobre o atendimento</h2>
-        <div class="hint">Defina o serviço e o profissional.</div>
-      </div>
-
-      <div class="grid2">
-        <div>
-          <label for="service">Serviço</label>
-          <select id="service"></select>
-        </div>
-
-        <div>
-          <label for="professional">Profissional</label>
-          <select id="professional"></select>
-        </div>
-      </div>
-
-      <div class="helperRow">
-        <div class="meta">
-          <div class="badge muted" id="metaDuration">⏳ Duração: —</div>
-          <div class="badge" id="metaRating"><span class="star">⭐</span> Avaliação: —</div>
-        </div>
-        <div class="hint" id="metaServiceName"></div>
-      </div>
-
-      <div class="smallNote">
-        Após escolher o serviço e o profissional, veja os próximos dias disponíveis e selecione um horário.
-      </div>
-    </div>
-
-    <!-- SEÇÃO 2 -->
-    <div class="section">
-      <div class="sectionTitle">
-        <h2>2) Dias e horários disponíveis</h2>
-        <div class="hint">Escolha o dia e depois o horário.</div>
-      </div>
-
-      <div class="grid2">
-        <div>
-          <label for="date">Data (opcional)</label>
-          <input type="date" id="date" />
-        </div>
-
-        <div>
-          <label>Status do agendamento</label>
-          <input id="statusField" value="Aguardando seleção..." readonly />
-        </div>
-      </div>
-
-      <!-- NOVO: dias disponíveis -->
-      <div class="daysBar">
-        <div class="daysTop">
-          <b>Próximos dias com disponibilidade</b>
-          <div class="daysHint" id="daysHint">Selecione serviço e profissional para carregar.</div>
-        </div>
-        <div id="daysChips" class="daysChips"></div>
-      </div>
-
-      <!-- Horários -->
-      <div id="slots" class="slots"></div>
-
-      <div class="smallNote" id="slotsNote">
-        Mostramos apenas horários disponíveis em tempo real.
-      </div>
-    </div>
-
-    <!-- SEÇÃO 3 -->
-    <div class="section">
-      <div class="sectionTitle">
-        <h2>3) Seus dados para confirmação</h2>
-        <div class="hint">Usaremos apenas para confirmar o atendimento.</div>
-      </div>
-
-      <div class="grid2">
-        <div>
-          <label for="customerName">Nome completo</label>
-          <input id="customerName" placeholder="Ex: Maria Silva" autocomplete="name" />
-        </div>
-
-        <div>
-          <label for="customerPhone">WhatsApp para confirmação</label>
-          <input id="customerPhone" placeholder="(00) 00000-0000" autocomplete="tel" />
-        </div>
-      </div>
-
-      <button id="btnConfirm" class="btn" disabled>Confirmar agendamento agora</button>
-
-      <div id="summary" class="summary">
-        <h3>Resumo do seu agendamento</h3>
-        <div class="sumGrid">
-          <div class="sumItem"><b>Serviço</b><span id="sumService">—</span></div>
-          <div class="sumItem"><b>Profissional</b><span id="sumProf">—</span></div>
-          <div class="sumItem"><b>Data</b><span id="sumDate">—</span></div>
-          <div class="sumItem"><b>Horário</b><span id="sumTime">—</span></div>
-        </div>
-      </div>
-
-      <div id="msgOk" class="msg ok"></div>
-      <div id="msgErr" class="msg err"></div>
-      <div id="msgInfo" class="msg info"></div>
-      <div id="msgWarn" class="msg warn"></div>
-
-      <div class="mini">
-        Desenvolvido por <b>LEP Sistemas</b> • Agenda Online Inteligente<br/>
-        Tecnologia para facilitar seu dia a dia
-      </div>
-    </div>
-
   </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  // FIXO (já preenchido com seus dados)
-  const SUPABASE_URL = "https://lbjkxslawyqbuncrnmbl.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_a6VPFRKUWl4iQsrz6LVFMA_qYLJ4p-L";
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <!-- MODAL -->
+  <div id="modalBack" class="modalBack">
+    <div class="card modal">
+      <div class="modalHeader">
+        <h3 id="modalTitle">—</h3>
+        <button class="btn2" id="modalClose">Fechar</button>
+      </div>
+      <div class="modalBody" id="modalBody"></div>
+      <div class="modalFooter" id="modalFooter"></div>
+    </div>
+  </div>
 
-  const serviceSel = document.getElementById("service");
-  const profSel = document.getElementById("professional");
-  const dateInput = document.getElementById("date");
-  const slotsDiv = document.getElementById("slots");
-  const btnConfirm = document.getElementById("btnConfirm");
+  <div id="toast" class="toast"></div>
 
-  const msgOk = document.getElementById("msgOk");
-  const msgErr = document.getElementById("msgErr");
-  const msgInfo = document.getElementById("msgInfo");
-  const msgWarn = document.getElementById("msgWarn");
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SB_URL = "https://lbjkxslawyqbuncrnmbl.supabase.co";
+    const SB_KEY = "sb_publishable_a6VPFRKUWl4iQsrz6LVFMA_qYLJ4p-L";
+    const sb = window.__sb || (window.__sb = window.supabase.createClient(SB_URL, SB_KEY));
 
-  const statusField = document.getElementById("statusField");
+    // UI refs
+    const loginView = document.getElementById("loginView");
+    const appView = document.getElementById("appView");
+    const btnLogin = document.getElementById("btnLogin");
+    const btnLogout = document.getElementById("btnLogout");
+    const btnRefresh = document.getElementById("btnRefresh");
+    const err = document.getElementById("err");
 
-  const metaDuration = document.getElementById("metaDuration");
-  const metaRating = document.getElementById("metaRating");
-  const metaServiceName = document.getElementById("metaServiceName");
+    const who = document.getElementById("who");
+    const companyPill = document.getElementById("companyPill");
+    const roleBox = document.getElementById("roleBox");
 
-  const daysChips = document.getElementById("daysChips");
-  const daysHint = document.getElementById("daysHint");
+    const kpiToday = document.getElementById("kpiToday");
+    const kpiConf  = document.getElementById("kpiConf");
+    const kpiCanc  = document.getElementById("kpiCanc");
+    const kpiDone  = document.getElementById("kpiDone");
 
-  const summary = document.getElementById("summary");
-  const sumService = document.getElementById("sumService");
-  const sumProf = document.getElementById("sumProf");
-  const sumDate = document.getElementById("sumDate");
-  const sumTime = document.getElementById("sumTime");
+    const badgeToday = document.getElementById("badgeToday");
+    const badgeAgenda = document.getElementById("badgeAgenda");
+    const badgeClientes = document.getElementById("badgeClientes");
+    const badgePros = document.getElementById("badgePros");
+    const badgeServ = document.getElementById("badgeServ");
+    const badgeHours = document.getElementById("badgeHours");
 
-  let selectedSlot = null;
-  let COMPANY_ID = null;
+    const tbodyNext = document.getElementById("tbodyNext");
+    const tbodyAgenda = document.getElementById("tbodyAgenda");
+    const agendaDate = document.getElementById("agendaDate");
+    const agendaPro = document.getElementById("agendaPro");
 
-  const servicesById = new Map();
-  const professionalsById = new Map();
+    const tbodyCustomers = document.getElementById("tbodyCustomers");
+    const searchCustomer = document.getElementById("searchCustomer");
 
-  // Avaliação fixa (conforme pedido)
-  const DEFAULT_RATING = 4.9;
+    const tbodyPros = document.getElementById("tbodyPros");
+    const tbodyServ = document.getElementById("tbodyServ");
 
-  // Config: quantos dias mostrar como "disponíveis"
-  const DAYS_LOOKAHEAD = 14;
+    const btnGoAgenda = document.getElementById("btnGoAgenda");
+    const btnAgendaReload = document.getElementById("btnAgendaReload");
 
-  function hideAllMsgs(){ [msgOk,msgErr,msgInfo,msgWarn].forEach(m=>m.style.display="none"); }
-  function showOk(t){ hideAllMsgs(); msgOk.style.display="block"; msgOk.textContent=t; }
-  function showErr(t){ hideAllMsgs(); msgErr.style.display="block"; msgErr.textContent=t; }
-  function showInfo(t){ hideAllMsgs(); msgInfo.style.display="block"; msgInfo.textContent=t; }
-  function showWarn(t){ hideAllMsgs(); msgWarn.style.display="block"; msgWarn.textContent=t; }
+    const btnNewCustomer = document.getElementById("btnNewCustomer");
+    const btnCustomersReload = document.getElementById("btnCustomersReload");
 
-  function setStatus(text){ statusField.value = text; }
+    const btnNewPro = document.getElementById("btnNewPro");
+    const btnProsReload = document.getElementById("btnProsReload");
 
-  function fmtTime(iso){
-    const d = new Date(iso);
-    return d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-  }
-  function fmtDateBR(yyyyMmDd){
-    if(!yyyyMmDd) return "—";
-    const [y,m,d] = yyyyMmDd.split("-");
-    return `${d}/${m}/${y}`;
-  }
-  function ymd(dateObj){
-    const d = new Date(dateObj);
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,"0");
-    const da = String(d.getDate()).padStart(2,"0");
-    return `${y}-${m}-${da}`;
-  }
-  function dowShortPt(dateObj){
-    return dateObj.toLocaleDateString("pt-BR",{weekday:"short"}).replace(".","");
-  }
-  function monthShortPt(dateObj){
-    return dateObj.toLocaleDateString("pt-BR",{month:"short"}).replace(".","");
-  }
+    const btnNewService = document.getElementById("btnNewService");
+    const btnServReload = document.getElementById("btnServReload");
 
-  function updateMeta(){
-    const s = servicesById.get(serviceSel.value);
-    const p = professionalsById.get(profSel.value);
+    const quickNewCustomer = document.getElementById("quickNewCustomer");
+    const quickNewPro = document.getElementById("quickNewPro");
+    const quickNewService = document.getElementById("quickNewService");
 
-    const durationMin = s?.duration_minutes ?? 40;
-    metaDuration.textContent = `⏳ Duração: ${durationMin} min`;
+    // Working Hours refs
+    const whPro = document.getElementById("whPro");
+    const whWeekday = document.getElementById("whWeekday");
+    const whStart = document.getElementById("whStart");
+    const whEnd = document.getElementById("whEnd");
+    const whSlot = document.getElementById("whSlot");
+    const btnWhAdd = document.getElementById("btnWhAdd");
+    const btnWhDefault = document.getElementById("btnWhDefault");
+    const btnWhReload = document.getElementById("btnWhReload");
+    const tbodyHours = document.getElementById("tbodyHours");
 
-    metaRating.innerHTML = `<span class="star">⭐</span> Avaliação: <strong>${DEFAULT_RATING.toFixed(1)}</strong>/5`;
+    // Modal
+    const modalBack = document.getElementById("modalBack");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalBody = document.getElementById("modalBody");
+    const modalFooter = document.getElementById("modalFooter");
+    const modalClose = document.getElementById("modalClose");
 
-    const svcName = s?.name ? `Serviço: ${s.name}` : "";
-    const profName = p?.name ? ` • Profissional: ${p.name}` : "";
-    metaServiceName.textContent = (svcName || profName) ? `${svcName}${profName}` : "";
-  }
+    // Toast
+    const toast = document.getElementById("toast");
 
-  function updateSummary(){
-    const s = servicesById.get(serviceSel.value);
-    const p = professionalsById.get(profSel.value);
+    let state = {
+      user: null,
+      profile: null,
+      company: null,
+      role: "staff",
+      isAdmin: false,
+      pros: [],
+      serv: [],
+      prosMap: {},
+      servMap: {}
+    };
 
-    sumService.textContent = s?.name ?? "—";
-    sumProf.textContent = p?.name ?? "—";
-    sumDate.textContent = fmtDateBR(dateInput.value);
-    sumTime.textContent = selectedSlot ? fmtTime(selectedSlot) : "—";
+    const pad2 = (n)=>String(n).padStart(2,"0");
+    const todayISO = ()=> {
+      const d = new Date();
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    };
+    const fmtTime = (iso)=> new Date(iso).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+    const fmtDateTime = (iso)=> new Date(iso).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+    const money = (cents)=>{
+      if (cents===null || cents===undefined || cents==="") return "—";
+      return (Number(cents)/100).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+    };
 
-    const canShow = !!(serviceSel.value && profSel.value);
-    summary.style.display = canShow ? "block" : "none";
-  }
+    const weekdayLabel = (w)=>{
+      const a=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+      return a[Number(w)] ?? String(w);
+    };
 
-  function resetSlotsUI(){
-    slotsDiv.innerHTML = "";
-    selectedSlot = null;
-    btnConfirm.disabled = true;
-    updateSummary();
-  }
+    function showLogin(){ appView.classList.add("hidden"); loginView.classList.remove("hidden"); }
+    function showApp(){ loginView.classList.add("hidden"); appView.classList.remove("hidden"); }
+    function showError(msg){ err.style.display="block"; err.textContent=msg; }
+    function clearError(){ err.style.display="none"; err.textContent=""; }
 
-  function renderDayChips(items, activeYmd){
-    daysChips.innerHTML = "";
-    if(!items.length){
-      daysChips.innerHTML = `<div style="color:#6b7280;font-size:12px;padding:6px 2px;">Nenhum dia disponível no período.</div>`;
-      return;
+    function toastMsg(type, msg){
+      toast.className = "toast " + (type==="ok" ? "ok" : "err");
+      toast.textContent = msg;
+      toast.style.display = "block";
+      setTimeout(()=> toast.style.display="none", 2600);
     }
 
-    items.forEach(it=>{
-      const chip = document.createElement("div");
-      chip.className = "dayChip" + (it.disabled ? " disabled" : "") + (it.ymd===activeYmd ? " active" : "");
-      chip.innerHTML = `
-        <div class="d1">${it.dow} • ${it.dd} ${it.mon}</div>
-        <div class="d2">${it.ymd === ymd(new Date()) ? "Hoje" : "Disponível"}</div>
-        <div class="d3">${it.count} horários</div>
-      `;
+    function tagStatus(status){
+      if(status==="confirmed") return `<span class="tag ok">Confirmado</span>`;
+      if(status==="cancelled") return `<span class="tag bad">Cancelado</span>`;
+      if(status==="done") return `<span class="tag done">Concluído</span>`;
+      return `<span class="tag">${status}</span>`;
+    }
 
-      if(!it.disabled){
-        chip.onclick = ()=>{
-          // seleciona o dia (atualiza dateInput) e carrega horários
-          dateInput.value = it.ymd;
-          document.querySelectorAll(".dayChip").forEach(x=>x.classList.remove("active"));
-          chip.classList.add("active");
-          loadSlots(); // carrega horários do dia clicado
-        };
+    function openModal(title, bodyHTML, footerHTML){
+      modalTitle.textContent = title;
+      modalBody.innerHTML = bodyHTML;
+      modalFooter.innerHTML = footerHTML || "";
+      modalBack.style.display = "flex";
+    }
+    function closeModal(){ modalBack.style.display = "none"; }
+    modalClose.onclick = closeModal;
+    modalBack.addEventListener("click",(e)=>{ if(e.target===modalBack) closeModal(); });
+
+    document.querySelectorAll(".menu button").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        document.querySelectorAll(".menu button").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        const tab = btn.dataset.tab;
+        document.querySelectorAll("main section").forEach(sec=>sec.classList.add("hidden"));
+        document.getElementById("tab-" + tab).classList.remove("hidden");
+
+        if(tab==="agenda") loadAgenda();
+        if(tab==="clientes") loadCustomers();
+        if(tab==="profissionais") loadProfessionals();
+        if(tab==="servicos") loadServices();
+        if(tab==="horarios") loadWorkingHours();
+      });
+    });
+
+    btnGoAgenda.onclick = ()=>{
+      document.querySelectorAll(".menu button").forEach(b=>b.classList.remove("active"));
+      document.querySelector('.menu button[data-tab="agenda"]').classList.add("active");
+      document.querySelectorAll("main section").forEach(sec=>sec.classList.add("hidden"));
+      document.getElementById("tab-agenda").classList.remove("hidden");
+      loadAgenda();
+    };
+
+    btnLogin.onclick = async ()=>{
+      clearError();
+      btnLogin.disabled = true;
+      btnLogin.textContent = "Entrando...";
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      btnLogin.disabled = false;
+      btnLogin.textContent = "Entrar";
+      if (error) return showError("E-mail ou senha inválidos.");
+      await bootstrap();
+    };
+
+    btnLogout.onclick = async ()=>{ await sb.auth.signOut(); showLogin(); };
+    btnRefresh.onclick = async ()=>{ await refreshAll(); toastMsg("ok","Atualizado."); };
+
+    quickNewCustomer.onclick = ()=> openCustomerModal();
+    quickNewPro.onclick = ()=> openProModal();
+    quickNewService.onclick = ()=> openServiceModal();
+
+    btnAgendaReload.onclick = loadAgenda;
+    btnCustomersReload.onclick = loadCustomers;
+    btnProsReload.onclick = loadProfessionals;
+    btnServReload.onclick = loadServices;
+
+    btnNewCustomer.onclick = ()=> openCustomerModal();
+    btnNewPro.onclick = ()=> openProModal();
+    btnNewService.onclick = ()=> openServiceModal();
+
+    agendaDate.onchange = loadAgenda;
+    agendaPro.onchange = loadAgenda;
+
+    let searchTimer = null;
+    searchCustomer.oninput = ()=>{
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(loadCustomers, 250);
+    };
+
+    // Working hours actions
+    btnWhReload.onclick = loadWorkingHours;
+
+    btnWhAdd.onclick = async ()=>{
+      const professional_id = whPro.value;
+      const weekday = Number(whWeekday.value);
+      const start_time = whStart.value;
+      const end_time = whEnd.value;
+      const slot_minutes = Number(whSlot.value || 30);
+
+      if(!professional_id) return toastMsg("err","Selecione um profissional.");
+      if(!start_time || !end_time) return toastMsg("err","Informe início e fim.");
+      if(start_time >= end_time) return toastMsg("err","Início deve ser menor que fim.");
+      if(slot_minutes < 10 || slot_minutes > 180) return toastMsg("err","Slot inválido.");
+
+      const payload = { professional_id, weekday, start_time, end_time, slot_minutes };
+
+      const { error } = await sb.from("working_hours").insert(payload);
+      if(error) return toastMsg("err","Erro ao salvar horário.");
+      toastMsg("ok","Horário salvo.");
+      await loadWorkingHours();
+    };
+
+    btnWhDefault.onclick = async ()=>{
+      const professional_id = whPro.value;
+      if(!professional_id) return toastMsg("err","Selecione um profissional.");
+
+      const ok = confirm("Aplicar padrão Seg–Sex 09:00–18:00 (slot 30) para este profissional? Isso adiciona novos horários.");
+      if(!ok) return;
+
+      const rows = [1,2,3,4,5].map(weekday=>({
+        professional_id,
+        weekday,
+        start_time: "09:00",
+        end_time: "18:00",
+        slot_minutes: 30
+      }));
+
+      const { error } = await sb.from("working_hours").insert(rows);
+      if(error) return toastMsg("err","Erro ao aplicar padrão (talvez duplicado).");
+      toastMsg("ok","Padrão aplicado.");
+      await loadWorkingHours();
+    };
+
+    async function bootstrap(){
+      const { data: sess } = await sb.auth.getSession();
+      if(!sess.session){ showLogin(); return; }
+      showApp();
+
+      const { data: u } = await sb.auth.getUser();
+      state.user = u?.user || null;
+      if(!state.user){ showLogin(); return; }
+
+      const { data: prof, error: e1 } = await sb
+        .from("profiles")
+        .select("company_id, role, display_name")
+        .eq("user_id", state.user.id)
+        .single();
+
+      if(e1 || !prof){
+        showError("Usuário sem vínculo no profiles. Verifique o insert em profiles.");
+        return;
       }
-      daysChips.appendChild(chip);
-    });
-  }
+      state.profile = prof;
+      state.role = prof.role || "staff";
+      state.isAdmin = state.role === "admin";
 
-  async function fetchSlotsForDate(dateStr){
-    // Busca disponibilidade via seu RPC existente
-    const { data, error } = await supabase.rpc("get_available_slots",{
-      p_company_id: COMPANY_ID,
-      p_professional_id: profSel.value,
-      p_service_id: serviceSel.value,
-      p_date: dateStr
-    });
-    if(error) return { dateStr, count: 0, error: true };
-    return { dateStr, count: (data?.length || 0), data: data || [] };
-  }
+      roleBox.textContent = state.isAdmin ? "ADMIN" : "STAFF";
 
-  async function loadAvailableDays(){
-    daysChips.innerHTML = "";
-    daysHint.textContent = "Selecione serviço e profissional para carregar.";
+      const { data: comp, error: e2 } = await sb
+        .from("companies")
+        .select("name, slug, status, paid_until")
+        .eq("id", prof.company_id)
+        .single();
 
-    if(!COMPANY_ID) return;
-    if(!serviceSel.value || !profSel.value){
-      return;
+      if(e2 || !comp){
+        showError("Empresa não encontrada para este usuário.");
+        return;
+      }
+      state.company = comp;
+
+      who.textContent = `Usuário: ${prof.display_name || state.user.email} • Perfil: ${state.role}`;
+      companyPill.textContent = `Empresa: ${comp.name}`;
+
+      agendaDate.value = todayISO();
+
+      await refreshAll();
     }
 
-    daysHint.textContent = "Carregando próximos dias disponíveis...";
-    // monta lista de próximos N dias
-    const base = new Date();
-    const dates = [];
-    for(let i=0;i<DAYS_LOOKAHEAD;i++){
-      const d = new Date(base);
-      d.setDate(base.getDate()+i);
-      dates.push(ymd(d));
+    async function refreshAll(){
+      await loadMaps();
+      await loadCounts();
+      await loadDashboard();
+      await fillWorkingHoursPros();
     }
 
-    // Faz consultas em paralelo (N=14). Se preferir mais leve, posso limitar concorrência.
-    const results = await Promise.all(dates.map(ds => fetchSlotsForDate(ds)));
+    async function loadMaps(){
+      const { data: pros } = await sb.from("professionals").select("id,name,active").order("name",{ascending:true});
+      const { data: serv } = await sb.from("services").select("id,name,active,duration_minutes,price_cents").order("name",{ascending:true});
 
-    const chips = results.map(r=>{
-      const d = new Date(r.dateStr + "T00:00:00");
-      return {
-        ymd: r.dateStr,
-        dow: dowShortPt(d),
-        dd: String(d.getDate()).padStart(2,"0"),
-        mon: monthShortPt(d),
-        count: r.count,
-        disabled: r.count === 0
-      };
-    });
+      state.pros = pros || [];
+      state.serv = serv || [];
+      state.prosMap = Object.fromEntries((pros||[]).map(p=>[p.id, p.name]));
+      state.servMap = Object.fromEntries((serv||[]).map(s=>[s.id, s.name]));
 
-    const availableCount = chips.filter(c=>!c.disabled).length;
-    if(availableCount === 0){
-      daysHint.textContent = "Nenhum dia disponível nos próximos dias.";
-      renderDayChips(chips, dateInput.value);
-      return;
+      // agenda filter
+      agendaPro.innerHTML = `<option value="">Todos os profissionais</option>`;
+      (pros||[]).forEach(p=>{ if(p.active) agendaPro.innerHTML += `<option value="${p.id}">${p.name}</option>`; });
     }
 
-    daysHint.textContent = "Escolha um dia para ver os horários.";
+    async function fillWorkingHoursPros(){
+      // select de profissionais na aba Horários
+      whPro.innerHTML = `<option value="">Selecione um profissional</option>`;
+      (state.pros || []).forEach(p=>{
+        if(p.active) whPro.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+      });
+      whPro.onchange = loadWorkingHours;
+    }
 
-    // se a data atual não tiver horários, pula para o primeiro dia com disponibilidade
-    const current = dateInput.value;
-    const hasCurrent = chips.some(c => c.ymd === current && !c.disabled);
-    if(!hasCurrent){
-      const firstAvail = chips.find(c => !c.disabled);
-      if(firstAvail){
-        dateInput.value = firstAvail.ymd;
+    async function loadCounts(){
+      const { count: cAppt } = await sb.from("appointments").select("id",{count:"exact",head:true});
+      const { count: cCust } = await sb.from("customers").select("id",{count:"exact",head:true});
+      const { count: cPros } = await sb.from("professionals").select("id",{count:"exact",head:true});
+      const { count: cServ } = await sb.from("services").select("id",{count:"exact",head:true});
+      const { count: cWh } = await sb.from("working_hours").select("id",{count:"exact",head:true});
+
+      badgeAgenda.textContent = cAppt ?? "0";
+      badgeClientes.textContent = cCust ?? "0";
+      badgePros.textContent = cPros ?? "0";
+      badgeServ.textContent = cServ ?? "0";
+      badgeHours.textContent = cWh ?? "0";
+
+      const start = agendaDate.value + "T00:00:00";
+      const end   = agendaDate.value + "T23:59:59";
+      const { count: cToday } = await sb
+        .from("appointments")
+        .select("id",{count:"exact",head:true})
+        .gte("starts_at", start)
+        .lte("starts_at", end);
+
+      badgeToday.textContent = cToday ?? "0";
+    }
+
+    async function loadDashboard(){
+      const d = todayISO();
+      const start = d + "T00:00:00";
+      const end   = d + "T23:59:59";
+
+      const { data, error } = await sb
+        .from("appointments")
+        .select("status, starts_at")
+        .gte("starts_at", start)
+        .lte("starts_at", end);
+
+      if(error){
+        kpiToday.textContent="—"; kpiConf.textContent="—"; kpiCanc.textContent="—"; kpiDone.textContent="—";
+      } else {
+        const total = data.length;
+        const conf = data.filter(x=>x.status==="confirmed").length;
+        const canc = data.filter(x=>x.status==="cancelled").length;
+        const done = data.filter(x=>x.status==="done").length;
+        kpiToday.textContent = total;
+        kpiConf.textContent = conf;
+        kpiCanc.textContent = canc;
+        kpiDone.textContent = done;
+      }
+
+      const now = new Date().toISOString();
+      const { data: next, error: e2 } = await sb
+        .from("appointments")
+        .select("id, starts_at, status, customer_name, professional_id, service_id")
+        .gte("starts_at", now)
+        .order("starts_at",{ascending:true})
+        .limit(20);
+
+      tbodyNext.innerHTML = "";
+      if(e2 || !next || !next.length){
+        tbodyNext.innerHTML = `<tr><td colspan="5">Nenhum agendamento futuro.</td></tr>`;
+      } else {
+        next.forEach(a=>{
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${fmtDateTime(a.starts_at)}</td>
+            <td>${state.prosMap[a.professional_id] || "—"}</td>
+            <td>${state.servMap[a.service_id] || "—"}</td>
+            <td>${a.customer_name || "—"}</td>
+            <td>${tagStatus(a.status)}</td>
+          `;
+          tbodyNext.appendChild(tr);
+        });
       }
     }
 
-    renderDayChips(chips, dateInput.value);
-  }
+    async function loadAgenda(){
+      const date = agendaDate.value || todayISO();
+      const start = date + "T00:00:00";
+      const end   = date + "T23:59:59";
+      const proId = agendaPro.value;
 
-  async function loadSlots(){
-    hideAllMsgs();
-    resetSlotsUI();
+      let q = sb
+        .from("appointments")
+        .select("id, starts_at, status, customer_name, customer_phone, professional_id, service_id")
+        .gte("starts_at", start)
+        .lte("starts_at", end)
+        .order("starts_at",{ascending:true});
 
-    updateMeta();
-    updateSummary();
+      if(proId) q = q.eq("professional_id", proId);
 
-    if(!COMPANY_ID) return;
+      const { data, error } = await q;
 
-    const serviceId = serviceSel.value;
-    const profId = profSel.value;
-    const date = dateInput.value;
+      tbodyAgenda.innerHTML = "";
+      if(error){
+        tbodyAgenda.innerHTML = `<tr><td colspan="7">Erro ao carregar agenda.</td></tr>`;
+        return;
+      }
+      if(!data.length){
+        tbodyAgenda.innerHTML = `<tr><td colspan="7">Nenhum agendamento para este filtro.</td></tr>`;
+        return;
+      }
 
-    if(!serviceId || !profId){
-      setStatus("Aguardando seleção...");
-      return;
+      data.forEach(a=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${fmtTime(a.starts_at)}</td>
+          <td>${state.prosMap[a.professional_id] || "—"}</td>
+          <td>${state.servMap[a.service_id] || "—"}</td>
+          <td>${a.customer_name || "—"}</td>
+          <td>${a.customer_phone || "—"}</td>
+          <td>${tagStatus(a.status)}</td>
+          <td>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn2" data-act="confirm" data-id="${a.id}">Confirmar</button>
+              <button class="btn2" data-act="done" data-id="${a.id}">Concluir</button>
+              <button class="btn2 btnDanger" data-act="cancel" data-id="${a.id}">Cancelar</button>
+              ${state.isAdmin ? `<button class="btn2 btnDanger" data-act="del" data-id="${a.id}">Excluir</button>` : ""}
+            </div>
+          </td>
+        `;
+        tbodyAgenda.appendChild(tr);
+      });
+
+      tbodyAgenda.querySelectorAll("button[data-act]").forEach(b=>{
+        b.onclick = ()=> onAgendaAction(b.dataset.act, b.dataset.id);
+      });
+
+      await loadCounts();
     }
 
-    // Sempre que trocar serviço/profissional, atualiza a barra de dias
-    await loadAvailableDays();
-
-    if(!date){
-      setStatus("Selecione um dia");
-      return;
+    async function onAgendaAction(act, id){
+      if(act==="del" && !state.isAdmin) return toastMsg("err","Apenas ADMIN pode excluir.");
+      if(act==="del"){
+        const ok = confirm("Excluir este agendamento? Essa ação não pode ser desfeita.");
+        if(!ok) return;
+        const { error } = await sb.from("appointments").delete().eq("id", id);
+        if(error) return toastMsg("err","Erro ao excluir.");
+        toastMsg("ok","Agendamento excluído.");
+        await loadAgenda(); await loadDashboard();
+        return;
+      }
+      let status = "confirmed";
+      if(act==="cancel") status = "cancelled";
+      if(act==="done") status = "done";
+      if(act==="confirm") status = "confirmed";
+      const { error } = await sb.from("appointments").update({ status }).eq("id", id);
+      if(error) return toastMsg("err","Erro ao atualizar status.");
+      toastMsg("ok","Status atualizado.");
+      await loadAgenda(); await loadDashboard();
     }
 
-    setStatus("Consultando disponibilidade...");
-    showInfo("Consultando horários disponíveis...");
+    async function loadCustomers(){
+      const term = (searchCustomer.value || "").trim().toLowerCase();
+      const { data, error } = await sb
+        .from("customers")
+        .select("id, full_name, phone, email, document, birth_date, address, notes")
+        .order("full_name",{ascending:true})
+        .limit(200);
 
-    const { data, error } = await supabase.rpc("get_available_slots",{
-      p_company_id: COMPANY_ID,
-      p_professional_id: profId,
-      p_service_id: serviceId,
-      p_date: date
-    });
+      tbodyCustomers.innerHTML = "";
+      if(error){ tbodyCustomers.innerHTML = `<tr><td colspan="5">Erro ao carregar clientes.</td></tr>`; return; }
 
-    if (error) {
-      setStatus("Falha ao buscar horários");
-      showErr("Erro ao buscar horários.");
-      return;
+      let list = data || [];
+      if(term){
+        list = list.filter(c =>
+          (c.full_name||"").toLowerCase().includes(term) ||
+          (c.phone||"").toLowerCase().includes(term)
+        );
+      }
+      if(!list.length){
+        tbodyCustomers.innerHTML = `<tr><td colspan="5">Nenhum cliente encontrado.</td></tr>`;
+        badgeClientes.textContent = "0";
+        return;
+      }
+      badgeClientes.textContent = String(list.length);
+
+      list.forEach(c=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${c.full_name || "—"}</td>
+          <td>${c.phone || "—"}</td>
+          <td>${c.email || "—"}</td>
+          <td>${c.document || "—"}</td>
+          <td>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn2" onclick="openCustomerModal(${encodeURIComponent(JSON.stringify(c))})">Editar</button>
+              ${state.isAdmin ? `<button class="btn2 btnDanger" onclick="deleteCustomer('${c.id}')">Excluir</button>` : ""}
+            </div>
+          </td>
+        `;
+        tbodyCustomers.appendChild(tr);
+      });
     }
 
-    hideAllMsgs();
-
-    if(!data || !data.length){
-      setStatus("Sem horários no dia");
-      slotsDiv.innerHTML = "<div style='grid-column:1/-1;color:#6b7280'>Sem horários disponíveis para esta data.</div>";
-      btnConfirm.disabled = true;
-      return;
-    }
-
-    setStatus("Selecione um horário");
-    data.forEach(s=>{
-      const b = document.createElement("div");
-      b.className="slot";
-      b.textContent = fmtTime(s.slot_start);
-      b.onclick = ()=>{
-        document.querySelectorAll(".slot").forEach(x=>x.classList.remove("active"));
-        b.classList.add("active");
-        selectedSlot = s.slot_start;
-        btnConfirm.disabled = false;
-        setStatus("Pronto para confirmar");
-        updateSummary();
-      };
-      slotsDiv.appendChild(b);
-    });
-  }
-
-  btnConfirm.onclick = async ()=>{
-    const name = document.getElementById("customerName").value.trim();
-    const phone = document.getElementById("customerPhone").value.trim();
-
-    if(name.length < 2) return showErr("Informe seu nome completo.");
-    if(!selectedSlot) return showErr("Selecione um horário.");
-    if(!COMPANY_ID) return showErr("Empresa não carregada.");
-
-    btnConfirm.disabled = true;
-    setStatus("Confirmando agendamento...");
-    showInfo("Confirmando seu agendamento...");
-
-    const { data, error } = await supabase.rpc("create_public_appointment",{
-      p_company_id: COMPANY_ID,
-      p_professional_id: profSel.value,
-      p_service_id: serviceSel.value,
-      p_customer_name: name,
-      p_customer_phone: phone,
-      p_starts_at: selectedSlot
-    });
-
-    if (error) {
-      btnConfirm.disabled = false;
-      setStatus("Falha ao confirmar");
-      return showErr(error.message);
-    }
-
-    setStatus("Agendamento confirmado");
-    showOk("Agendamento confirmado com sucesso! Seu horário foi reservado.");
-    updateSummary();
-
-    // Recarrega dias e horários (para remover o slot ocupado e atualizar contagens)
-    await loadAvailableDays();
-    await loadSlots();
-  };
-
-  async function loadCompany(){
-    const { data, error } = await supabase
-      .from("companies")
-      .select("id,status,paid_until")
-      .eq("slug","empresa-demo")
-      .single();
-
-    if (error || !data) {
-      showErr("Empresa não encontrada (slug empresa-demo).");
-      setStatus("Indisponível");
-      return;
-    }
-
-    COMPANY_ID = data.id;
-
-    if (data.status !== "active") {
-      showWarn("Empresa está inativa no momento.");
-    }
-
-    const today = new Date(new Date().toISOString().slice(0,10));
-    if (data.paid_until && new Date(data.paid_until) < today) {
-      showWarn("Empresa está com pagamento vencido.");
-    }
-  }
-
-  async function loadServices(){
-    let res = await supabase
-      .from("services")
-      .select("id,name,duration_minutes")
-      .eq("active",true)
-      .order("name",{ascending:true});
-
-    if (res.error) {
-      res = await supabase
-        .from("services")
-        .select("id,name")
-        .eq("active",true)
+    async function loadProfessionals(){
+      const { data, error } = await sb
+        .from("professionals")
+        .select("id,name,active")
         .order("name",{ascending:true});
+
+      tbodyPros.innerHTML = "";
+      if(error){ tbodyPros.innerHTML = `<tr><td colspan="3">Erro ao carregar profissionais.</td></tr>`; return; }
+      if(!data.length){ tbodyPros.innerHTML = `<tr><td colspan="3">Nenhum profissional cadastrado.</td></tr>`; return; }
+
+      badgePros.textContent = String(data.length);
+
+      data.forEach(p=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${p.name}</td>
+          <td>${p.active ? `<span class="tag ok">Ativo</span>` : `<span class="tag bad">Inativo</span>`}</td>
+          <td>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn2" onclick="openProModal(${encodeURIComponent(JSON.stringify(p))})">Editar</button>
+              <button class="btn2" onclick="togglePro('${p.id}', ${p.active})">${p.active ? "Inativar" : "Ativar"}</button>
+              ${state.isAdmin ? `<button class="btn2 btnDanger" onclick="deletePro('${p.id}')">Excluir</button>` : ""}
+            </div>
+          </td>
+        `;
+        tbodyPros.appendChild(tr);
+      });
+
+      await loadMaps();
+      await fillWorkingHoursPros();
     }
 
-    if (res.error) { showErr("Erro ao carregar serviços."); return; }
+    async function loadServices(){
+      const { data, error } = await sb
+        .from("services")
+        .select("id,name,duration_minutes,price_cents,active")
+        .order("name",{ascending:true});
 
-    servicesById.clear();
-    serviceSel.innerHTML = `<option value="">Selecione</option>`;
-    (res.data||[]).forEach(s=>{
-      servicesById.set(String(s.id), s);
-      serviceSel.innerHTML += `<option value="${s.id}">${s.name}</option>`;
-    });
-  }
+      tbodyServ.innerHTML = "";
+      if(error){ tbodyServ.innerHTML = `<tr><td colspan="5">Erro ao carregar serviços.</td></tr>`; return; }
+      if(!data.length){ tbodyServ.innerHTML = `<tr><td colspan="5">Nenhum serviço cadastrado.</td></tr>`; return; }
 
-  async function loadProfessionals(){
-    const { data, error } = await supabase
-      .from("professionals")
-      .select("id,name")
-      .eq("active",true)
-      .order("name",{ascending:true});
+      badgeServ.textContent = String(data.length);
 
-    if (error) { showErr("Erro ao carregar profissionais."); return; }
+      data.forEach(s=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${s.name}</td>
+          <td>${s.duration_minutes} min</td>
+          <td>${money(s.price_cents)}</td>
+          <td>${s.active ? `<span class="tag ok">Ativo</span>` : `<span class="tag bad">Inativo</span>`}</td>
+          <td>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn2" onclick="openServiceModal(${encodeURIComponent(JSON.stringify(s))})">Editar</button>
+              <button class="btn2" onclick="toggleService('${s.id}', ${s.active})">${s.active ? "Inativar" : "Ativar"}</button>
+              ${state.isAdmin ? `<button class="btn2 btnDanger" onclick="deleteService('${s.id}')">Excluir</button>` : ""}
+            </div>
+          </td>
+        `;
+        tbodyServ.appendChild(tr);
+      });
 
-    professionalsById.clear();
-    profSel.innerHTML = `<option value="">Selecione</option>`;
-    (data||[]).forEach(p=>{
-      professionalsById.set(String(p.id), p);
-      profSel.innerHTML += `<option value="${p.id}">${p.name}</option>`;
-    });
-  }
+      await loadMaps();
+    }
 
-  function onSelectionChange(){
-    updateMeta();
-    updateSummary();
-    // limpa slots e carrega dias/horários novamente
-    loadSlots();
-  }
+    async function loadWorkingHours(){
+      const proId = whPro.value;
 
-  serviceSel.onchange = onSelectionChange;
-  profSel.onchange = onSelectionChange;
+      let q = sb
+        .from("working_hours")
+        .select("id, professional_id, weekday, start_time, end_time, slot_minutes")
+        .order("professional_id",{ascending:true})
+        .order("weekday",{ascending:true})
+        .order("start_time",{ascending:true});
 
-  // Se o usuário mudar manualmente a data, recarrega horários e marca chip se existir
-  dateInput.onchange = async ()=>{
-    updateSummary();
-    await loadSlots();
-    // tenta realçar chip ativo
-    document.querySelectorAll(".dayChip").forEach(ch => ch.classList.remove("active"));
-    const active = Array.from(document.querySelectorAll(".dayChip")).find(ch => {
-      // checa pelo texto? melhor re-render; então chamamos loadAvailableDays que re-renderiza com active
-      return false;
-    });
-    await loadAvailableDays();
-  };
+      if(proId) q = q.eq("professional_id", proId);
 
-  (async ()=>{
-    dateInput.value = ymd(new Date());
-    setStatus("Carregando...");
-    await loadCompany();
-    await loadServices();
-    await loadProfessionals();
+      const { data, error } = await q;
 
-    updateMeta();
-    updateSummary();
+      tbodyHours.innerHTML = "";
+      if(error){
+        tbodyHours.innerHTML = `<tr><td colspan="6">Erro ao carregar horários.</td></tr>`;
+        return;
+      }
+      if(!data.length){
+        tbodyHours.innerHTML = `<tr><td colspan="6">Nenhum horário cadastrado.</td></tr>`;
+        return;
+      }
 
-    setStatus("Aguardando seleção...");
-    // já tenta carregar dias (se já tiver seleção)
-    await loadAvailableDays();
-  })();
-</script>
+      data.forEach(w=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${state.prosMap[w.professional_id] || "—"}</td>
+          <td>${weekdayLabel(w.weekday)}</td>
+          <td>${w.start_time}</td>
+          <td>${w.end_time}</td>
+          <td>${w.slot_minutes} min</td>
+          <td>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn2" onclick="editWH('${w.id}')">Editar</button>
+              ${state.isAdmin ? `<button class="btn2 btnDanger" onclick="deleteWH('${w.id}')">Excluir</button>` : ""}
+            </div>
+          </td>
+        `;
+        tbodyHours.appendChild(tr);
+      });
+
+      await loadCounts();
+    }
+
+    // ----- MODAIS / CRUD (clientes, pros, serviços, horários) -----
+    function esc(s){
+      return String(s||"")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    window.openCustomerModal = (encoded)=>{
+      let c=null;
+      if(encoded) c = JSON.parse(decodeURIComponent(encoded));
+      const isEdit = !!c;
+      c = c || { id:null, full_name:"", phone:"", email:"", document:"", birth_date:"", address:"", notes:"" };
+
+      openModal(
+        isEdit ? "Editar Cliente" : "Novo Cliente",
+        `
+          <div class="row2">
+            <div><label>Nome completo</label><input id="c_full_name" value="${esc(c.full_name)}"/></div>
+            <div><label>Telefone</label><input id="c_phone" value="${esc(c.phone||"")}"/></div>
+          </div>
+          <div class="row2">
+            <div><label>E-mail</label><input id="c_email" value="${esc(c.email||"")}"/></div>
+            <div><label>Documento</label><input id="c_document" value="${esc(c.document||"")}"/></div>
+          </div>
+          <div class="row2">
+            <div><label>Nascimento</label><input id="c_birth" type="date" value="${c.birth_date||""}"/></div>
+            <div><label>Endereço</label><input id="c_address" value="${esc(c.address||"")}"/></div>
+          </div>
+          <div><label>Observações</label><input id="c_notes" value="${esc(c.notes||"")}"/></div>
+        `,
+        `
+          <button class="btn2" onclick="window.__closeModal()">Cancelar</button>
+          <button class="btn" onclick="window.saveCustomer('${c.id||""}')">${isEdit ? "Salvar" : "Cadastrar"}</button>
+        `
+      );
+    };
+
+    window.saveCustomer = async (id)=>{
+      const payload = {
+        full_name: document.getElementById("c_full_name").value.trim(),
+        phone: document.getElementById("c_phone").value.trim() || null,
+        email: document.getElementById("c_email").value.trim() || null,
+        document: document.getElementById("c_document").value.trim() || null,
+        birth_date: document.getElementById("c_birth").value || null,
+        address: document.getElementById("c_address").value.trim() || null,
+        notes: document.getElementById("c_notes").value.trim() || null
+      };
+      if(payload.full_name.length < 2) return toastMsg("err","Nome inválido.");
+
+      let res;
+      if(id) res = await sb.from("customers").update(payload).eq("id", id);
+      else res = await sb.from("customers").insert(payload);
+
+      if(res.error) return toastMsg("err","Erro ao salvar cliente.");
+      toastMsg("ok", id ? "Cliente atualizado." : "Cliente cadastrado.");
+      closeModal();
+      await loadCustomers(); await loadCounts();
+    };
+
+    window.deleteCustomer = async (id)=>{
+      if(!state.isAdmin) return toastMsg("err","Apenas ADMIN pode excluir.");
+      if(!confirm("Excluir cliente?")) return;
+      const { error } = await sb.from("customers").delete().eq("id", id);
+      if(error) return toastMsg("err","Erro ao excluir.");
+      toastMsg("ok","Cliente excluído.");
+      await loadCustomers(); await loadCounts();
+    };
+
+    window.openProModal = (encoded)=>{
+      let p=null;
+      if(encoded) p = JSON.parse(decodeURIComponent(encoded));
+      const isEdit = !!p;
+      p = p || { id:null, name:"", active:true };
+
+      openModal(
+        isEdit ? "Editar Profissional" : "Novo Profissional",
+        `
+          <div class="row2">
+            <div><label>Nome</label><input id="p_name" value="${esc(p.name)}"/></div>
+            <div>
+              <label>Status</label>
+              <select id="p_active">
+                <option value="true" ${p.active ? "selected":""}>Ativo</option>
+                <option value="false" ${!p.active ? "selected":""}>Inativo</option>
+              </select>
+            </div>
+          </div>
+        `,
+        `
+          <button class="btn2" onclick="window.__closeModal()">Cancelar</button>
+          <button class="btn" onclick="window.savePro('${p.id||""}')">${isEdit ? "Salvar" : "Cadastrar"}</button>
+        `
+      );
+    };
+
+    window.savePro = async (id)=>{
+      const name = document.getElementById("p_name").value.trim();
+      const active = document.getElementById("p_active").value === "true";
+      if(name.length < 2) return toastMsg("err","Nome inválido.");
+
+      let res;
+      if(id) res = await sb.from("professionals").update({ name, active }).eq("id", id);
+      else res = await sb.from("professionals").insert({ name, active });
+
+      if(res.error) return toastMsg("err","Erro ao salvar profissional.");
+      toastMsg("ok", id ? "Profissional atualizado." : "Profissional cadastrado.");
+      closeModal();
+      await loadProfessionals(); await loadCounts();
+    };
+
+    window.togglePro = async (id, active)=>{
+      const { error } = await sb.from("professionals").update({ active: !active }).eq("id", id);
+      if(error) return toastMsg("err","Erro ao atualizar.");
+      toastMsg("ok","Atualizado.");
+      await loadProfessionals(); await loadCounts();
+    };
+
+    window.deletePro = async (id)=>{
+      if(!state.isAdmin) return toastMsg("err","Apenas ADMIN pode excluir.");
+      if(!confirm("Excluir profissional?")) return;
+      const { error } = await sb.from("professionals").delete().eq("id", id);
+      if(error) return toastMsg("err","Erro ao excluir.");
+      toastMsg("ok","Profissional excluído.");
+      await loadProfessionals(); await loadCounts();
+    };
+
+    window.openServiceModal = (encoded)=>{
+      let s=null;
+      if(encoded) s = JSON.parse(decodeURIComponent(encoded));
+      const isEdit = !!s;
+      s = s || { id:null, name:"", duration_minutes:30, price_cents:0, active:true };
+
+      openModal(
+        isEdit ? "Editar Serviço" : "Novo Serviço",
+        `
+          <div class="row2">
+            <div><label>Nome do serviço</label><input id="s_name" value="${esc(s.name)}"/></div>
+            <div><label>Duração (min)</label><input id="s_dur" type="number" min="10" max="480" value="${Number(s.duration_minutes||30)}"/></div>
+          </div>
+          <div class="row2">
+            <div><label>Preço (R$)</label><input id="s_price" type="number" step="0.01" value="${(Number(s.price_cents||0)/100).toFixed(2)}"/></div>
+            <div>
+              <label>Status</label>
+              <select id="s_active">
+                <option value="true" ${s.active ? "selected":""}>Ativo</option>
+                <option value="false" ${!s.active ? "selected":""}>Inativo</option>
+              </select>
+            </div>
+          </div>
+        `,
+        `
+          <button class="btn2" onclick="window.__closeModal()">Cancelar</button>
+          <button class="btn" onclick="window.saveService('${s.id||""}')">${isEdit ? "Salvar" : "Cadastrar"}</button>
+        `
+      );
+    };
+
+    window.saveService = async (id)=>{
+      const name = document.getElementById("s_name").value.trim();
+      const duration_minutes = Number(document.getElementById("s_dur").value || 30);
+      const price = Number(document.getElementById("s_price").value || 0);
+      const price_cents = Math.round(price * 100);
+      const active = document.getElementById("s_active").value === "true";
+
+      if(name.length < 2) return toastMsg("err","Nome inválido.");
+      if(duration_minutes < 10 || duration_minutes > 480) return toastMsg("err","Duração inválida.");
+
+      let res;
+      if(id) res = await sb.from("services").update({ name, duration_minutes, price_cents, active }).eq("id", id);
+      else res = await sb.from("services").insert({ name, duration_minutes, price_cents, active });
+
+      if(res.error) return toastMsg("err","Erro ao salvar serviço.");
+      toastMsg("ok", id ? "Serviço atualizado." : "Serviço cadastrado.");
+      closeModal();
+      await loadServices(); await loadCounts();
+    };
+
+    window.toggleService = async (id, active)=>{
+      const { error } = await sb.from("services").update({ active: !active }).eq("id", id);
+      if(error) return toastMsg("err","Erro ao atualizar.");
+      toastMsg("ok","Atualizado.");
+      await loadServices(); await loadCounts();
+    };
+
+    window.deleteService = async (id)=>{
+      if(!state.isAdmin) return toastMsg("err","Apenas ADMIN pode excluir.");
+      if(!confirm("Excluir serviço?")) return;
+      const { error } = await sb.from("services").delete().eq("id", id);
+      if(error) return toastMsg("err","Erro ao excluir.");
+      toastMsg("ok","Serviço excluído.");
+      await loadServices(); await loadCounts();
+    };
+
+    // Working hours edit/delete
+    window.editWH = async (id)=>{
+      const { data, error } = await sb.from("working_hours")
+        .select("id, professional_id, weekday, start_time, end_time, slot_minutes")
+        .eq("id", id).single();
+
+      if(error || !data) return toastMsg("err","Erro ao abrir horário.");
+
+      openModal(
+        "Editar Horário",
+        `
+          <div class="row2">
+            <div>
+              <label>Profissional</label>
+              <select id="wh_e_pro">
+                ${state.pros.filter(p=>p.active).map(p=>`<option value="${p.id}" ${p.id===data.professional_id?"selected":""}>${p.name}</option>`).join("")}
+              </select>
+            </div>
+            <div>
+              <label>Dia</label>
+              <select id="wh_e_day">
+                ${[0,1,2,3,4,5,6].map(w=>`<option value="${w}" ${Number(w)===Number(data.weekday)?"selected":""}>${weekdayLabel(w)}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+          <div class="row2">
+            <div><label>Início</label><input id="wh_e_start" type="time" value="${data.start_time}"/></div>
+            <div><label>Fim</label><input id="wh_e_end" type="time" value="${data.end_time}"/></div>
+          </div>
+          <div><label>Slot (min)</label><input id="wh_e_slot" type="number" min="10" max="180" value="${data.slot_minutes}"/></div>
+        `,
+        `
+          <button class="btn2" onclick="window.__closeModal()">Cancelar</button>
+          <button class="btn" onclick="window.saveWH('${data.id}')">Salvar</button>
+        `
+      );
+    };
+
+    window.saveWH = async (id)=>{
+      const professional_id = document.getElementById("wh_e_pro").value;
+      const weekday = Number(document.getElementById("wh_e_day").value);
+      const start_time = document.getElementById("wh_e_start").value;
+      const end_time = document.getElementById("wh_e_end").value;
+      const slot_minutes = Number(document.getElementById("wh_e_slot").value || 30);
+
+      if(start_time >= end_time) return toastMsg("err","Início deve ser menor que fim.");
+      if(slot_minutes < 10 || slot_minutes > 180) return toastMsg("err","Slot inválido.");
+
+      const { error } = await sb.from("working_hours")
+        .update({ professional_id, weekday, start_time, end_time, slot_minutes })
+        .eq("id", id);
+
+      if(error) return toastMsg("err","Erro ao salvar horário.");
+      toastMsg("ok","Horário atualizado.");
+      closeModal();
+      await loadWorkingHours();
+    };
+
+    window.deleteWH = async (id)=>{
+      if(!state.isAdmin) return toastMsg("err","Apenas ADMIN pode excluir.");
+      if(!confirm("Excluir horário?")) return;
+      const { error } = await sb.from("working_hours").delete().eq("id", id);
+      if(error) return toastMsg("err","Erro ao excluir.");
+      toastMsg("ok","Horário excluído.");
+      await loadWorkingHours();
+    };
+
+    window.__closeModal = closeModal;
+
+    // Auto start
+    (async ()=>{ await bootstrap(); })();
+  </script>
 </body>
 </html>
