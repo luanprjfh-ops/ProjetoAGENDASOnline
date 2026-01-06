@@ -9,13 +9,23 @@
     :root{
       --bg:#fbf7fb;
       --card:#ffffff;
-      --primary:#ec4899;
-      --primary2:#a855f7;
-      --text:#1f2937;
+
+      /* Mais roxo no visual */
+      --primary:#ec4899;   /* rosa */
+      --primary2:#7c3aed;  /* roxo mais forte */
+      --primary3:#a855f7;  /* roxo */
+      --purpleGlow: rgba(124,58,237,.18);
+
+      --text:#111827;
       --muted:#6b7280;
-      --border:#f1e7f5;
+      --border:#efe7ff;
       --shadow:0 18px 50px rgba(17,24,39,.10);
       --radius:18px;
+
+      --okbg:#ecfdf5; --oktx:#065f46; --okbd:#a7f3d0;
+      --erbg:#fff1f2; --ertx:#be123c; --erbd:#fecdd3;
+      --infbg:#eff6ff; --inftx:#1d4ed8; --infbd:#bfdbfe;
+      --warnbg:#fffbeb; --warntx:#92400e; --warnbd:#fde68a;
     }
     *{box-sizing:border-box}
     body{
@@ -23,32 +33,138 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
       color:var(--text);
       background:
-        radial-gradient(circle at top left, #fde2f3, transparent 40%),
-        radial-gradient(circle at bottom right, #e9d5ff, transparent 40%),
+        radial-gradient(circle at top left, rgba(124,58,237,.25), transparent 45%),
+        radial-gradient(circle at bottom right, rgba(168,85,247,.22), transparent 45%),
+        radial-gradient(circle at 20% 30%, rgba(236,72,153,.16), transparent 40%),
         var(--bg);
       min-height:100vh;
     }
     .center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
     .card{
       width:100%;
-      max-width:540px;
+      max-width:680px;
       background:rgba(255,255,255,.95);
       border:1px solid var(--border);
-      border-radius:var(--radius);
+      border-radius:calc(var(--radius) + 2px);
       box-shadow:var(--shadow);
       padding:22px;
       backdrop-filter: blur(10px);
     }
+
+    .top{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .brand{display:flex;align-items:center;gap:10px}
+    .logoDot{
+      width:14px;height:14px;border-radius:999px;
+      background:linear-gradient(90deg,var(--primary2),var(--primary3));
+      box-shadow:0 18px 40px var(--purpleGlow);
+      flex:0 0 auto;
+      margin-top:6px;
+    }
     h1{
       margin:0;
       font-size:30px;
-      font-weight:900;
-      background:linear-gradient(90deg,var(--primary),var(--primary2));
+      font-weight:950;
+      line-height:1.05;
+      background:linear-gradient(90deg,var(--primary2),var(--primary3),var(--primary));
       -webkit-background-clip:text;
       -webkit-text-fill-color:transparent;
     }
-    p{color:var(--muted);margin:6px 0 16px}
-    label{font-size:12px;color:var(--muted);display:block;margin-top:12px}
+    .sub{
+      color:var(--muted);
+      margin:8px 0 0;
+      font-size:14px;
+      line-height:1.45;
+    }
+
+    .pill{
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:8px 10px;
+      font-size:12px;
+      color:var(--muted);
+      background:rgba(255,255,255,.75);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      white-space:nowrap;
+      height:fit-content;
+      box-shadow:0 10px 30px rgba(124,58,237,.08);
+    }
+    .lock{
+      width:10px;height:10px;border-radius:3px;
+      background:linear-gradient(90deg,var(--primary2),var(--primary3));
+      display:inline-block;
+    }
+
+    .benefits{
+      margin:14px 0 16px;
+      border:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(124,58,237,.06), rgba(255,255,255,.7));
+      border-radius:16px;
+      padding:12px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .benefit{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:10px;
+      border-radius:14px;
+      border:1px dashed rgba(124,58,237,.18);
+      background:rgba(255,255,255,.88);
+    }
+    .ico{
+      width:30px;height:30px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(90deg,rgba(124,58,237,.14),rgba(168,85,247,.14));
+      border:1px solid rgba(124,58,237,.15);
+      flex:0 0 auto;
+      font-weight:900;
+      color:#6d28d9;
+    }
+    .benefit b{display:block;font-size:13px}
+    .benefit span{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+
+    .section{
+      margin-top:14px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px;
+      background:linear-gradient(180deg, rgba(124,58,237,.05), rgba(255,255,255,.78));
+    }
+    .sectionTitle{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:6px;
+    }
+    .sectionTitle h2{
+      margin:0;
+      font-size:14px;
+      font-weight:950;
+      color:#111827;
+      letter-spacing:.2px;
+    }
+    .hint{font-size:12px;color:var(--muted)}
+
+    .grid2{display:grid;grid-template-columns: 1fr 1fr;gap:12px}
+    @media (max-width:640px){
+      .benefits{grid-template-columns:1fr}
+      .grid2{grid-template-columns:1fr}
+      .top{flex-direction:column;align-items:flex-start}
+      .pill{width:100%;justify-content:center}
+    }
+
+    label{font-size:12px;color:var(--muted);display:block;margin-top:10px}
     select,input{
       width:100%;
       padding:12px 14px;
@@ -57,16 +173,96 @@
       margin-top:6px;
       font-size:14px;
       outline:none;
+      background:#fff;
     }
     input:focus,select:focus{
-      border-color:#d8b4fe;
-      box-shadow:0 0 0 4px rgba(168,85,247,.12);
+      border-color:#c4b5fd;
+      box-shadow:0 0 0 4px rgba(124,58,237,.12);
     }
+
+    .helperRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .badge{
+      font-size:12px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(124,58,237,.18);
+      color:#374151;
+      background:rgba(255,255,255,.9);
+    }
+    .badge strong{font-weight:950}
+    .badge.muted{color:var(--muted);border-color:var(--border)}
+    .badge .star{color:#f59e0b}
+
+    /* Dias disponíveis (chips) */
+    .daysBar{
+      margin-top:10px;
+      border:1px solid rgba(124,58,237,.18);
+      border-radius:16px;
+      background:rgba(255,255,255,.88);
+      padding:10px;
+    }
+    .daysTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .daysTop b{
+      font-size:12px;
+      color:#111827;
+    }
+    .daysHint{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .daysChips{
+      display:flex;
+      gap:8px;
+      overflow:auto;
+      padding-bottom:2px;
+      scrollbar-width: thin;
+    }
+    .dayChip{
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:14px;
+      padding:10px 10px;
+      min-width:112px;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .06s ease, background .12s ease, border-color .12s ease;
+    }
+    .dayChip:hover{transform: translateY(-1px);border-color:rgba(124,58,237,.30)}
+    .dayChip .d1{font-weight:950;font-size:12px;color:#111827}
+    .dayChip .d2{font-size:12px;color:var(--muted);margin-top:2px}
+    .dayChip .d3{font-size:12px;margin-top:6px;color:#6d28d9;font-weight:900}
+    .dayChip.disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+    .dayChip.active{
+      border-color:transparent;
+      background:linear-gradient(90deg,var(--primary2),var(--primary3));
+      box-shadow:0 16px 40px rgba(124,58,237,.18);
+    }
+    .dayChip.active .d1,
+    .dayChip.active .d2,
+    .dayChip.active .d3{color:#fff}
+
     .slots{
       display:grid;
-      grid-template-columns: repeat(auto-fill, minmax(92px,1fr));
+      grid-template-columns: repeat(auto-fill, minmax(98px,1fr));
       gap:10px;
-      margin-top:14px;
+      margin-top:12px;
     }
     .slot{
       padding:10px;
@@ -75,69 +271,233 @@
       background:#fff;
       text-align:center;
       cursor:pointer;
-      font-weight:800;
+      font-weight:950;
       user-select:none;
+      transition: transform .06s ease, background .12s ease;
     }
-    .slot:hover{background:#faf5ff}
+    .slot:hover{background:#faf5ff;transform: translateY(-1px)}
     .slot.active{
-      background:linear-gradient(90deg,var(--primary),var(--primary2));
+      background:linear-gradient(90deg,var(--primary2),var(--primary3));
       color:#fff;
       border-color:transparent;
     }
+
     .btn{
       width:100%;
       border:0;
       padding:14px;
       border-radius:14px;
-      font-weight:900;
+      font-weight:950;
       cursor:pointer;
       color:#fff;
-      background:linear-gradient(90deg,var(--primary),var(--primary2));
-      margin-top:16px;
+      background:linear-gradient(90deg,var(--primary2),var(--primary3),var(--primary));
+      margin-top:14px;
+      letter-spacing:.2px;
+      box-shadow:0 16px 35px rgba(124,58,237,.18);
     }
-    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .btn:disabled{opacity:.6;cursor:not-allowed;box-shadow:none}
+
     .msg{
       margin-top:12px;
       padding:12px;
       border-radius:14px;
       font-size:14px;
       display:none;
+      border:1px solid transparent;
+      line-height:1.4;
     }
-    .ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
-    .err{background:#fff1f2;color:#be123c;border:1px solid #fecdd3}
-    .mini{font-size:12px;color:var(--muted);margin-top:12px;text-align:center}
+    .ok{background:var(--okbg);color:var(--oktx);border-color:var(--okbd)}
+    .err{background:var(--erbg);color:var(--ertx);border-color:var(--erbd)}
+    .info{background:var(--infbg);color:var(--inftx);border-color:var(--infbd)}
+    .warn{background:var(--warnbg);color:var(--warntx);border-color:var(--warnbd)}
+    .mini{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:12px;
+      text-align:center;
+      line-height:1.4;
+    }
+
+    .summary{
+      margin-top:12px;
+      border:1px solid rgba(124,58,237,.18);
+      border-radius:16px;
+      padding:12px;
+      background:rgba(255,255,255,.9);
+      display:none;
+    }
+    .summary h3{
+      margin:0 0 8px;
+      font-size:13px;
+      font-weight:950;
+    }
+    .sumGrid{display:grid;grid-template-columns: 1fr 1fr;gap:10px}
+    .sumItem{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px;
+      background:#fff;
+      font-size:12px;
+      color:#374151;
+    }
+    .sumItem b{display:block;font-size:12px;color:#111827;margin-bottom:3px}
+    @media (max-width:640px){ .sumGrid{grid-template-columns:1fr} }
+
+    .smallNote{font-size:12px;color:var(--muted);margin-top:10px}
   </style>
 </head>
 
 <body>
 <div class="center">
   <div class="card">
-    <h1>Agende seu horário</h1>
-    <p>Escolha o serviço, profissional e horário disponível.</p>
 
-    <label>Serviço</label>
-    <select id="service"></select>
+    <div class="top">
+      <div class="brand">
+        <span class="logoDot"></span>
+        <div>
+          <h1>Agende seu atendimento com praticidade e inovação</h1>
+          <div class="sub">
+            Escolha o serviço, o profissional ideal e o melhor horário em poucos cliques.
+            Rápido, simples e totalmente online.
+          </div>
+        </div>
+      </div>
 
-    <label>Profissional</label>
-    <select id="professional"></select>
+      <div class="pill" title="Segurança e privacidade">
+        <span class="lock"></span>
+        Seus dados estão protegidos
+      </div>
+    </div>
 
-    <label>Data</label>
-    <input type="date" id="date" />
+    <div class="benefits">
+      <div class="benefit">
+        <div class="ico">⏱</div>
+        <div><b>Agendamento rápido</b><span>Fluxo simples e objetivo, sem complicações.</span></div>
+      </div>
+      <div class="benefit">
+        <div class="ico">📅</div>
+        <div><b>Horários em tempo real</b><span>Mostramos apenas horários disponíveis.</span></div>
+      </div>
+      <div class="benefit">
+        <div class="ico">✅</div>
+        <div><b>Confirmação imediata</b><span>Ao confirmar, o sistema registra e reserva o horário.</span></div>
+      </div>
+      <div class="benefit">
+        <div class="ico">📲</div>
+        <div><b>WhatsApp para confirmação</b><span>Usamos seu número apenas para confirmar.</span></div>
+      </div>
+    </div>
 
-    <div id="slots" class="slots"></div>
+    <!-- SEÇÃO 1 -->
+    <div class="section">
+      <div class="sectionTitle">
+        <h2>1) Sobre o atendimento</h2>
+        <div class="hint">Defina o serviço e o profissional.</div>
+      </div>
 
-    <label>Seu nome</label>
-    <input id="customerName" placeholder="Ex: Maria Silva" />
+      <div class="grid2">
+        <div>
+          <label for="service">Serviço</label>
+          <select id="service"></select>
+        </div>
 
-    <label>Telefone / WhatsApp</label>
-    <input id="customerPhone" placeholder="(00) 00000-0000" />
+        <div>
+          <label for="professional">Profissional</label>
+          <select id="professional"></select>
+        </div>
+      </div>
 
-    <button id="btnConfirm" class="btn" disabled>Confirmar agendamento</button>
+      <div class="helperRow">
+        <div class="meta">
+          <div class="badge muted" id="metaDuration">⏳ Duração: —</div>
+          <div class="badge" id="metaRating"><span class="star">⭐</span> Avaliação: —</div>
+        </div>
+        <div class="hint" id="metaServiceName"></div>
+      </div>
 
-    <div id="msgOk" class="msg ok"></div>
-    <div id="msgErr" class="msg err"></div>
+      <div class="smallNote">
+        Após escolher o serviço e o profissional, veja os próximos dias disponíveis e selecione um horário.
+      </div>
+    </div>
 
-    <div class="mini">LEP Sistemas • Agenda Online</div>
+    <!-- SEÇÃO 2 -->
+    <div class="section">
+      <div class="sectionTitle">
+        <h2>2) Dias e horários disponíveis</h2>
+        <div class="hint">Escolha o dia e depois o horário.</div>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label for="date">Data (opcional)</label>
+          <input type="date" id="date" />
+        </div>
+
+        <div>
+          <label>Status do agendamento</label>
+          <input id="statusField" value="Aguardando seleção..." readonly />
+        </div>
+      </div>
+
+      <!-- NOVO: dias disponíveis -->
+      <div class="daysBar">
+        <div class="daysTop">
+          <b>Próximos dias com disponibilidade</b>
+          <div class="daysHint" id="daysHint">Selecione serviço e profissional para carregar.</div>
+        </div>
+        <div id="daysChips" class="daysChips"></div>
+      </div>
+
+      <!-- Horários -->
+      <div id="slots" class="slots"></div>
+
+      <div class="smallNote" id="slotsNote">
+        Mostramos apenas horários disponíveis em tempo real.
+      </div>
+    </div>
+
+    <!-- SEÇÃO 3 -->
+    <div class="section">
+      <div class="sectionTitle">
+        <h2>3) Seus dados para confirmação</h2>
+        <div class="hint">Usaremos apenas para confirmar o atendimento.</div>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label for="customerName">Nome completo</label>
+          <input id="customerName" placeholder="Ex: Maria Silva" autocomplete="name" />
+        </div>
+
+        <div>
+          <label for="customerPhone">WhatsApp para confirmação</label>
+          <input id="customerPhone" placeholder="(00) 00000-0000" autocomplete="tel" />
+        </div>
+      </div>
+
+      <button id="btnConfirm" class="btn" disabled>Confirmar agendamento agora</button>
+
+      <div id="summary" class="summary">
+        <h3>Resumo do seu agendamento</h3>
+        <div class="sumGrid">
+          <div class="sumItem"><b>Serviço</b><span id="sumService">—</span></div>
+          <div class="sumItem"><b>Profissional</b><span id="sumProf">—</span></div>
+          <div class="sumItem"><b>Data</b><span id="sumDate">—</span></div>
+          <div class="sumItem"><b>Horário</b><span id="sumTime">—</span></div>
+        </div>
+      </div>
+
+      <div id="msgOk" class="msg ok"></div>
+      <div id="msgErr" class="msg err"></div>
+      <div id="msgInfo" class="msg info"></div>
+      <div id="msgWarn" class="msg warn"></div>
+
+      <div class="mini">
+        Desenvolvido por <b>LEP Sistemas</b> • Agenda Online Inteligente<br/>
+        Tecnologia para facilitar seu dia a dia
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -146,7 +506,6 @@
   // FIXO (já preenchido com seus dados)
   const SUPABASE_URL = "https://lbjkxslawyqbuncrnmbl.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_a6VPFRKUWl4iQsrz6LVFMA_qYLJ4p-L";
-
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const serviceSel = document.getElementById("service");
@@ -154,19 +513,304 @@
   const dateInput = document.getElementById("date");
   const slotsDiv = document.getElementById("slots");
   const btnConfirm = document.getElementById("btnConfirm");
+
   const msgOk = document.getElementById("msgOk");
   const msgErr = document.getElementById("msgErr");
+  const msgInfo = document.getElementById("msgInfo");
+  const msgWarn = document.getElementById("msgWarn");
+
+  const statusField = document.getElementById("statusField");
+
+  const metaDuration = document.getElementById("metaDuration");
+  const metaRating = document.getElementById("metaRating");
+  const metaServiceName = document.getElementById("metaServiceName");
+
+  const daysChips = document.getElementById("daysChips");
+  const daysHint = document.getElementById("daysHint");
+
+  const summary = document.getElementById("summary");
+  const sumService = document.getElementById("sumService");
+  const sumProf = document.getElementById("sumProf");
+  const sumDate = document.getElementById("sumDate");
+  const sumTime = document.getElementById("sumTime");
 
   let selectedSlot = null;
   let COMPANY_ID = null;
 
-  function showOk(t){ msgOk.style.display="block"; msgOk.textContent=t; msgErr.style.display="none"; }
-  function showErr(t){ msgErr.style.display="block"; msgErr.textContent=t; msgOk.style.display="none"; }
+  const servicesById = new Map();
+  const professionalsById = new Map();
+
+  // Avaliação fixa (conforme pedido)
+  const DEFAULT_RATING = 4.9;
+
+  // Config: quantos dias mostrar como "disponíveis"
+  const DAYS_LOOKAHEAD = 14;
+
+  function hideAllMsgs(){ [msgOk,msgErr,msgInfo,msgWarn].forEach(m=>m.style.display="none"); }
+  function showOk(t){ hideAllMsgs(); msgOk.style.display="block"; msgOk.textContent=t; }
+  function showErr(t){ hideAllMsgs(); msgErr.style.display="block"; msgErr.textContent=t; }
+  function showInfo(t){ hideAllMsgs(); msgInfo.style.display="block"; msgInfo.textContent=t; }
+  function showWarn(t){ hideAllMsgs(); msgWarn.style.display="block"; msgWarn.textContent=t; }
+
+  function setStatus(text){ statusField.value = text; }
 
   function fmtTime(iso){
     const d = new Date(iso);
     return d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
   }
+  function fmtDateBR(yyyyMmDd){
+    if(!yyyyMmDd) return "—";
+    const [y,m,d] = yyyyMmDd.split("-");
+    return `${d}/${m}/${y}`;
+  }
+  function ymd(dateObj){
+    const d = new Date(dateObj);
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const da = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${da}`;
+  }
+  function dowShortPt(dateObj){
+    return dateObj.toLocaleDateString("pt-BR",{weekday:"short"}).replace(".","");
+  }
+  function monthShortPt(dateObj){
+    return dateObj.toLocaleDateString("pt-BR",{month:"short"}).replace(".","");
+  }
+
+  function updateMeta(){
+    const s = servicesById.get(serviceSel.value);
+    const p = professionalsById.get(profSel.value);
+
+    const durationMin = s?.duration_minutes ?? 40;
+    metaDuration.textContent = `⏳ Duração: ${durationMin} min`;
+
+    metaRating.innerHTML = `<span class="star">⭐</span> Avaliação: <strong>${DEFAULT_RATING.toFixed(1)}</strong>/5`;
+
+    const svcName = s?.name ? `Serviço: ${s.name}` : "";
+    const profName = p?.name ? ` • Profissional: ${p.name}` : "";
+    metaServiceName.textContent = (svcName || profName) ? `${svcName}${profName}` : "";
+  }
+
+  function updateSummary(){
+    const s = servicesById.get(serviceSel.value);
+    const p = professionalsById.get(profSel.value);
+
+    sumService.textContent = s?.name ?? "—";
+    sumProf.textContent = p?.name ?? "—";
+    sumDate.textContent = fmtDateBR(dateInput.value);
+    sumTime.textContent = selectedSlot ? fmtTime(selectedSlot) : "—";
+
+    const canShow = !!(serviceSel.value && profSel.value);
+    summary.style.display = canShow ? "block" : "none";
+  }
+
+  function resetSlotsUI(){
+    slotsDiv.innerHTML = "";
+    selectedSlot = null;
+    btnConfirm.disabled = true;
+    updateSummary();
+  }
+
+  function renderDayChips(items, activeYmd){
+    daysChips.innerHTML = "";
+    if(!items.length){
+      daysChips.innerHTML = `<div style="color:#6b7280;font-size:12px;padding:6px 2px;">Nenhum dia disponível no período.</div>`;
+      return;
+    }
+
+    items.forEach(it=>{
+      const chip = document.createElement("div");
+      chip.className = "dayChip" + (it.disabled ? " disabled" : "") + (it.ymd===activeYmd ? " active" : "");
+      chip.innerHTML = `
+        <div class="d1">${it.dow} • ${it.dd} ${it.mon}</div>
+        <div class="d2">${it.ymd === ymd(new Date()) ? "Hoje" : "Disponível"}</div>
+        <div class="d3">${it.count} horários</div>
+      `;
+
+      if(!it.disabled){
+        chip.onclick = ()=>{
+          // seleciona o dia (atualiza dateInput) e carrega horários
+          dateInput.value = it.ymd;
+          document.querySelectorAll(".dayChip").forEach(x=>x.classList.remove("active"));
+          chip.classList.add("active");
+          loadSlots(); // carrega horários do dia clicado
+        };
+      }
+      daysChips.appendChild(chip);
+    });
+  }
+
+  async function fetchSlotsForDate(dateStr){
+    // Busca disponibilidade via seu RPC existente
+    const { data, error } = await supabase.rpc("get_available_slots",{
+      p_company_id: COMPANY_ID,
+      p_professional_id: profSel.value,
+      p_service_id: serviceSel.value,
+      p_date: dateStr
+    });
+    if(error) return { dateStr, count: 0, error: true };
+    return { dateStr, count: (data?.length || 0), data: data || [] };
+  }
+
+  async function loadAvailableDays(){
+    daysChips.innerHTML = "";
+    daysHint.textContent = "Selecione serviço e profissional para carregar.";
+
+    if(!COMPANY_ID) return;
+    if(!serviceSel.value || !profSel.value){
+      return;
+    }
+
+    daysHint.textContent = "Carregando próximos dias disponíveis...";
+    // monta lista de próximos N dias
+    const base = new Date();
+    const dates = [];
+    for(let i=0;i<DAYS_LOOKAHEAD;i++){
+      const d = new Date(base);
+      d.setDate(base.getDate()+i);
+      dates.push(ymd(d));
+    }
+
+    // Faz consultas em paralelo (N=14). Se preferir mais leve, posso limitar concorrência.
+    const results = await Promise.all(dates.map(ds => fetchSlotsForDate(ds)));
+
+    const chips = results.map(r=>{
+      const d = new Date(r.dateStr + "T00:00:00");
+      return {
+        ymd: r.dateStr,
+        dow: dowShortPt(d),
+        dd: String(d.getDate()).padStart(2,"0"),
+        mon: monthShortPt(d),
+        count: r.count,
+        disabled: r.count === 0
+      };
+    });
+
+    const availableCount = chips.filter(c=>!c.disabled).length;
+    if(availableCount === 0){
+      daysHint.textContent = "Nenhum dia disponível nos próximos dias.";
+      renderDayChips(chips, dateInput.value);
+      return;
+    }
+
+    daysHint.textContent = "Escolha um dia para ver os horários.";
+
+    // se a data atual não tiver horários, pula para o primeiro dia com disponibilidade
+    const current = dateInput.value;
+    const hasCurrent = chips.some(c => c.ymd === current && !c.disabled);
+    if(!hasCurrent){
+      const firstAvail = chips.find(c => !c.disabled);
+      if(firstAvail){
+        dateInput.value = firstAvail.ymd;
+      }
+    }
+
+    renderDayChips(chips, dateInput.value);
+  }
+
+  async function loadSlots(){
+    hideAllMsgs();
+    resetSlotsUI();
+
+    updateMeta();
+    updateSummary();
+
+    if(!COMPANY_ID) return;
+
+    const serviceId = serviceSel.value;
+    const profId = profSel.value;
+    const date = dateInput.value;
+
+    if(!serviceId || !profId){
+      setStatus("Aguardando seleção...");
+      return;
+    }
+
+    // Sempre que trocar serviço/profissional, atualiza a barra de dias
+    await loadAvailableDays();
+
+    if(!date){
+      setStatus("Selecione um dia");
+      return;
+    }
+
+    setStatus("Consultando disponibilidade...");
+    showInfo("Consultando horários disponíveis...");
+
+    const { data, error } = await supabase.rpc("get_available_slots",{
+      p_company_id: COMPANY_ID,
+      p_professional_id: profId,
+      p_service_id: serviceId,
+      p_date: date
+    });
+
+    if (error) {
+      setStatus("Falha ao buscar horários");
+      showErr("Erro ao buscar horários.");
+      return;
+    }
+
+    hideAllMsgs();
+
+    if(!data || !data.length){
+      setStatus("Sem horários no dia");
+      slotsDiv.innerHTML = "<div style='grid-column:1/-1;color:#6b7280'>Sem horários disponíveis para esta data.</div>";
+      btnConfirm.disabled = true;
+      return;
+    }
+
+    setStatus("Selecione um horário");
+    data.forEach(s=>{
+      const b = document.createElement("div");
+      b.className="slot";
+      b.textContent = fmtTime(s.slot_start);
+      b.onclick = ()=>{
+        document.querySelectorAll(".slot").forEach(x=>x.classList.remove("active"));
+        b.classList.add("active");
+        selectedSlot = s.slot_start;
+        btnConfirm.disabled = false;
+        setStatus("Pronto para confirmar");
+        updateSummary();
+      };
+      slotsDiv.appendChild(b);
+    });
+  }
+
+  btnConfirm.onclick = async ()=>{
+    const name = document.getElementById("customerName").value.trim();
+    const phone = document.getElementById("customerPhone").value.trim();
+
+    if(name.length < 2) return showErr("Informe seu nome completo.");
+    if(!selectedSlot) return showErr("Selecione um horário.");
+    if(!COMPANY_ID) return showErr("Empresa não carregada.");
+
+    btnConfirm.disabled = true;
+    setStatus("Confirmando agendamento...");
+    showInfo("Confirmando seu agendamento...");
+
+    const { data, error } = await supabase.rpc("create_public_appointment",{
+      p_company_id: COMPANY_ID,
+      p_professional_id: profSel.value,
+      p_service_id: serviceSel.value,
+      p_customer_name: name,
+      p_customer_phone: phone,
+      p_starts_at: selectedSlot
+    });
+
+    if (error) {
+      btnConfirm.disabled = false;
+      setStatus("Falha ao confirmar");
+      return showErr(error.message);
+    }
+
+    setStatus("Agendamento confirmado");
+    showOk("Agendamento confirmado com sucesso! Seu horário foi reservado.");
+    updateSummary();
+
+    // Recarrega dias e horários (para remover o slot ocupado e atualizar contagens)
+    await loadAvailableDays();
+    await loadSlots();
+  };
 
   async function loadCompany(){
     const { data, error } = await supabase
@@ -177,32 +821,43 @@
 
     if (error || !data) {
       showErr("Empresa não encontrada (slug empresa-demo).");
+      setStatus("Indisponível");
       return;
     }
 
     COMPANY_ID = data.id;
 
-    // Se a empresa estiver inativa/vencida, o RPC já bloqueia também,
-    // mas aqui já avisamos visualmente.
     if (data.status !== "active") {
-      showErr("Empresa está inativa no momento.");
+      showWarn("Empresa está inativa no momento.");
     }
-    if (data.paid_until && new Date(data.paid_until) < new Date(new Date().toISOString().slice(0,10))) {
-      showErr("Empresa está com pagamento vencido.");
+
+    const today = new Date(new Date().toISOString().slice(0,10));
+    if (data.paid_until && new Date(data.paid_until) < today) {
+      showWarn("Empresa está com pagamento vencido.");
     }
   }
 
   async function loadServices(){
-    const { data, error } = await supabase
+    let res = await supabase
       .from("services")
-      .select("id,name")
+      .select("id,name,duration_minutes")
       .eq("active",true)
       .order("name",{ascending:true});
 
-    if (error) { showErr("Erro ao carregar serviços."); return; }
+    if (res.error) {
+      res = await supabase
+        .from("services")
+        .select("id,name")
+        .eq("active",true)
+        .order("name",{ascending:true});
+    }
 
+    if (res.error) { showErr("Erro ao carregar serviços."); return; }
+
+    servicesById.clear();
     serviceSel.innerHTML = `<option value="">Selecione</option>`;
-    (data||[]).forEach(s=>{
+    (res.data||[]).forEach(s=>{
+      servicesById.set(String(s.id), s);
       serviceSel.innerHTML += `<option value="${s.id}">${s.name}</option>`;
     });
   }
@@ -216,96 +871,50 @@
 
     if (error) { showErr("Erro ao carregar profissionais."); return; }
 
+    professionalsById.clear();
     profSel.innerHTML = `<option value="">Selecione</option>`;
     (data||[]).forEach(p=>{
+      professionalsById.set(String(p.id), p);
       profSel.innerHTML += `<option value="${p.id}">${p.name}</option>`;
     });
   }
 
-  async function loadSlots(){
-    msgOk.style.display = "none";
-    msgErr.style.display = "none";
-
-    slotsDiv.innerHTML = "";
-    selectedSlot = null;
-    btnConfirm.disabled = true;
-
-    if(!COMPANY_ID) return;
-
-    const serviceId = serviceSel.value;
-    const profId = profSel.value;
-    const date = dateInput.value;
-
-    if(!serviceId || !profId || !date) return;
-
-    const { data, error } = await supabase.rpc("get_available_slots",{
-      p_company_id: COMPANY_ID,
-      p_professional_id: profId,
-      p_service_id: serviceId,
-      p_date: date
-    });
-
-    if (error) {
-      showErr("Erro ao buscar horários.");
-      return;
-    }
-
-    if(!data || !data.length){
-      slotsDiv.innerHTML = "<div style='grid-column:1/-1;color:#888'>Sem horários disponíveis</div>";
-      return;
-    }
-
-    data.forEach(s=>{
-      const b = document.createElement("div");
-      b.className="slot";
-      b.textContent = fmtTime(s.slot_start);
-      b.onclick = ()=>{
-        document.querySelectorAll(".slot").forEach(x=>x.classList.remove("active"));
-        b.classList.add("active");
-        selectedSlot = s.slot_start;
-        btnConfirm.disabled = false;
-      };
-      slotsDiv.appendChild(b);
-    });
+  function onSelectionChange(){
+    updateMeta();
+    updateSummary();
+    // limpa slots e carrega dias/horários novamente
+    loadSlots();
   }
 
-  btnConfirm.onclick = async ()=>{
-    const name = document.getElementById("customerName").value.trim();
-    const phone = document.getElementById("customerPhone").value.trim();
+  serviceSel.onchange = onSelectionChange;
+  profSel.onchange = onSelectionChange;
 
-    if(name.length < 2) return showErr("Informe seu nome.");
-    if(!selectedSlot) return showErr("Selecione um horário.");
-
-    btnConfirm.disabled = true;
-
-    const { data, error } = await supabase.rpc("create_public_appointment",{
-      p_company_id: COMPANY_ID,
-      p_professional_id: profSel.value,
-      p_service_id: serviceSel.value,
-      p_customer_name: name,
-      p_customer_phone: phone,
-      p_starts_at: selectedSlot
-    });
-
-    if (error) {
-      btnConfirm.disabled = false;
-      return showErr(error.message);
-    }
-
-    showOk("Agendamento confirmado com sucesso!");
-    // Recarrega slots para remover o horário que acabou de ser ocupado
+  // Se o usuário mudar manualmente a data, recarrega horários e marca chip se existir
+  dateInput.onchange = async ()=>{
+    updateSummary();
     await loadSlots();
+    // tenta realçar chip ativo
+    document.querySelectorAll(".dayChip").forEach(ch => ch.classList.remove("active"));
+    const active = Array.from(document.querySelectorAll(".dayChip")).find(ch => {
+      // checa pelo texto? melhor re-render; então chamamos loadAvailableDays que re-renderiza com active
+      return false;
+    });
+    await loadAvailableDays();
   };
 
-  serviceSel.onchange = loadSlots;
-  profSel.onchange = loadSlots;
-  dateInput.onchange = loadSlots;
-
   (async ()=>{
-    dateInput.value = new Date().toISOString().slice(0,10);
+    dateInput.value = ymd(new Date());
+    setStatus("Carregando...");
     await loadCompany();
     await loadServices();
     await loadProfessionals();
+
+    updateMeta();
+    updateSummary();
+
+    setStatus("Aguardando seleção...");
+    // já tenta carregar dias (se já tiver seleção)
+    await loadAvailableDays();
   })();
 </script>
 </body>
