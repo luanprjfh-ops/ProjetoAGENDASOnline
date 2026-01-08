@@ -248,10 +248,10 @@
   // CONFIGURAÇÃO SUPABASE
   // =========================
   // Use o mesmo projeto do Painel (URL e ANON KEY)
-  const SUPABASE_URL = "https://lbjkxslawyqbuncrnmbl.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_a6VPFRKUWl4iQsrz6LVFMA_qYLJ4p-L";
+  const SUPABASE_URL = "https://nsmvnfhdohpvmtoimsub.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_tn76OaKxjctgngA6jj9NSw_KXfWqt-f";
 
-  const sb = window.__sb || (window.__sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   // =========================
   // HELPERS UI
@@ -283,9 +283,12 @@
   }
   function parseCompanySlug(){
     const url = new URL(window.location.href);
-    // Ex: agenda.html?empresa=empresa-1
     const s = (url.searchParams.get("empresa") || "").trim();
-    return s || "empresa-1";
+    if(!s){
+      // Em produção, exigir o slug para evitar cair na empresa errada.
+      throw new Error("Link inválido: falta ?empresa=SEU-SLUG. Ex.: ?empresa=clinica-x");
+    }
+    return s;
   }
 
   // =========================
