@@ -247,10 +247,9 @@
   // =========================
   // CONFIGURAÇÃO SUPABASE
   // =========================
-  // MESMO PROJETO do Painel (URL e ANON KEY)
   const SUPABASE_URL = "https://nsmvnfhdohpvmtoimsub.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_tn76OaKxjctgngA6jj9NSw_KXfWqt-f";
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const sb = window.__sb || (window.__sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
 
   // =========================
   // HELPERS UI
@@ -296,10 +295,16 @@
     const week = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"][dt.getUTCDay()];
     return `${String(d).padStart(2,"0")}/${String(m).padStart(2,"0")} • ${week}`;
   }
+
   function parseCompanySlug(){
     const url = new URL(window.location.href);
-    const s = (url.searchParams.get("empresa") || "").trim();
-    return s || null;
+    const raw = (url.searchParams.get("empresa") || url.searchParams.get("slug") || "").trim();
+    if(!raw) return null;
+    try{
+      return decodeURIComponent(raw).trim().toLowerCase();
+    }catch(_){
+      return raw.trim().toLowerCase();
+    }
   }
 
   // =========================
@@ -309,42 +314,37 @@
   let COMPANY_NAME = null;
   let selectedSlot = null;
 
+  function pickFirstRow(data){
+    if(!data) return null;
+    return Array.isArray(data) ? (data[0] || null) : data;
+  }
+
   // =========================
   // DATA ACCESS (PUBLICO)
   // =========================
   async function loadCompanyBySlug(slug){
-    let row = null;
+    // 1) tenta via RPC (pode retornar OBJETO ou ARRAY)
+    const rpcRes = await sb.rpc("get_company_public", { p_slug: slug });
+    if(rpcRes?.error) throw rpcRes.error;
 
-    // 1) Tenta via RPC (pode retornar OBJETO ou ARRAY)
-    try{
-      const { data, error } = await sb.rpc("get_company_public", { p_slug: slug });
-      if(error) throw error;
-      row = Array.isArray(data) ? (data[0] || null) : data;
-    }catch(_e){
-      row = null;
-    }
+    let row = pickFirstRow(rpcRes?.data);
 
-    // 2) Fallback: SELECT direto (se o RPC vier vazio / formato diferente)
+    // 2) fallback: consulta direta na tabela (se a função foi criada diferente)
     if(!row || !row.id){
-      try{
-        const { data, error } = await sb
-          .from("companies")
-          .select("id,name,slug,status")
-          .eq("slug", slug)
-          .limit(1)
-          .maybeSingle();
-        if(!error && data && data.id) row = data;
-      }catch(_e){
-        // mantém null
-      }
+      const direct = await sb
+        .from("companies")
+        .select("id,name,slug,status")
+        .eq("slug", slug)
+        .maybeSingle();
+
+      if(direct?.error) throw direct.error;
+      row = direct?.data || null;
     }
 
-    if(!row || !row.id){
-      throw new Error("Empresa inválida (slug não encontrado).");
-    }
+    if(!row || !row.id) throw new Error(`Empresa inválida (slug não encontrado): ${slug}`);
 
     COMPANY_ID = row.id;
-    COMPANY_NAME = row.name || "Empresa";
+    COMPANY_NAME = row.name || slug;
     companyPill.textContent = COMPANY_NAME;
     subtitle.textContent = `Agende na empresa: ${COMPANY_NAME}`;
   }
@@ -359,6 +359,7 @@
       .order("name",{ascending:true});
 
     if(error) throw error;
+
     for(const s of (data||[])){
       const opt = document.createElement("option");
       opt.value = s.id;
@@ -378,6 +379,7 @@
       .order("name",{ascending:true});
 
     if(error) throw error;
+
     for(const p of (data||[])){
       const opt = document.createElement("option");
       opt.value = p.id;
@@ -433,7 +435,8 @@
     if(!wh.length){ showErr("Este profissional não possui horários cadastrados."); return; }
 
     const [y,m,d] = isoDate.split("-").map(Number);
-    const weekday = new Date(y, m-1, d).getDay();
+    const dtLocal = new Date(y, m-1, d);
+    const weekday = dtLocal.getDay();
 
     const todays = wh.filter(x => Number(x.weekday) === Number(weekday));
     if(!todays.length){ showErr("Sem expediente nesta data."); return; }
@@ -492,7 +495,6 @@
 
     const serviceId = serviceSel.value;
     const profId = profSel.value;
-
     if(!COMPANY_ID) { showErr("Empresa inválida."); return; }
     if(!serviceId || !profId) { showErr("Selecione um serviço e um profissional."); return; }
 
@@ -609,13 +611,13 @@
 
       const slug = parseCompanySlug();
       if(!slug){
-        companyPill.textContent = "Erro";
+        companyPill.textContent = "Informe a empresa";
         showErr(
           "Link inválido: falta o parâmetro da empresa.\n\n" +
           "Use assim:\n" +
           "?empresa=empresa-1\n\n" +
           "Exemplo:\n" +
-          window.location.origin + window.location.pathname + "?empresa=empresa-1"
+          window.location.pathname + "?empresa=empresa-1"
         );
         return;
       }
@@ -623,7 +625,6 @@
       await loadCompanyBySlug(slug);
       await loadServices();
       await loadProfessionals();
-
       enableForm();
 
       if(serviceSel.options.length <= 1){
