@@ -298,8 +298,13 @@
 
   function parseCompanySlug(){
     const url = new URL(window.location.href);
-    const slug = (url.searchParams.get("empresa") || "").trim();
-    return slug || null;
+    const raw = (url.searchParams.get("empresa") || url.searchParams.get("slug") || "").trim();
+    return raw ? raw.toLowerCase() : null;
+  }
+
+  function firstRow(data){
+    if(Array.isArray(data)) return data[0] || null;
+    return data || null;
   }
 
   // =========================
@@ -313,13 +318,39 @@
   // DATA ACCESS (PUBLICO)
   // =========================
   async function loadCompanyBySlug(slug){
-    const { data, error } = await sb.rpc("get_company_public", { p_slug: slug });
-    if(error) throw error;
-    if(!data || !data.id) throw new Error("Empresa inválida (slug não encontrado).");
-    COMPANY_ID = data.id;
-    COMPANY_NAME = data.name;
-    companyPill.textContent = data.name;
-    subtitle.textContent = `Agende na empresa: ${data.name}`;
+    // 1) RPC (padrão)
+    try{
+      const { data, error } = await sb.rpc("get_company_public", { p_slug: slug });
+      if(error) throw error;
+      const row = firstRow(data);
+      if(row && row.id){
+        COMPANY_ID = row.id;
+        COMPANY_NAME = row.name || "Empresa";
+        companyPill.textContent = COMPANY_NAME;
+        subtitle.textContent = `Agende na empresa: ${COMPANY_NAME}`;
+        return;
+      }
+    }catch(_e){
+      // fallback abaixo
+    }
+
+    // 2) fallback direto (caso a RPC retorne SETOF/array ou esteja diferente)
+    const { data: row2, error: err2 } = await sb
+      .from("companies")
+      .select("id,name,slug,status")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if(err2) throw err2;
+    if(!row2 || !row2.id) throw new Error("Empresa inválida (slug não encontrado).");
+    if(row2.status && String(row2.status).toLowerCase() !== "active"){
+      throw new Error("Empresa inativa.");
+    }
+
+    COMPANY_ID = row2.id;
+    COMPANY_NAME = row2.name || "Empresa";
+    companyPill.textContent = COMPANY_NAME;
+    subtitle.textContent = `Agende na empresa: ${COMPANY_NAME}`;
   }
 
   async function loadServices(){
@@ -330,8 +361,8 @@
       .eq("company_id", COMPANY_ID)
       .eq("active", true)
       .order("name",{ascending:true});
-
     if(error) throw error;
+
     for(const s of (data||[])){
       const opt = document.createElement("option");
       opt.value = s.id;
@@ -349,8 +380,8 @@
       .eq("company_id", COMPANY_ID)
       .eq("active", true)
       .order("name",{ascending:true});
-
     if(error) throw error;
+
     for(const p of (data||[])){
       const opt = document.createElement("option");
       opt.value = p.id;
@@ -365,7 +396,6 @@
       .select("weekday,start_time,end_time,slot_minutes,professional_id,company_id")
       .eq("company_id", COMPANY_ID)
       .eq("professional_id", profId);
-
     if(error) throw error;
     return data || [];
   }
@@ -381,7 +411,7 @@
   }
 
   // =========================
-  // CALCULO DE SLOTS
+  // CÁLCULO DE SLOTS
   // =========================
   function overlaps(aStart, aEnd, bStart, bEnd){
     return aStart < bEnd && bStart < aEnd;
@@ -466,6 +496,7 @@
 
     const serviceId = serviceSel.value;
     const profId = profSel.value;
+
     if(!COMPANY_ID) { showErr("Empresa inválida."); return; }
     if(!serviceId || !profId) { showErr("Selecione um serviço e um profissional."); return; }
 
@@ -474,6 +505,7 @@
 
     const today = new Date();
     const dates = [];
+
     for(let i=0;i<daysAhead;i++){
       const d = new Date(today.getFullYear(), today.getMonth(), today.getDate()+i);
       const iso = d.toISOString().slice(0,10);
@@ -556,21 +588,18 @@
   // EVENTOS
   // =========================
   btnFindDates.onclick = ()=> scanAvailableDates({daysAhead:21, maxDates:14});
-
   availDateSel.onchange = async ()=>{
     if(availDateSel.value){
       dateInput.value = "";
       await renderSlotsForDate(availDateSel.value);
     }
   };
-
   dateInput.onchange = async ()=>{
     if(dateInput.value){
       availDateSel.value = "";
       await renderSlotsForDate(dateInput.value);
     }
   };
-
   serviceSel.onchange = ()=> scanAvailableDates({daysAhead:21, maxDates:14});
   profSel.onchange = ()=> scanAvailableDates({daysAhead:21, maxDates:14});
   btnConfirm.onclick = confirmAppointment;
