@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LEP Sistemas • Agenda Online</title>
   <style>
-    /* Mantém o estilo do seu arquivo (mesma identidade visual) */
     :root{
       --bg1:#110814;
       --bg2:#2a0f2a;
@@ -111,6 +110,7 @@
       border-radius:14px;
       border:1px solid var(--stroke);
       font-size:14px;
+      white-space:pre-line;
     }
     .msg.ok{display:block; border-color:#4dff9f55; background:#0b1a1355; color:var(--ok);}
     .msg.err{display:block; border-color:#ff5c5c55; background:#1a0b0b55; color:var(--danger);}
@@ -170,14 +170,14 @@
             <div style="display:grid; gap:12px;">
               <div>
                 <label>Serviço</label>
-                <select id="service">
+                <select id="service" disabled>
                   <option value="">Carregando...</option>
                 </select>
               </div>
 
               <div>
                 <label>Profissional</label>
-                <select id="professional">
+                <select id="professional" disabled>
                   <option value="">Carregando...</option>
                 </select>
               </div>
@@ -185,18 +185,18 @@
               <div class="row">
                 <div>
                   <label>Data</label>
-                  <select id="availableDate">
+                  <select id="availableDate" disabled>
                     <option value="">Selecione</option>
                   </select>
                 </div>
                 <div>
                   <label>Ou escolha manual</label>
-                  <input id="date" type="date" />
+                  <input id="date" type="date" disabled />
                 </div>
               </div>
 
               <div class="actions">
-                <button class="secondary" id="btnFindDates" type="button">Buscar datas</button>
+                <button class="secondary" id="btnFindDates" type="button" disabled>Buscar datas</button>
               </div>
 
               <div>
@@ -247,10 +247,8 @@
   // =========================
   // CONFIGURAÇÃO SUPABASE
   // =========================
-  // Use o mesmo projeto do Painel (URL e ANON KEY)
   const SUPABASE_URL = "https://nsmvnfhdohpvmtoimsub.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_tn76OaKxjctgngA6jj9NSw_KXfWqt-f";
-
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   // =========================
@@ -272,6 +270,22 @@
   function showErr(t){ msgErr.textContent=t; msgErr.className="msg err"; msgErr.style.display="block"; msgOk.style.display="none"; }
   function clearMsgs(){ msgOk.style.display="none"; msgErr.style.display="none"; }
 
+  function enableForm(){
+    serviceSel.disabled = false;
+    profSel.disabled = false;
+    dateInput.disabled = false;
+    availDateSel.disabled = false;
+    btnFindDates.disabled = false;
+  }
+  function disableForm(){
+    serviceSel.disabled = true;
+    profSel.disabled = true;
+    dateInput.disabled = true;
+    availDateSel.disabled = true;
+    btnFindDates.disabled = true;
+    btnConfirm.disabled = true;
+  }
+
   function fmtTimeHM(d){
     return d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
   }
@@ -281,14 +295,11 @@
     const week = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"][dt.getUTCDay()];
     return `${String(d).padStart(2,"0")}/${String(m).padStart(2,"0")} • ${week}`;
   }
+
   function parseCompanySlug(){
     const url = new URL(window.location.href);
-    const s = (url.searchParams.get("empresa") || "").trim();
-    if(!s){
-      // Em produção, exigir o slug para evitar cair na empresa errada.
-      throw new Error("Link inválido: falta ?empresa=SEU-SLUG. Ex.: ?empresa=clinica-x");
-    }
-    return s;
+    const slug = (url.searchParams.get("empresa") || "").trim();
+    return slug || null;
   }
 
   // =========================
@@ -304,7 +315,7 @@
   async function loadCompanyBySlug(slug){
     const { data, error } = await sb.rpc("get_company_public", { p_slug: slug });
     if(error) throw error;
-    if(!data || !data.id) throw new Error("Empresa inválida.");
+    if(!data || !data.id) throw new Error("Empresa inválida (slug não encontrado).");
     COMPANY_ID = data.id;
     COMPANY_NAME = data.name;
     companyPill.textContent = data.name;
@@ -315,7 +326,7 @@
     serviceSel.innerHTML = `<option value="">Selecione</option>`;
     const { data, error } = await sb
       .from("services")
-      .select("id,name,duration_minutes,price_cents,active,company_id")
+      .select("id,name,duration_minutes,active,company_id")
       .eq("company_id", COMPANY_ID)
       .eq("active", true)
       .order("name",{ascending:true});
@@ -360,14 +371,13 @@
   }
 
   async function loadBusyForDay(profId, isoDate){
-    // RPC retorna apenas intervalos (sem dados pessoais)
     const { data, error } = await sb.rpc("get_busy_slots", {
       p_company_id: COMPANY_ID,
       p_professional_id: profId,
       p_day: isoDate
     });
     if(error) throw error;
-    return data || []; // [{starts_at, ends_at}]
+    return data || [];
   }
 
   // =========================
@@ -392,25 +402,21 @@
 
     const durMin = Number(serviceSel.selectedOptions[0]?.dataset?.duration || 30);
 
-    // working_hours
     const wh = await loadWorkingHours(profId);
     if(!wh.length){ showErr("Este profissional não possui horários cadastrados."); return; }
 
-    // weekday 0..6 (Dom..Sáb)
     const [y,m,d] = isoDate.split("-").map(Number);
     const dtLocal = new Date(y, m-1, d);
     const weekday = dtLocal.getDay();
 
-    const todays = wh.filter(x => x.weekday === weekday);
+    const todays = wh.filter(x => Number(x.weekday) === Number(weekday));
     if(!todays.length){ showErr("Sem expediente nesta data."); return; }
 
     const busy = await loadBusyForDay(profId, isoDate);
 
-    // Gera slots
     const slots = [];
     for(const w of todays){
-      const slotMin = w.slot_minutes || 30;
-      // monta DateTime local
+      const slotMin = Number(w.slot_minutes || 30);
       const [sh, sm] = (w.start_time||"09:00:00").split(":").map(Number);
       const [eh, em] = (w.end_time||"18:00:00").split(":").map(Number);
 
@@ -422,7 +428,6 @@
         const slotEnd = new Date(cur.getTime() + durMin*60000);
         if(slotEnd > end) break;
 
-        // verifica colisão com busy (busy vem timestamptz; converte)
         const collides = (busy||[]).some(b=>{
           const bs = new Date(b.starts_at);
           const be = new Date(b.ends_at);
@@ -438,7 +443,6 @@
 
     if(!slots.length){ showErr("Sem horários disponíveis para esta data."); return; }
 
-    // Render
     for(const s of slots){
       const div = document.createElement("div");
       div.className = "slot";
@@ -474,7 +478,7 @@
       const d = new Date(today.getFullYear(), today.getMonth(), today.getDate()+i);
       const iso = d.toISOString().slice(0,10);
       const weekday = d.getDay();
-      if(!wh.some(x=>x.weekday===weekday)) continue; // sem expediente
+      if(!wh.some(x=>Number(x.weekday)===Number(weekday))) continue;
       dates.push(iso);
       if(dates.length>=maxDates) break;
     }
@@ -487,9 +491,10 @@
     }
 
     if(dates.length){
-      // pré-carrega slots do primeiro dia
       availDateSel.value = dates[0];
       await renderSlotsForDate(dates[0]);
+    } else {
+      showErr("Nenhuma data disponível (sem expediente nos próximos dias).");
     }
   }
 
@@ -518,7 +523,7 @@
     btnConfirm.textContent = "Confirmando...";
 
     try{
-      const { data, error } = await sb.rpc("create_public_appointment", {
+      const { error } = await sb.rpc("create_public_appointment", {
         p_company_id: COMPANY_ID,
         p_professional_id: profId,
         p_service_id: serviceId,
@@ -531,7 +536,6 @@
       if(error) throw error;
 
       showOk("Agendamento confirmado com sucesso.");
-      // limpa seleção e recarrega slots (pra não permitir duplicidade)
       await renderSlotsForDate(isoDate);
 
       document.getElementById("customerName").value="";
@@ -569,7 +573,6 @@
 
   serviceSel.onchange = ()=> scanAvailableDates({daysAhead:21, maxDates:14});
   profSel.onchange = ()=> scanAvailableDates({daysAhead:21, maxDates:14});
-
   btnConfirm.onclick = confirmAppointment;
 
   // =========================
@@ -577,17 +580,37 @@
   // =========================
   (async ()=>{
     try{
+      disableForm();
+      clearMsgs();
+
       const slug = parseCompanySlug();
+      if(!slug){
+        companyPill.textContent = "Erro";
+        showErr(
+          "Link inválido: falta o parâmetro da empresa.\n\n" +
+          "Use assim:\n" +
+          "?empresa=empresa-1\n\n" +
+          "Exemplo:\n" +
+          window.location.pathname + "?empresa=empresa-1"
+        );
+        return;
+      }
+
       await loadCompanyBySlug(slug);
       await loadServices();
       await loadProfessionals();
-      // não inicia slots até selecionar
-      serviceSel.innerHTML = serviceSel.innerHTML.includes("Selecione") ? serviceSel.innerHTML : `<option value="">Selecione</option>` + serviceSel.innerHTML;
-      profSel.innerHTML = profSel.innerHTML.includes("Selecione") ? profSel.innerHTML : `<option value="">Selecione</option>` + profSel.innerHTML;
-      clearMsgs();
+      enableForm();
+
+      if(serviceSel.options.length <= 1){
+        showErr("Nenhum serviço ativo encontrado para esta empresa (cadastre no Painel).");
+      }
+      if(profSel.options.length <= 1){
+        showErr("Nenhum profissional ativo encontrado para esta empresa (cadastre no Painel).");
+      }
+
     }catch(e){
-      showErr(e?.message || "Falha ao carregar agenda.");
       companyPill.textContent = "Erro";
+      showErr(e?.message || "Falha ao carregar agenda.");
     }
   })();
   </script>
