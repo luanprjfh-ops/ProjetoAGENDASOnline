@@ -247,9 +247,10 @@
   // =========================
   // CONFIGURAÇÃO SUPABASE
   // =========================
+  // MESMO PROJETO do Painel (URL e ANON KEY)
   const SUPABASE_URL = "https://nsmvnfhdohpvmtoimsub.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_tn76OaKxjctgngA6jj9NSw_KXfWqt-f";
-  const sb = window.__sb || (window.__sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   // =========================
   // HELPERS UI
@@ -291,20 +292,14 @@
   }
   function fmtDateLabel(iso){
     const [y,m,d] = iso.split("-").map(Number);
-    const dt = new Date(Date.UTC(y, m-1, d));
-    const week = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"][dt.getUTCDay()];
+    const dt = new Date(y, m-1, d);
+    const week = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"][dt.getDay()];
     return `${String(d).padStart(2,"0")}/${String(m).padStart(2,"0")} • ${week}`;
   }
-
   function parseCompanySlug(){
     const url = new URL(window.location.href);
-    const raw = (url.searchParams.get("empresa") || url.searchParams.get("slug") || "").trim();
-    if(!raw) return null;
-    try{
-      return decodeURIComponent(raw).trim().toLowerCase();
-    }catch(_){
-      return raw.trim().toLowerCase();
-    }
+    const s = (url.searchParams.get("empresa") || "").trim();
+    return s || null;
   }
 
   // =========================
@@ -314,37 +309,27 @@
   let COMPANY_NAME = null;
   let selectedSlot = null;
 
-  function pickFirstRow(data){
-    if(!data) return null;
-    return Array.isArray(data) ? (data[0] || null) : data;
-  }
-
   // =========================
   // DATA ACCESS (PUBLICO)
   // =========================
   async function loadCompanyBySlug(slug){
-    // 1) tenta via RPC (pode retornar OBJETO ou ARRAY)
-    const rpcRes = await sb.rpc("get_company_public", { p_slug: slug });
-    if(rpcRes?.error) throw rpcRes.error;
+    // O site público (anon) NÃO deve consultar a tabela `companies` diretamente, pois RLS costuma bloquear.
+    // Buscamos a empresa via RPC `get_company_public`, que devolve {company_id, company_name, company_slug}.
+    const { data, error } = await sb.rpc("get_company_public", { p_slug: slug });
 
-    let row = pickFirstRow(rpcRes?.data);
-
-    // 2) fallback: consulta direta na tabela (se a função foi criada diferente)
-    if(!row || !row.id){
-      const direct = await sb
-        .from("companies")
-        .select("id,name,slug,status")
-        .eq("slug", slug)
-        .maybeSingle();
-
-      if(direct?.error) throw direct.error;
-      row = direct?.data || null;
+    if(error){
+      // Mostra erro real (muito importante para depurar RLS/RPC)
+      const detail = [error.message, error.details, error.hint].filter(Boolean).join(" | ");
+      throw new Error(`Falha ao buscar empresa (RPC get_company_public): ${detail || "erro desconhecido"}`);
     }
 
-    if(!row || !row.id) throw new Error(`Empresa inválida (slug não encontrado): ${slug}`);
+    const row = Array.isArray(data) ? (data[0] || null) : data;
+    if(!row || !row.company_id){
+      throw new Error("Empresa inválida (slug não encontrado ou empresa inativa).");
+    }
 
-    COMPANY_ID = row.id;
-    COMPANY_NAME = row.name || slug;
+    COMPANY_ID = row.company_id;
+    COMPANY_NAME = row.company_name || "Empresa";
     companyPill.textContent = COMPANY_NAME;
     subtitle.textContent = `Agende na empresa: ${COMPANY_NAME}`;
   }
@@ -359,7 +344,6 @@
       .order("name",{ascending:true});
 
     if(error) throw error;
-
     for(const s of (data||[])){
       const opt = document.createElement("option");
       opt.value = s.id;
@@ -379,7 +363,6 @@
       .order("name",{ascending:true});
 
     if(error) throw error;
-
     for(const p of (data||[])){
       const opt = document.createElement("option");
       opt.value = p.id;
@@ -435,8 +418,7 @@
     if(!wh.length){ showErr("Este profissional não possui horários cadastrados."); return; }
 
     const [y,m,d] = isoDate.split("-").map(Number);
-    const dtLocal = new Date(y, m-1, d);
-    const weekday = dtLocal.getDay();
+    const weekday = new Date(y, m-1, d).getDay();
 
     const todays = wh.filter(x => Number(x.weekday) === Number(weekday));
     if(!todays.length){ showErr("Sem expediente nesta data."); return; }
@@ -495,6 +477,7 @@
 
     const serviceId = serviceSel.value;
     const profId = profSel.value;
+
     if(!COMPANY_ID) { showErr("Empresa inválida."); return; }
     if(!serviceId || !profId) { showErr("Selecione um serviço e um profissional."); return; }
 
@@ -505,7 +488,7 @@
     const dates = [];
     for(let i=0;i<daysAhead;i++){
       const d = new Date(today.getFullYear(), today.getMonth(), today.getDate()+i);
-      const iso = d.toISOString().slice(0,10);
+      const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
       const weekday = d.getDay();
       if(!wh.some(x=>Number(x.weekday)===Number(weekday))) continue;
       dates.push(iso);
@@ -611,13 +594,13 @@
 
       const slug = parseCompanySlug();
       if(!slug){
-        companyPill.textContent = "Informe a empresa";
+        companyPill.textContent = "Erro";
         showErr(
           "Link inválido: falta o parâmetro da empresa.\n\n" +
           "Use assim:\n" +
           "?empresa=empresa-1\n\n" +
           "Exemplo:\n" +
-          window.location.pathname + "?empresa=empresa-1"
+          window.location.origin + window.location.pathname + "?empresa=empresa-1"
         );
         return;
       }
@@ -625,6 +608,7 @@
       await loadCompanyBySlug(slug);
       await loadServices();
       await loadProfessionals();
+
       enableForm();
 
       if(serviceSel.options.length <= 1){
