@@ -896,8 +896,8 @@ td:first-child{border-radius:14px 0 0 14px}
     }
 
     async function loadMaps(){
-      const { data: pros } = await sb.from("professionals").select("id,name,active").order("name",{ascending:true});
-      const { data: serv } = await sb.from("services").select("id,name,active,duration_minutes,price_cents").order("name",{ascending:true});
+      const { data: pros } = await sb.from("professionals").select("id,name,active").eq("company_id", state.profile.company_id).order("name",{ascending:true});
+      const { data: serv } = await sb.from("services").select("id,name,active,duration_minutes,price_cents").eq("company_id", state.profile.company_id).order("name",{ascending:true});
 
       state.pros = pros || [];
       state.serv = serv || [];
@@ -917,11 +917,11 @@ td:first-child{border-radius:14px 0 0 14px}
     }
 
     async function loadCounts(){
-      const { count: cAppt } = await sb.from("appointments").select("id",{count:"exact",head:true});
-      const { count: cCust } = await sb.from("customers").select("id",{count:"exact",head:true});
-      const { count: cPros } = await sb.from("professionals").select("id",{count:"exact",head:true});
-      const { count: cServ } = await sb.from("services").select("id",{count:"exact",head:true});
-      const { count: cWh } = await sb.from("working_hours").select("id",{count:"exact",head:true});
+      const { count: cAppt } = await sb.from("appointments").select("id",{count:"exact",head:true}).eq("company_id", state.profile.company_id);
+      const { count: cCust } = await sb.from("customers").select("id",{count:"exact",head:true}).eq("company_id", state.profile.company_id);
+      const { count: cPros } = await sb.from("professionals").select("id",{count:"exact",head:true}).eq("company_id", state.profile.company_id);
+      const { count: cServ } = await sb.from("services").select("id",{count:"exact",head:true}).eq("company_id", state.profile.company_id);
+      const { count: cWh } = await sb.from("working_hours").select("id",{count:"exact",head:true}).eq("company_id", state.profile.company_id);
 
       badgeAgenda.textContent = cAppt ?? "0";
       badgeClientes.textContent = cCust ?? "0";
@@ -1000,6 +1000,7 @@ td:first-child{border-radius:14px 0 0 14px}
       let q = sb
         .from("appointments")
         .select("id, starts_at, status, customer_name, customer_phone, professional_id, service_id")
+        .eq("company_id", state.profile.company_id)
         .gte("starts_at", start)
         .lte("starts_at", end)
         .order("starts_at",{ascending:true});
