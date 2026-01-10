@@ -471,7 +471,77 @@ tbody tr:hover td{
   outline-offset: 2px;
 }
 
-  </style>
+  
+/* WhatsApp quick action */
+.waBtn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:8px 10px;
+  border-radius:12px;
+  border:1px solid rgba(34,197,94,.45);
+  background: rgba(34,197,94,.10);
+  color:#86efac;
+  font-weight:900;
+  font-size:12px;
+  text-decoration:none;
+  white-space:nowrap;
+  transition: transform .16s ease, filter .16s ease, background .16s ease, border-color .16s ease;
+}
+.waBtn:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  background: rgba(34,197,94,.14);
+  border-color: rgba(34,197,94,.55);
+}
+.waBtn:active{transform: translateY(0px); filter: brightness(.98);}
+.waBtn.small{padding:6px 9px; font-size:12px; border-radius:999px}
+.phoneCell{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* Status warning (Aguardando) */
+.tag.warn{border-color: rgba(250,204,21,.50);background: rgba(250,204,21,.12);color: #fde68a}
+
+/* Clickable customer name */
+.linkBtn{
+  background:transparent;
+  border:0;
+  padding:0;
+  margin:0;
+  color: var(--text);
+  font-weight:900;
+  cursor:pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(192,132,252,.35);
+  text-underline-offset: 3px;
+}
+.linkBtn:hover{ text-decoration-color: rgba(192,132,252,.65); }
+
+/* Menu modal */
+.menuGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+}
+@media (max-width:640px){.menuGrid{grid-template-columns:1fr}}
+.menuTile{
+  text-align:left;
+  padding:14px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.04);
+  cursor:pointer;
+  transition: transform .16s ease, background .16s ease, border-color .16s ease;
+}
+.menuTile:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,.07);
+  border-color: rgba(255,255,255,.20);
+}
+.menuTile .t{font-weight:1000;color:var(--text);margin-bottom:4px}
+.menuTile .d{font-size:12px;color:var(--muted)}
+
+</style>
 </head>
 
 <body>
@@ -507,6 +577,7 @@ tbody tr:hover td{
       </div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
         <span class="pill" id="companyPill">Empresa: —</span>
+        <button class="btn2" id="btnOpenMenu">Menu</button>
         <button class="btn2" id="btnRefresh">Atualizar</button>
         <button class="btn2" id="btnLogout">Sair</button>
       </div>
@@ -583,6 +654,7 @@ tbody tr:hover td{
             <div class="left">
               <input class="miniInput" id="agendaDate" type="date" />
               <select class="miniInput" id="agendaPro"></select>
+              <input class="miniInput" id="agendaSearch" placeholder="Buscar cliente/telefone..." />
             </div>
             <div class="right">
               <button class="btn2" id="btnAgendaReload">Recarregar</button>
@@ -803,6 +875,172 @@ tbody tr:hover td{
 
     // Toast
     const toast = document.getElementById("toast");
+    // Menu (modal)
+    const btnOpenMenu = document.getElementById("btnOpenMenu");
+
+    // Agenda search
+    const agendaSearch = document.getElementById("agendaSearch");
+
+    // Helpers: WhatsApp link and phone normalization (BR default)
+    function normalizePhoneToE164(phone){
+      const raw = String(phone||"").trim();
+      if(!raw) return null;
+      const digits = raw.replace(/\D/g,"");
+      if(!digits) return null;
+
+      // If starts with 55 already (Brazil), keep; else assume BR when length <= 11
+      if(digits.startsWith("55")) return digits;
+      if(digits.length <= 11) return "55" + digits;
+      return digits; // fallback
+    }
+
+    function waLink(phone, text){
+      const e164 = normalizePhoneToE164(phone);
+      if(!e164) return null;
+      const base = "https://wa.me/" + e164;
+      if(!text) return base;
+      return base + "?text=" + encodeURIComponent(text);
+    }
+
+    function renderWhatsAppBtn(phone, name, small=false){
+      const url = waLink(phone, name ? `Olá ${name}!` : "Olá!");
+      if(!url) return "";
+      const cls = "waBtn" + (small ? " small" : "");
+      return `<a class="${cls}" href="${url}" target="_blank" rel="noopener">WhatsApp</a>`;
+    }
+
+    // Open Menu modal (clean navigation / more visibility)
+    function openMenuModal(){
+      const body = `
+        <div class="menuGrid">
+          <button class="menuTile" onclick="selectTab('dash', true)">
+            <div class="t">Dashboard</div><div class="d">Resumo do dia e próximos</div>
+          </button>
+          <button class="menuTile" onclick="selectTab('agenda', true)">
+            <div class="t">Agenda</div><div class="d">Gerenciar agendamentos</div>
+          </button>
+          <button class="menuTile" onclick="selectTab('clientes', true)">
+            <div class="t">Clientes</div><div class="d">Cadastro, busca e histórico</div>
+          </button>
+          <button class="menuTile" onclick="selectTab('profissionais', true)">
+            <div class="t">Profissionais</div><div class="d">Equipe e disponibilidade</div>
+          </button>
+          <button class="menuTile" onclick="selectTab('servicos', true)">
+            <div class="t">Serviços</div><div class="d">Preço e duração</div>
+          </button>
+          <button class="menuTile" onclick="selectTab('horarios', true)">
+            <div class="t">Horários</div><div class="d">Regras de agenda por profissional</div>
+          </button>
+        </div>
+      `;
+      openModal("Menu", body, `<button class="btn" onclick="window.__closeModal()">Fechar</button>`);
+    }
+
+    window.selectTab = (tab, close=true)=>{
+      document.querySelectorAll(".menu button").forEach(b=>b.classList.remove("active"));
+      const btn = document.querySelector(`.menu button[data-tab="${tab}"]`);
+      if(btn) btn.classList.add("active");
+      document.querySelectorAll("main section").forEach(sec=>sec.classList.add("hidden"));
+      const sec = document.getElementById("tab-" + tab);
+      if(sec) sec.classList.remove("hidden");
+
+      if(tab==="agenda") loadAgenda();
+      if(tab==="clientes") loadCustomers();
+      if(tab==="profissionais") loadProfessionals();
+      if(tab==="servicos") loadServices();
+      if(tab==="horarios") loadWorkingHours();
+
+      if(close) closeModal();
+    };
+
+    btnOpenMenu?.addEventListener("click", openMenuModal);
+
+    // Debounce agenda search
+    let agendaSearchTimer = null;
+    agendaSearch?.addEventListener("input", ()=>{
+      clearTimeout(agendaSearchTimer);
+      agendaSearchTimer = setTimeout(loadAgenda, 250);
+    });
+
+    // Customer history (simple / premium)
+    window.openCustomerHistory = async (encoded)=>{
+      let c = encoded ? JSON.parse(decodeURIComponent(encoded)) : null;
+      if(!c) return toastMsg("err","Cliente inválido.");
+      await openHistoryByCustomer(c.full_name, c.phone);
+    };
+
+    window.openCustomerHistoryFromAgenda = async (name, phone)=>{
+      await openHistoryByCustomer(name, phone);
+    };
+
+    async function openHistoryByCustomer(name, phone){
+      const companyId = state?.profile?.company_id;
+      if(!companyId) return toastMsg("err","Sessão inválida.");
+
+      const phoneNorm = (phone||"").trim();
+      const nameNorm = (name||"").trim();
+
+      // Prefer phone match when available
+      let q = sb.from("appointments")
+        .select("id, starts_at, status, customer_name, customer_phone, professional_id, service_id")
+        .eq("company_id", companyId)
+        .order("starts_at",{ascending:false})
+        .limit(10);
+
+      if(phoneNorm){
+        q = q.eq("customer_phone", phoneNorm);
+      } else if(nameNorm){
+        q = q.ilike("customer_name", "%" + nameNorm + "%");
+      }
+
+      const { data, error } = await q;
+      if(error) return toastMsg("err","Erro ao carregar histórico.");
+
+      const rows = (data||[]).map(a=>`
+        <tr>
+          <td>${fmtDateTime(a.starts_at)}</td>
+          <td>${state.prosMap[a.professional_id] || "—"}</td>
+          <td>${state.servMap[a.service_id] || "—"}</td>
+          <td>${tagStatus(a.status)}</td>
+        </tr>
+      `).join("");
+
+      const wa = phoneNorm ? `
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 2px 0">
+          <a class="waBtn" target="_blank" rel="noopener" href="${waLink(phoneNorm, `Olá ${nameNorm||""}! Estou confirmando seu agendamento.`) || "#"}">Confirmar</a>
+          <a class="waBtn" target="_blank" rel="noopener" href="${waLink(phoneNorm, `Olá ${nameNorm||""}! Podemos remarcar seu horário?`) || "#"}">Remarcar</a>
+          <a class="waBtn" target="_blank" rel="noopener" href="${waLink(phoneNorm, `Olá ${nameNorm||""}! Obrigado pelo atendimento.`) || "#"}">Pós</a>
+        </div>
+      ` : `<div class="muted" style="font-size:13px;margin-top:10px">Sem telefone para WhatsApp.</div>`;
+
+      openModal(
+        "Histórico do Cliente",
+        `
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
+            <div>
+              <div style="font-weight:1000;font-size:16px;color:var(--text)">${esc(nameNorm) || "Cliente"}</div>
+              <div class="muted" style="font-size:13px;margin-top:4px">Telefone: ${esc(phoneNorm)||"—"}</div>
+            </div>
+            ${phoneNorm ? renderWhatsAppBtn(phoneNorm, nameNorm) : ""}
+          </div>
+
+          ${wa}
+
+          <div style="margin-top:12px; overflow:auto">
+            <table>
+              <thead>
+                <tr><th>Data/Hora</th><th>Profissional</th><th>Serviço</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                ${rows || `<tr><td colspan="4">Nenhum histórico encontrado.</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+        `,
+        `<button class="btn" onclick="window.__closeModal()">Fechar</button>`
+      );
+    }
+
 
     let state = {
       user: null,
@@ -873,7 +1111,8 @@ tbody tr:hover td{
       if(status==="confirmed") return `<span class="tag ok">Confirmado</span>`;
       if(status==="cancelled") return `<span class="tag bad">Cancelado</span>`;
       if(status==="done") return `<span class="tag done">Concluído</span>`;
-      return `<span class="tag">${status}</span>`;
+      if(status==="pending" || status==="awaiting") return `<span class="tag warn">Aguardando</span>`;
+      return `<span class="tag">${status || "—"}</span>`;
     }
 
     function openModal(title, bodyHTML, footerHTML){
@@ -1227,24 +1466,43 @@ tbody tr:hover td{
 
       const { data, error } = await q;
 
+      // filtro local (rápido) para busca na tela sem complicar o SQL
+      const aTerm = (agendaSearch?.value || "").trim().toLowerCase();
+      let list = data || [];
+      if(aTerm){
+        list = list.filter(x =>
+          (x.customer_name||"").toLowerCase().includes(aTerm) ||
+          (x.customer_phone||"").toLowerCase().includes(aTerm)
+        );
+      }
+
       tbodyAgenda.innerHTML = "";
       if(error){
         tbodyAgenda.innerHTML = `<tr><td colspan="7">Erro ao carregar agenda.</td></tr>`;
         return;
       }
-      if(!data?.length){
+      if(!list?.length){
         tbodyAgenda.innerHTML = `<tr><td colspan="7">Nenhum agendamento para este filtro.</td></tr>`;
         return;
       }
 
-      data.forEach(a=>{
+      list.forEach(a=>{
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${fmtTime(a.starts_at)}</td>
           <td>${state.prosMap[a.professional_id] || "—"}</td>
           <td>${state.servMap[a.service_id] || "—"}</td>
-          <td>${a.customer_name || "—"}</td>
-          <td>${a.customer_phone || "—"}</td>
+          <td>
+            <button class="linkBtn" onclick="openCustomerHistoryFromAgenda('${a.customer_name||""}','${a.customer_phone||""}')">
+              ${a.customer_name || "—"}
+            </button>
+          </td>
+          <td>
+            <div class="phoneCell">
+              <span>${a.customer_phone || "—"}</span>
+              ${renderWhatsAppBtn(a.customer_phone, a.customer_name)}
+            </div>
+          </td>
           <td>${tagStatus(a.status)}</td>
           <td>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -1317,12 +1575,18 @@ tbody tr:hover td{
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${c.full_name || "—"}</td>
-          <td>${c.phone || "—"}</td>
+          <td>
+            <div class="phoneCell">
+              <span>${c.phone || "—"}</span>
+              ${renderWhatsAppBtn(c.phone, c.full_name, true)}
+            </div>
+          </td>
           <td>${c.email || "—"}</td>
           <td>${c.document || "—"}</td>
           <td>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn2" onclick="openCustomerModal(${encodeURIComponent(JSON.stringify(c))})">Editar</button>
+              <button class="btn2" onclick="openCustomerHistory(${encodeURIComponent(JSON.stringify(c))})">Histórico</button>
               ${state.isAdmin ? `<button class="btn2 btnDanger" onclick="deleteCustomer('${c.id}')">Excluir</button>` : ""}
             </div>
           </td>
