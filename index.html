@@ -623,6 +623,30 @@ tbody tr:hover td{
             <div class="card kpi"><h3>Concluídos</h3><p class="big" id="kpiDone">—</p></div>
           </div>
 
+
+          <div class="grid" style="margin-top:14px">
+            <div class="card kpi"><h3>Atendimentos hoje</h3><p class="big" id="kpiApptToday">—</p></div>
+            <div class="card kpi"><h3>Faturamento estimado hoje</h3><p class="big" id="kpiRevenueToday">—</p></div>
+            <div class="card kpi"><h3>Profissional mais ocupado (semana)</h3><p class="big" id="kpiBusiestPro">—</p></div>
+            <div class="card kpi"><h3>Horário mais usado (semana)</h3><p class="big" id="kpiBusiestHour">—</p></div>
+          </div>
+
+          <div style="margin-top:14px" class="card section">
+            <div class="toolbar">
+              <div class="left">
+                <div style="font-weight:1000">Alertas</div>
+                <span class="muted" style="font-size:13px">detecção automática</span>
+              </div>
+              <div class="right">
+                <span class="tag" id="alertBadge">—</span>
+              </div>
+            </div>
+
+            <div id="alertsBox" class="muted" style="font-size:14px;line-height:1.6">
+              <div>—</div>
+            </div>
+          </div>
+
           <div style="margin-top:14px" class="card section">
             <div class="toolbar">
               <div class="left">
@@ -820,6 +844,15 @@ tbody tr:hover td{
     const kpiConf  = document.getElementById("kpiConf");
     const kpiCanc  = document.getElementById("kpiCanc");
     const kpiDone  = document.getElementById("kpiDone");
+
+    const kpiApptToday = document.getElementById("kpiApptToday");
+    const kpiRevenueToday = document.getElementById("kpiRevenueToday");
+    const kpiBusiestPro = document.getElementById("kpiBusiestPro");
+    const kpiBusiestHour = document.getElementById("kpiBusiestHour");
+
+    const alertsBox = document.getElementById("alertsBox");
+    const alertBadge = document.getElementById("alertBadge");
+
 
     const badgeToday = document.getElementById("badgeToday");
     const badgeAgenda = document.getElementById("badgeAgenda");
@@ -1086,6 +1119,8 @@ tbody tr:hover td{
       companyPill.textContent = "Empresa: —";
       roleBox.textContent = "—";
       kpiToday.textContent="—"; kpiConf.textContent="—"; kpiCanc.textContent="—"; kpiDone.textContent="—";
+      kpiApptToday.textContent="—"; kpiRevenueToday.textContent="—"; kpiBusiestPro.textContent="—"; kpiBusiestHour.textContent="—";
+      alertBadge.textContent="—"; alertsBox.innerHTML = "<div>—</div>";
       badgeToday.textContent="—"; badgeAgenda.textContent="—"; badgeClientes.textContent="—"; badgePros.textContent="—"; badgeServ.textContent="—"; badgeHours.textContent="—";
       tbodyNext.innerHTML=""; tbodyAgenda.innerHTML=""; tbodyCustomers.innerHTML=""; tbodyPros.innerHTML=""; tbodyServ.innerHTML=""; tbodyHours.innerHTML="";
       agendaPro.innerHTML=""; whPro.innerHTML="";
@@ -1320,6 +1355,7 @@ tbody tr:hover td{
       await loadMaps();
       await loadCounts();
       await loadDashboard();
+      await loadDashboardOverview();
       await fillWorkingHoursPros();
     }
 
@@ -1389,6 +1425,8 @@ tbody tr:hover td{
       const companyId = state?.profile?.company_id;
       if(!companyId){
         kpiToday.textContent="—"; kpiConf.textContent="—"; kpiCanc.textContent="—"; kpiDone.textContent="—";
+      kpiApptToday.textContent="—"; kpiRevenueToday.textContent="—"; kpiBusiestPro.textContent="—"; kpiBusiestHour.textContent="—";
+      alertBadge.textContent="—"; alertsBox.innerHTML = "<div>—</div>";
         tbodyNext.innerHTML = `<tr><td colspan="5">Sessão inválida (sem company_id).</td></tr>`;
         return;
       }
@@ -1405,6 +1443,8 @@ tbody tr:hover td{
 
       if(error){
         kpiToday.textContent="—"; kpiConf.textContent="—"; kpiCanc.textContent="—"; kpiDone.textContent="—";
+      kpiApptToday.textContent="—"; kpiRevenueToday.textContent="—"; kpiBusiestPro.textContent="—"; kpiBusiestHour.textContent="—";
+      alertBadge.textContent="—"; alertsBox.innerHTML = "<div>—</div>";
       } else {
         const total = (data||[]).length;
         const conf = (data||[]).filter(x=>x.status==="confirmed").length;
@@ -1442,6 +1482,74 @@ tbody tr:hover td{
         });
       }
     }
+
+    
+    async function loadDashboardOverview(){
+      const companyId = state?.profile?.company_id;
+      if(!companyId){
+        kpiApptToday.textContent="—";
+        kpiRevenueToday.textContent="—";
+        kpiBusiestPro.textContent="—";
+        kpiBusiestHour.textContent="—";
+        alertBadge.textContent="—";
+        alertsBox.innerHTML = "<div>Sessão inválida (sem company_id).</div>";
+        return;
+      }
+
+      const { data, error } = await sb.rpc("dashboard_overview");
+      if(error || !data){
+        // Fallback silencioso (mantém painel funcionando mesmo sem as functions)
+        kpiApptToday.textContent="—";
+        kpiRevenueToday.textContent="—";
+        kpiBusiestPro.textContent="—";
+        kpiBusiestHour.textContent="—";
+        alertBadge.textContent="—";
+        alertsBox.innerHTML = `<div>Não foi possível carregar as métricas avançadas.</div>`;
+        return;
+      }
+
+      // TODAY
+      const today = data.today || {};
+      kpiApptToday.textContent = Number(today.appointments_today || 0);
+      kpiRevenueToday.textContent = money(Number(today.revenue_today_cents || 0));
+
+      // WEEK
+      const week = data.week || {};
+      const bProName = week.busiest_professional_name;
+      const bProCount = Number(week.busiest_professional_count || 0);
+      kpiBusiestPro.textContent = (bProName ? `${bProName} (${bProCount})` : "—");
+
+      const bHour = week.busiest_hour;
+      const bHourCount = Number(week.busiest_hour_count || 0);
+      kpiBusiestHour.textContent = (bHour ? `${String(bHour).padStart(2,"0")}:00 (${bHourCount})` : "—");
+
+      // ALERTS
+      const alerts = data.alerts || {};
+      const agendaEmptyTomorrow = !!alerts.agenda_empty_tomorrow;
+      const prosWithoutHours = Array.isArray(alerts.professionals_without_hours) ? alerts.professionals_without_hours : [];
+
+      const items = [];
+      if(agendaEmptyTomorrow){
+        items.push(`<div><span class="tag bad">Atenção</span> Agenda vazia amanhã.</div>`);
+      } else {
+        items.push(`<div><span class="tag ok">OK</span> Há agendamentos para amanhã.</div>`);
+      }
+
+      if(prosWithoutHours.length){
+        const names = prosWithoutHours
+          .map(x => x?.professional_name || x?.name || x?.professional || "Profissional")
+          .slice(0, 8)
+          .join(", ");
+        items.push(`<div><span class="tag warn">Aviso</span> Profissionais sem horário cadastrado: <b>${esc(names)}</b>${prosWithoutHours.length>8 ? "…" : ""}</div>`);
+      } else {
+        items.push(`<div><span class="tag ok">OK</span> Todos os profissionais ativos possuem horário cadastrado.</div>`);
+      }
+
+      alertsBox.innerHTML = items.join("");
+      const totalAlerts = (agendaEmptyTomorrow ? 1 : 0) + (prosWithoutHours.length ? 1 : 0);
+      alertBadge.textContent = totalAlerts ? String(totalAlerts) : "0";
+    }
+
 
     async function loadAgenda(){
       const companyId = state?.profile?.company_id;
@@ -1531,7 +1639,8 @@ tbody tr:hover td{
         const { error } = await sb.from("appointments").delete().eq("id", id).eq("company_id", state.profile.company_id);
         if(error) return toastMsg("err","Erro ao excluir.");
         toastMsg("ok","Agendamento excluído.");
-        await loadAgenda(); await loadDashboard();
+        await loadAgenda(); await loadDashboard(); await loadDashboardOverview();
+      await loadDashboardOverview();
         return;
       }
       let status = "confirmed";
@@ -1542,7 +1651,8 @@ tbody tr:hover td{
       const { error } = await sb.from("appointments").update({ status }).eq("id", id).eq("company_id", state.profile.company_id);
       if(error) return toastMsg("err","Erro ao atualizar status.");
       toastMsg("ok","Status atualizado.");
-      await loadAgenda(); await loadDashboard();
+      await loadAgenda(); await loadDashboard(); await loadDashboardOverview();
+      await loadDashboardOverview();
     }
 
     async function loadCustomers(){
