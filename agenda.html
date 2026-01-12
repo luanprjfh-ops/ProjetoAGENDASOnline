@@ -40,7 +40,7 @@
       background:var(--card);
       border:1px solid var(--stroke);
       border-radius:var(--radius);
-      box-shadow:var(--shadow);
+      box-shadow:var(--msgShadow, var(--shadow));
       overflow:hidden;
     }
     .head{
@@ -247,13 +247,14 @@
   // =========================
   // CONFIGURAÇÃO SUPABASE
   // =========================
-  // MESMO PROJETO do Painel (URL e ANON KEY)
   const SUPABASE_URL = "https://nsmvnfhdohpvmtoimsub.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_tn76OaKxjctgngA6jj9NSw_KXfWqt-f";
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
 
   // =========================
-  // HELPERS UI
+  // ELEMENTOS
   // =========================
   const serviceSel = document.getElementById("service");
   const profSel = document.getElementById("professional");
@@ -301,6 +302,10 @@
     const s = (url.searchParams.get("empresa") || "").trim();
     return s || null;
   }
+  function errDetail(e){
+    if(!e) return "";
+    return [e.message, e.details, e.hint].filter(Boolean).join(" | ");
+  }
 
   // =========================
   // ESTADO
@@ -310,32 +315,54 @@
   let selectedSlot = null;
 
   // =========================
-  // DATA ACCESS (PUBLICO)
+  // RPC HELPERS (preferidos)
+  // =========================
+  async function rpcMaybe(name, args){
+    // Retorna {ok:true,data} ou {ok:false,error}
+    const { data, error } = await sb.rpc(name, args);
+    if(error) return { ok:false, error };
+    return { ok:true, data };
+  }
+
+  // =========================
+  // LOAD COMPANY
   // =========================
   async function loadCompanyBySlug(slug){
-    // O site público (anon) NÃO deve consultar a tabela `companies` diretamente, pois RLS costuma bloquear.
-    // Buscamos a empresa via RPC `get_company_public`, que devolve {company_id, company_name, company_slug}.
-    const { data, error } = await sb.rpc("get_company_public", { p_slug: slug });
-
-    if(error){
-      // Mostra erro real (muito importante para depurar RLS/RPC)
-      const detail = [error.message, error.details, error.hint].filter(Boolean).join(" | ");
-      throw new Error(`Falha ao buscar empresa (RPC get_company_public): ${detail || "erro desconhecido"}`);
+    const res = await rpcMaybe("get_company_public", { p_slug: slug });
+    if(!res.ok){
+      throw new Error(`Falha ao buscar empresa (RPC get_company_public): ${errDetail(res.error) || "erro desconhecido"}`);
     }
-
-    const row = Array.isArray(data) ? (data[0] || null) : data;
+    const row = Array.isArray(res.data) ? (res.data[0] || null) : res.data;
     if(!row || !row.company_id){
       throw new Error("Empresa inválida (slug não encontrado ou empresa inativa).");
     }
-
     COMPANY_ID = row.company_id;
     COMPANY_NAME = row.company_name || "Empresa";
     companyPill.textContent = COMPANY_NAME;
     subtitle.textContent = `Agende na empresa: ${COMPANY_NAME}`;
   }
 
+  // =========================
+  // SERVICES / PROFESSIONALS / WORKING HOURS
+  // =========================
   async function loadServices(){
     serviceSel.innerHTML = `<option value="">Selecione</option>`;
+
+    // 1) Preferir RPC segura (anon)
+    const r = await rpcMaybe("get_services_public", { p_company_id: COMPANY_ID });
+    if(r.ok){
+      const rows = Array.isArray(r.data) ? r.data : (r.data ? [r.data] : []);
+      for(const s of rows){
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        opt.textContent = `${s.name} • ${s.duration_minutes} min`;
+        opt.dataset.duration = s.duration_minutes;
+        serviceSel.appendChild(opt);
+      }
+      return;
+    }
+
+    // 2) Fallback (se você ainda não criou a RPC) — pode falhar no mobile por RLS anon
     const { data, error } = await sb
       .from("services")
       .select("id,name,duration_minutes,active,company_id")
@@ -343,7 +370,14 @@
       .eq("active", true)
       .order("name",{ascending:true});
 
-    if(error) throw error;
+    if(error){
+      throw new Error(
+        "Falha ao carregar serviços.\n" +
+        "Dica: crie a RPC get_services_public para o modo público.\n" +
+        `Detalhes: ${errDetail(error)}`
+      );
+    }
+
     for(const s of (data||[])){
       const opt = document.createElement("option");
       opt.value = s.id;
@@ -355,6 +389,21 @@
 
   async function loadProfessionals(){
     profSel.innerHTML = `<option value="">Selecione</option>`;
+
+    // 1) Preferir RPC segura (anon)
+    const r = await rpcMaybe("get_professionals_public", { p_company_id: COMPANY_ID });
+    if(r.ok){
+      const rows = Array.isArray(r.data) ? r.data : (r.data ? [r.data] : []);
+      for(const p of rows){
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.name;
+        profSel.appendChild(opt);
+      }
+      return;
+    }
+
+    // 2) Fallback (pode falhar no mobile por RLS anon)
     const { data, error } = await sb
       .from("professionals")
       .select("id,name,active,company_id")
@@ -362,7 +411,15 @@
       .eq("active", true)
       .order("name",{ascending:true});
 
-    if(error) throw error;
+    if(error){
+      throw new Error(
+        "Falha ao carregar profissionais.\n" +
+        "Isso normalmente acontece no celular porque o usuário é ANON e a RLS bloqueia.\n" +
+        "Crie a RPC get_professionals_public.\n" +
+        `Detalhes: ${errDetail(error)}`
+      );
+    }
+
     for(const p of (data||[])){
       const opt = document.createElement("option");
       opt.value = p.id;
@@ -372,13 +429,24 @@
   }
 
   async function loadWorkingHours(profId){
+    // 1) RPC segura
+    const r = await rpcMaybe("get_working_hours_public", { p_company_id: COMPANY_ID, p_professional_id: profId });
+    if(r.ok) return Array.isArray(r.data) ? r.data : (r.data ? [r.data] : []);
+
+    // 2) Fallback
     const { data, error } = await sb
       .from("working_hours")
       .select("weekday,start_time,end_time,slot_minutes,professional_id,company_id")
       .eq("company_id", COMPANY_ID)
       .eq("professional_id", profId);
 
-    if(error) throw error;
+    if(error){
+      throw new Error(
+        "Falha ao carregar horários do profissional.\n" +
+        "Crie a RPC get_working_hours_public.\n" +
+        `Detalhes: ${errDetail(error)}`
+      );
+    }
     return data || [];
   }
 
@@ -388,12 +456,12 @@
       p_professional_id: profId,
       p_day: isoDate
     });
-    if(error) throw error;
+    if(error) throw new Error(`Falha ao buscar indisponibilidades: ${errDetail(error)}`);
     return data || [];
   }
 
   // =========================
-  // CALCULO DE SLOTS
+  // SLOTS
   // =========================
   function overlaps(aStart, aEnd, bStart, bEnd){
     return aStart < bEnd && bStart < aEnd;
@@ -545,7 +613,7 @@
         p_customer_email: email || null,
         p_notes: notes || null
       });
-      if(error) throw error;
+      if(error) throw new Error(errDetail(error) || "Falha ao confirmar.");
 
       showOk("Agendamento confirmado com sucesso.");
       await renderSlotsForDate(isoDate);
