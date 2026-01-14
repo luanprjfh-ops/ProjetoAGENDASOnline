@@ -589,6 +589,7 @@ tbody tr:hover td{
         <div class="menu">
           <button class="active" data-tab="dash"><span>Dashboard</span><span class="tag" id="badgeToday">—</span></button>
           <button data-tab="agenda"><span>Agenda</span><span class="tag" id="badgeAgenda">—</span></button>
+          <button data-tab="historico"><span>Histórico</span><span class="tag" id="badgeHistorico">—</span></button>
           <button data-tab="clientes"><span>Clientes</span><span class="tag" id="badgeClientes">—</span></button>
           <button data-tab="profissionais"><span>Profissionais</span><span class="tag" id="badgePros">—</span></button>
           <button data-tab="servicos"><span>Serviços</span><span class="tag" id="badgeServ">—</span></button>
@@ -681,6 +682,7 @@ tbody tr:hover td{
               <input class="miniInput" id="agendaSearch" placeholder="Buscar cliente/telefone..." />
             </div>
             <div class="right">
+              <button class="btn2" id="btnNewAppointment">+ Novo Agendamento</button>
               <button class="btn2" id="btnAgendaReload">Recarregar</button>
             </div>
           </div>
@@ -691,6 +693,37 @@ tbody tr:hover td{
                 <tr><th>Hora</th><th>Profissional</th><th>Serviço</th><th>Cliente</th><th>Telefone</th><th>Status</th><th>Ações</th></tr>
               </thead>
               <tbody id="tbodyAgenda"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- HISTÓRICO -->
+        <section id="tab-historico" class="card section hidden">
+          <h2>Histórico</h2>
+          <p>Atendimentos finalizados (status: <strong>done</strong>). Filtre por datas e profissional. Você pode excluir por período para manter leve.</p>
+
+          <div class="toolbar">
+            <div class="left">
+              <input class="miniInput" id="histStart" type="date" />
+              <input class="miniInput" id="histEnd" type="date" />
+              <select class="miniInput" id="histPro"></select>
+              <input class="miniInput" id="histSearch" placeholder="Buscar cliente/telefone..." />
+            </div>
+            <div class="right">
+              <button class="btn2" id="btnHistToday">Hoje</button>
+              <button class="btn2" id="btnHist7">7 dias</button>
+              <button class="btn2" id="btnHist30">30 dias</button>
+              <button class="btn2" id="btnHistReload">Recarregar</button>
+              <button class="btn2 btnDanger" id="btnHistClear">Excluir por data</button>
+            </div>
+          </div>
+
+          <div style="overflow:auto">
+            <table>
+              <thead>
+                <tr><th>Data</th><th>Hora</th><th>Profissional</th><th>Serviço</th><th>Cliente</th><th>Telefone</th><th>Status</th></tr>
+              </thead>
+              <tbody id="tbodyHistorico"></tbody>
             </table>
           </div>
         </section>
@@ -856,13 +889,26 @@ tbody tr:hover td{
 
     const badgeToday = document.getElementById("badgeToday");
     const badgeAgenda = document.getElementById("badgeAgenda");
-    const badgeClientes = document.getElementById("badgeClientes");
+    const badgeHistorico = document.getElementById("badgeHistorico");
+const badgeClientes = document.getElementById("badgeClientes");
     const badgePros = document.getElementById("badgePros");
     const badgeServ = document.getElementById("badgeServ");
     const badgeHours = document.getElementById("badgeHours");
 
     const tbodyNext = document.getElementById("tbodyNext");
     const tbodyAgenda = document.getElementById("tbodyAgenda");
+    // HISTÓRICO
+    const histStart = document.getElementById("histStart");
+    const histEnd = document.getElementById("histEnd");
+    const histPro = document.getElementById("histPro");
+    const histSearch = document.getElementById("histSearch");
+    const btnHistToday = document.getElementById("btnHistToday");
+    const btnHist7 = document.getElementById("btnHist7");
+    const btnHist30 = document.getElementById("btnHist30");
+    const btnHistReload = document.getElementById("btnHistReload");
+    const btnHistClear = document.getElementById("btnHistClear");
+    const tbodyHistorico = document.getElementById("tbodyHistorico");
+
     const agendaDate = document.getElementById("agendaDate");
     const agendaPro = document.getElementById("agendaPro");
 
@@ -874,6 +920,7 @@ tbody tr:hover td{
 
     const btnGoAgenda = document.getElementById("btnGoAgenda");
     const btnAgendaReload = document.getElementById("btnAgendaReload");
+    const btnNewAppointment = document.getElementById("btnNewAppointment");
 
     const btnNewCustomer = document.getElementById("btnNewCustomer");
     const btnCustomersReload = document.getElementById("btnCustomersReload");
@@ -978,6 +1025,7 @@ tbody tr:hover td{
       if(sec) sec.classList.remove("hidden");
 
       if(tab==="agenda") loadAgenda();
+      if(tab==="historico") loadHistory();
       if(tab==="clientes") loadCustomers();
       if(tab==="profissionais") loadProfessionals();
       if(tab==="servicos") loadServices();
@@ -1220,6 +1268,7 @@ tbody tr:hover td{
     quickNewService.onclick = ()=> openServiceModal();
 
     btnAgendaReload.onclick = loadAgenda;
+    btnNewAppointment && (btnNewAppointment.onclick = ()=> openNewAppointmentModal());
     btnCustomersReload.onclick = loadCustomers;
     btnProsReload.onclick = loadProfessionals;
     btnServReload.onclick = loadServices;
@@ -1568,6 +1617,7 @@ tbody tr:hover td{
         .eq("company_id", companyId)
         .gte("starts_at", start)
         .lt("starts_at", end)
+        .neq("status", "done")
         .order("starts_at",{ascending:true});
 
       if(proId) q = q.eq("professional_id", proId);
@@ -1631,6 +1681,160 @@ tbody tr:hover td{
       await loadCounts();
     }
 
+    async function loadHistory(){
+      const companyId = state?.profile?.company_id;
+      if(!companyId){
+        tbodyHistorico.innerHTML = `<tr><td colspan="7">Sessão inválida (sem company_id).</td></tr>`;
+        return;
+      }
+
+      // Defaults: últimos 7 dias
+      if(!histStart.value || !histEnd.value){
+        const today = new Date();
+        const end = today.toISOString().slice(0,10);
+        const startDate = new Date(today);
+        startDate.setDate(startDate.getDate() - 7);
+        const start = startDate.toISOString().slice(0,10);
+        histStart.value = start;
+        histEnd.value = end;
+      }
+
+      const startDay = histStart.value;
+      const endDay = histEnd.value;
+      const proId = histPro.value;
+      const term = (histSearch.value || "").trim().toLowerCase();
+
+      const { start: startTs } = dayRangeUTC(startDay);
+      // endDay inclusive -> range até o final do dia
+      const { end: endTs } = dayRangeUTC(endDay);
+
+      let q = sb
+        .from("appointments")
+        .select("id, starts_at, ends_at, status, customer_name, customer_phone, professional_id, service_id")
+        .eq("company_id", companyId)
+        .eq("status", "done")
+        .gte("starts_at", startTs)
+        .lt("starts_at", endTs)
+        .order("starts_at", { ascending: false });
+
+      if(proId) q = q.eq("professional_id", proId);
+
+      const { data, error } = await q;
+
+      tbodyHistorico.innerHTML = "";
+      if(error){
+        tbodyHistorico.innerHTML = `<tr><td colspan="7">Erro ao carregar histórico.</td></tr>`;
+        return;
+      }
+
+      let list = data || [];
+      if(term){
+        list = list.filter(x =>
+          (x.customer_name||"").toLowerCase().includes(term) ||
+          (x.customer_phone||"").toLowerCase().includes(term)
+        );
+      }
+
+      if(!list.length){
+        tbodyHistorico.innerHTML = `<tr><td colspan="7">Nenhum registro no período.</td></tr>`;
+        badgeHistorico.textContent = "0";
+        return;
+      }
+
+      badgeHistorico.textContent = String(list.length);
+
+      list.forEach(a=>{
+        const d = fmtDate(a.starts_at);
+        const t = fmtTime(a.starts_at);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${d}</td>
+          <td>${t}</td>
+          <td>${state.prosMap[a.professional_id] || "—"}</td>
+          <td>${state.servMap[a.service_id] || "—"}</td>
+          <td>${a.customer_name || "—"}</td>
+          <td>
+            <div class="phoneCell">
+              <span>${a.customer_phone || "—"}</span>
+              ${renderWhatsAppBtn(a.customer_phone, a.customer_name)}
+            </div>
+          </td>
+          <td>${tagStatus(a.status)}</td>
+        `;
+        tbodyHistorico.appendChild(tr);
+      });
+    }
+
+    // Botões rápidos do Histórico
+    if(btnHistToday){
+      btnHistToday.onclick = async ()=>{
+        const d = todayISO();
+        histStart.value = d; histEnd.value = d;
+        await loadHistory();
+      };
+    }
+    if(btnHist7){
+      btnHist7.onclick = async ()=>{
+        const today = new Date();
+        const end = today.toISOString().slice(0,10);
+        const startDate = new Date(today); startDate.setDate(startDate.getDate()-7);
+        histStart.value = startDate.toISOString().slice(0,10);
+        histEnd.value = end;
+        await loadHistory();
+      };
+    }
+    if(btnHist30){
+      btnHist30.onclick = async ()=>{
+        const today = new Date();
+        const end = today.toISOString().slice(0,10);
+        const startDate = new Date(today); startDate.setDate(startDate.getDate()-30);
+        histStart.value = startDate.toISOString().slice(0,10);
+        histEnd.value = end;
+        await loadHistory();
+      };
+    }
+    if(btnHistReload){
+      btnHistReload.onclick = loadHistory;
+    }
+    if(histSearch){
+      histSearch.addEventListener("input", debounce(loadHistory, 250));
+    }
+    if(histPro){
+      histPro.onchange = loadHistory;
+    }
+    if(histStart) histStart.onchange = loadHistory;
+    if(histEnd) histEnd.onchange = loadHistory;
+
+    // Excluir histórico por data (somente ADMIN)
+    if(btnHistClear){
+      btnHistClear.onclick = async ()=>{
+        if(!state.isAdmin) return toastMsg("err","Apenas ADMIN pode excluir histórico.");
+        const startDay = histStart.value;
+        const endDay = histEnd.value;
+        if(!startDay || !endDay) return toastMsg("err","Informe data inicial e final.");
+        const ok = confirm(`Excluir histórico (DONE) de ${startDay} até ${endDay}?`);
+        if(!ok) return;
+
+        const { start: startTs } = dayRangeUTC(startDay);
+        const { end: endTs } = dayRangeUTC(endDay);
+
+        const { error } = await sb
+          .from("appointments")
+          .delete()
+          .eq("company_id", state.profile.company_id)
+          .eq("status", "done")
+          .gte("starts_at", startTs)
+          .lt("starts_at", endTs);
+
+        if(error) return toastMsg("err","Erro ao excluir histórico (verifique policy/admin).");
+        toastMsg("ok","Histórico excluído.");
+        await loadHistory();
+        await loadDashboard();
+        await loadDashboardOverview();
+      };
+    }
+
+
     async function onAgendaAction(act, id){
       if(act==="del" && !state.isAdmin) return toastMsg("err","Apenas ADMIN pode excluir.");
       if(act==="del"){
@@ -1651,7 +1855,12 @@ tbody tr:hover td{
       const { error } = await sb.from("appointments").update({ status }).eq("id", id).eq("company_id", state.profile.company_id);
       if(error) return toastMsg("err","Erro ao atualizar status.");
       toastMsg("ok","Status atualizado.");
-      await loadAgenda(); await loadDashboard(); await loadDashboardOverview();
+      await loadAgenda();
+      // Se foi finalizado, atualiza também o Histórico para aparecer imediatamente.
+      if(status === "done"){
+        try { await loadHistory(); } catch(e) {}
+      }
+      await loadDashboard();
       await loadDashboardOverview();
     }
 
@@ -1695,8 +1904,8 @@ tbody tr:hover td{
           <td>${c.document || "—"}</td>
           <td>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn2" onclick="openCustomerModal(${encodeURIComponent(JSON.stringify(c))})">Editar</button>
-              <button class="btn2" onclick="openCustomerHistory(${encodeURIComponent(JSON.stringify(c))})">Histórico</button>
+              <button class="btn2" onclick="openCustomerModal(\'${encodeURIComponent(JSON.stringify(c))}\')">Editar</button>
+              <button class="btn2" onclick="openCustomerHistory(\'${encodeURIComponent(JSON.stringify(c))}\')">Histórico</button>
               ${state.isAdmin ? `<button class="btn2 btnDanger" onclick="deleteCustomer('${c.id}')">Excluir</button>` : ""}
             </div>
           </td>
@@ -1725,7 +1934,7 @@ tbody tr:hover td{
           <td>${p.active ? `<span class="tag ok">Ativo</span>` : `<span class="tag bad">Inativo</span>`}</td>
           <td>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn2" onclick="openProModal(${encodeURIComponent(JSON.stringify(p))})">Editar</button>
+              <button class="btn2" onclick="openProModal(\'${encodeURIComponent(JSON.stringify(p))}\')">Editar</button>
               <button class="btn2" onclick="togglePro('${p.id}', ${p.active})">${p.active ? "Inativar" : "Ativar"}</button>
               ${state.isAdmin ? `<button class="btn2 btnDanger" onclick="deletePro('${p.id}')">Excluir</button>` : ""}
             </div>
@@ -1760,7 +1969,7 @@ tbody tr:hover td{
           <td>${s.active ? `<span class="tag ok">Ativo</span>` : `<span class="tag bad">Inativo</span>`}</td>
           <td>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn2" onclick="openServiceModal(${encodeURIComponent(JSON.stringify(s))})">Editar</button>
+              <button class="btn2" onclick="openServiceModal(\'${encodeURIComponent(JSON.stringify(s))}\')">Editar</button>
               <button class="btn2" onclick="toggleService('${s.id}', ${s.active})">${s.active ? "Inativar" : "Ativar"}</button>
               ${state.isAdmin ? `<button class="btn2 btnDanger" onclick="deleteService('${s.id}')">Excluir</button>` : ""}
             </div>
@@ -2102,6 +2311,193 @@ tbody tr:hover td{
       await loadWorkingHours();
     };
 
+
+    // ----- NOVO AGENDAMENTO (com horários disponíveis por profissional) -----
+    function buildOptions(list, valueKey, labelKey, onlyActive=true){
+      return (list||[])
+        .filter(x => !onlyActive || x.active)
+        .map(x => `<option value="${x[valueKey]}">${esc(x[labelKey])}</option>`)
+        .join("");
+    }
+
+    // Extrai o campo de data/hora retornado pelo RPC (compatível com variações de nome)
+    function pickSlotStart(row){
+      if(!row) return null;
+      return row.slot_start || row.starts_at || row.start || row.slot || row.datetime || row.time || null;
+    }
+
+    async function openNewAppointmentModal(){
+      if(!state?.profile?.company_id) return toastMsg("err","Sessão inválida (sem company_id).");
+      if(!(state.pros||[]).length || !(state.serv||[]).length){
+        await loadMaps();
+      }
+
+      const defaultDate = agendaDate.value || todayISO();
+
+      const body = `
+        <div class="row2">
+          <div>
+            <label>Profissional</label>
+            <select id="na_pro">
+              <option value="">Selecione</option>
+              ${buildOptions(state.pros, "id", "name", true)}
+            </select>
+          </div>
+          <div>
+            <label>Serviço</label>
+            <select id="na_serv">
+              <option value="">Selecione</option>
+              ${buildOptions(state.serv, "id", "name", true)}
+            </select>
+          </div>
+        </div>
+
+        <div class="row2" style="margin-top:8px">
+          <div>
+            <label>Data</label>
+            <input id="na_date" type="date" value="${defaultDate}" />
+          </div>
+          <div>
+            <label>Telefone do cliente</label>
+            <input id="na_phone" placeholder="DDD + número" />
+          </div>
+        </div>
+
+        <div style="margin-top:8px">
+          <label>Nome do cliente</label>
+          <input id="na_name" placeholder="Nome completo" />
+        </div>
+
+        <div class="toolbar" style="margin-top:12px">
+          <div class="left" style="gap:10px">
+            <div style="font-weight:1000">Horários disponíveis</div>
+            <span class="muted" style="font-size:13px">selecionar um horário cria o agendamento</span>
+          </div>
+          <div class="right">
+            <button class="btn2" id="na_reload_slots">Carregar horários</button>
+          </div>
+        </div>
+
+        <div id="na_slots" style="display:flex;flex-wrap:wrap;gap:10px;padding:10px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background: rgba(255,255,255,.03);min-height:64px"></div>
+        <div id="na_msg" class="muted" style="margin-top:10px;font-size:13px"></div>
+      `;
+
+      const footer = `
+        <button class="btn2" onclick="window.__closeModal()">Fechar</button>
+      `;
+
+      openModal("Novo Agendamento", body, footer);
+
+      // Wire events after render
+      const elPro = document.getElementById("na_pro");
+      const elServ = document.getElementById("na_serv");
+      const elDate = document.getElementById("na_date");
+      const elName = document.getElementById("na_name");
+      const elPhone = document.getElementById("na_phone");
+      const elSlots = document.getElementById("na_slots");
+      const elMsg = document.getElementById("na_msg");
+      const elReload = document.getElementById("na_reload_slots");
+
+      const setMsg = (t)=>{ if(elMsg) elMsg.textContent = t || ""; };
+
+      async function loadSlots(){
+        setMsg("");
+        elSlots.innerHTML = "";
+
+        const p_professional_id = elPro.value;
+        const p_service_id = elServ.value;
+        const p_date = elDate.value;
+
+        if(!p_professional_id || !p_service_id || !p_date){
+          setMsg("Selecione profissional, serviço e data para listar horários.");
+          return;
+        }
+
+        // RPC: get_available_slots(p_professional_id, p_service_id, p_date)
+        const { data, error } = await sb.rpc("get_available_slots", {
+          p_professional_id,
+          p_service_id,
+          p_date
+        });
+
+        if(error){
+          console.error(error);
+          setMsg("Erro ao buscar horários disponíveis. Verifique se a RPC get_available_slots existe e está liberada no RLS.");
+          return;
+        }
+
+        const slots = (data||[])
+          .map(pickSlotStart)
+          .filter(Boolean);
+
+        if(!slots.length){
+          setMsg("Nenhum horário disponível para este profissional nesta data.");
+          return;
+        }
+
+        // Render buttons
+        slots.forEach(iso=>{
+          const hhmm = fmtTime(iso);
+          const btn = document.createElement("button");
+          btn.className = "btn2";
+          btn.textContent = hhmm;
+          btn.style.minWidth = "90px";
+          btn.onclick = ()=> createAppointment(iso);
+          elSlots.appendChild(btn);
+        });
+
+        setMsg(`Total de horários livres: ${slots.length}`);
+      }
+
+      async function createAppointment(p_starts_at){
+        setMsg("");
+
+        const p_professional_id = elPro.value;
+        const p_service_id = elServ.value;
+        const p_customer_name = (elName.value||"").trim();
+        const p_customer_phone = (elPhone.value||"").trim();
+
+        if(!p_professional_id || !p_service_id) return setMsg("Selecione profissional e serviço.");
+        if(!p_customer_name || p_customer_name.length < 2) return setMsg("Informe o nome do cliente.");
+        // telefone pode ser vazio, mas é recomendado
+        // Desabilita botões para evitar clique duplo
+        [...elSlots.querySelectorAll("button")].forEach(b=>b.disabled = true);
+
+        const { data, error } = await sb.rpc("create_appointment", {
+          p_professional_id,
+          p_service_id,
+          p_customer_name,
+          p_customer_phone,
+          p_starts_at
+        });
+
+        if(error){
+          console.error(error);
+          // Caso clássico: unique violation / slot ocupado no exato momento
+          toastMsg("err","Não foi possível agendar: horário pode ter sido ocupado. Recarregue os horários.");
+          [...elSlots.querySelectorAll("button")].forEach(b=>b.disabled = false);
+          return;
+        }
+
+        toastMsg("ok","Agendamento criado com sucesso.");
+        // Atualiza agenda e KPIs
+        await loadAgenda();
+        await loadDashboard();
+        await loadDashboardOverview();
+        await loadCounts();
+
+        // Recarrega slots para "sumir" o horário recém-ocupado
+        await loadSlots();
+      }
+
+      elReload?.addEventListener("click", loadSlots);
+      elPro?.addEventListener("change", loadSlots);
+      elServ?.addEventListener("change", loadSlots);
+      elDate?.addEventListener("change", loadSlots);
+
+      // Carrega automaticamente se já houver dados preenchidos
+      await loadSlots();
+    }
     window.__closeModal = closeModal;
 
     // Auto start
