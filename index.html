@@ -542,278 +542,54 @@ tbody tr:hover td{
 .menuTile .d{font-size:12px;color:var(--muted)}
 
 
-/* =========================
-   PREMIUM LOGIN (Split)
-   - Inspired by modern SaaS layouts
-   - Does NOT change the internal app UI
-   ========================= */
-#loginView.loginShell{
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  padding: 24px;
-  background:
-    radial-gradient(1200px 700px at 18% 12%, rgba(168,85,247,.14), transparent 55%),
-    radial-gradient(1000px 720px at 86% 20%, rgba(192,132,252,.14), transparent 58%),
-    radial-gradient(1200px 740px at 40% 96%, rgba(255,79,216,.10), transparent 60%),
-    #07020b;
-  overflow: auto;
-}
-
-#loginView .loginGrid{
-  width: min(1180px, 100%);
-  min-height: 640px;
-  display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 22px;
-  align-items: stretch;
-}
-
-@media (max-width: 980px){
-  #loginView .loginGrid{ grid-template-columns: 1fr; min-height: auto; }
-  #loginView .loginHero{ display:none; }
-  #loginView.loginShell{ padding: 18px; }
-}
-
-#loginView .loginCardWrap{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-#loginView .loginCard{
-  width: min(460px, 100%);
-  padding: 28px 26px;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,.12);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
-    rgba(14, 8, 20, .72);
-  box-shadow: 0 26px 78px rgba(0,0,0,.55);
-  backdrop-filter: blur(14px);
-}
-
-#loginView .loginBrandRow{
-  display:flex;
-  gap:12px;
-  align-items:center;
-}
-
-#loginView .loginMark{
-  width:44px;
-  height:44px;
-  border-radius: 14px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight: 1000;
-  letter-spacing: .2px;
-  color:#0b0410;
-  background: linear-gradient(135deg, var(--accent2), var(--accent1));
-  box-shadow: 0 14px 30px rgba(168,85,247,.28);
-}
-
-#loginView .loginBrandName{
-  font-weight: 1000;
-  font-size: 18px;
-  letter-spacing: .3px;
-  color: var(--text);
-}
-#loginView .loginBrandName span{ color: var(--accent1); }
-
-#loginView .loginBrandTag{
-  margin-top:2px;
-  font-size: 12px;
-  color: var(--muted2);
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-
-#loginView .loginTitle{
-  margin: 18px 0 6px;
-  font-size: 22px;
-  letter-spacing: .2px;
-}
-#loginView .loginSub{
-  margin: 0 0 14px;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-#loginView .loginForm label{
-  font-size: 12px;
-  color: var(--muted);
-  display:block;
-  margin-top: 10px;
-}
-
-#loginView .loginForm input{
-  width:100%;
-  padding: 12px 14px;
-  min-height: 46px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.14);
-  outline: none;
-  margin-top: 6px;
-  font-size: 14px;
-  background: rgba(10,6,14,.68);
-  color: var(--text);
-}
-
-#loginView .passWrap{
-  position: relative;
-  margin-top: 6px;
-}
-#loginView .passWrap input{ margin-top: 0; padding-right: 48px; }
-
-#loginView .passToggle{
-  position:absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.05);
-  color: var(--text);
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  cursor: pointer;
-}
-#loginView .passToggle:hover{ background: rgba(255,255,255,.08); }
-
-#loginView .loginPrimary{
-  margin-top: 16px;
-  font-size: 15px;
-}
-
-#loginView .loginFoot{
-  margin-top: 18px;
-  font-size: 12px;
-  color: var(--muted2);
+/* PREMIUM LOGIN */
+.premium-login{
+  max-width:420px;
+  padding:34px 30px;
   text-align:center;
 }
-
-/* RIGHT HERO (visual only) */
-#loginView .loginHero{
-  position: relative;
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,.10);
-  background:
-    radial-gradient(900px 520px at 78% 10%, rgba(192,132,252,.10), transparent 55%),
-    radial-gradient(900px 620px at 22% 90%, rgba(168,85,247,.10), transparent 60%),
-    rgba(10,6,14,.35);
-  overflow: hidden;
-  box-shadow: 0 26px 78px rgba(0,0,0,.45);
-  backdrop-filter: blur(14px);
+.login-brand{
+  margin-bottom:26px;
 }
-
-#loginView .heroInner{
-  height: 100%;
-  padding: 34px 34px;
-  display:flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 18px;
+.login-brand h1{
+  margin:14px 0 4px;
+  font-size:30px;
+  font-weight:900;
+  letter-spacing:.5px;
 }
-
-#loginView .heroBadge{
-  display:inline-flex;
-  align-self:flex-start;
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.04);
-  color: var(--text);
-  font-weight: 900;
-  font-size: 12px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
+.login-brand h1 span{
+  color:var(--accent1);
 }
-
-#loginView .heroLogo{
-  display:flex;
-  align-items: center;
-  gap: 12px;
+.login-brand p{
+  font-size:14px;
+  color:var(--muted);
 }
-#loginView .heroIcon{
-  width: 54px;
-  height: 54px;
-  border-radius: 18px;
+.logo-circle{
+  width:68px;
+  height:68px;
+  border-radius:50%;
+  margin:0 auto;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-weight: 1000;
-  font-size: 22px;
+  font-weight:900;
+  font-size:22px;
+  background:linear-gradient(135deg,var(--accent2),var(--accent1));
   color:#0b0410;
-  background: linear-gradient(135deg, var(--accent2), var(--accent1));
-  box-shadow: 0 16px 34px rgba(168,85,247,.28);
+  box-shadow:0 0 30px rgba(168,85,247,.45);
 }
-#loginView .heroName{
-  font-weight: 1000;
-  font-size: 30px;
-  letter-spacing: .6px;
+.login-form{
+  text-align:left;
 }
-#loginView .heroName span{ color: var(--accent1); }
-#loginView .heroBy{
-  margin-top: 2px;
-  color: var(--muted);
-  font-size: 13px;
+.login-btn{
+  width:100%;
+  margin-top:16px;
+  font-size:15px;
 }
-
-#loginView .heroBig{
-  font-size: 32px;
-  line-height: 1.15;
-  font-weight: 900;
-  letter-spacing: .2px;
-  color: var(--text);
-  text-shadow: 0 12px 44px rgba(0,0,0,.55);
-}
-
-#loginView .heroWa{
-  position: absolute;
-  right: 18px;
-  bottom: 18px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding: 12px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(34,197,94,.55);
-  background: rgba(34,197,94,.12);
-  color: #86efac;
-  font-weight: 1000;
-  text-decoration: none;
-}
-
-#loginView .heroWa:hover{
-  background: rgba(34,197,94,.16);
-  border-color: rgba(34,197,94,.70);
-}
-
-#loginView .heroDeco{
-  position:absolute;
-  border-radius: 999px;
-  pointer-events:none;
-  filter: blur(0px);
-  opacity: .55;
-}
-#loginView .heroDeco.d1{
-  width: 380px; height: 380px;
-  right: -160px; top: -160px;
-  border: 2px solid rgba(255,255,255,.08);
-}
-#loginView .heroDeco.d2{
-  width: 520px; height: 520px;
-  right: -260px; top: -220px;
-  border: 2px solid rgba(255,255,255,.06);
-}
-#loginView .heroDeco.d3{
-  width: 520px; height: 520px;
-  left: -260px; bottom: -280px;
-  border: 2px solid rgba(255,255,255,.05);
+.login-footer{
+  margin-top:20px;
+  font-size:12px;
+  color:var(--muted2);
 }
 
 </style>
@@ -822,83 +598,32 @@ tbody tr:hover td{
 <body>
 
   
-  <!-- LOGIN (Premium split layout) -->
-  <div id="loginView" class="loginShell">
-    <div class="loginGrid">
+  <!-- LOGIN (Premium) -->
+  <div id="loginView" class="center">
+    <div class="card login premium-login">
+      <div class="login-brand">
+        <div class="logo-circle">AP</div>
+        <h1>Agenda<span>PRO</span></h1>
+        <p>Sistema profissional de agendamentos</p>
+      </div>
 
-      <!-- LEFT: Card -->
-      <section class="loginCardWrap">
-        <div class="loginCard">
-          <div class="loginBrandRow">
-            <div class="loginMark" aria-hidden="true">AP</div>
-            <div>
-              <div class="loginBrandName">Agenda<span>PRO</span></div>
-              <div class="loginBrandTag">Painel Administrativo</div>
-            </div>
-          </div>
+      <div class="login-form">
+        <label>E-mail</label>
+        <input id="email" placeholder="seu@email.com" />
 
-          <h2 class="loginTitle">Acesso ao sistema</h2>
-          <p class="loginSub">Entre com suas credenciais para continuar.</p>
+        <label>Senha</label>
+        <input id="password" type="password" placeholder="••••••••" />
 
-          <div class="loginForm">
-            <label for="email">E-mail</label>
-            <input id="email" placeholder="seu@email.com" autocomplete="email" />
+        <div id="err" class="error"></div>
 
-            <label for="password">Senha</label>
-            <div class="passWrap">
-              <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
-              <button class="passToggle" type="button" aria-label="Mostrar/ocultar senha" onclick="togglePassword()">👁</button>
-            </div>
+        <button id="btnLogin" class="btn login-btn">Entrar no sistema</button>
+      </div>
 
-            <div id="err" class="error"></div>
-
-            <button id="btnLogin" class="btn loginPrimary" style="width:100%">Entrar</button>
-          </div>
-
-          <div class="loginFoot">
-            <span>LEP Sistemas • Agenda Online</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- RIGHT: Hero -->
-      <aside class="loginHero" aria-hidden="true">
-        <div class="heroInner">
-          <div class="heroBadge">Solução profissional</div>
-
-          <div class="heroLogo">
-            <div class="heroIcon">$</div>
-            <div class="heroName">Agenda<span>PRO</span></div>
-            <div class="heroBy">por LEP Sistemas</div>
-          </div>
-
-          <div class="heroBig">
-            O sistema completo<br/>
-            para gestão de agenda<br/>
-            da sua Barbearia e 
-            Salão de beleza
-          </div>
-
-          <a class="heroWa" href="https://wa.me/" target="_blank" rel="noopener" title="Suporte via WhatsApp">
-            WhatsApp
-          </a>
-        </div>
-
-        <div class="heroDeco d1"></div>
-        <div class="heroDeco d2"></div>
-        <div class="heroDeco d3"></div>
-      </aside>
-
+      <div class="login-footer">
+        <span>LEP Sistemas • Agenda Online</span>
+      </div>
     </div>
   </div>
-
-  <script>
-    function togglePassword(){
-      const el = document.getElementById('password');
-      if(!el) return;
-      el.type = (el.type === 'password') ? 'text' : 'password';
-    }
-  </script>
 
 
   <!-- APP -->
