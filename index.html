@@ -1579,14 +1579,28 @@ const badgeClientes = document.getElementById("badgeClientes");
       clearError();
       btnLogin.disabled = true;
       btnLogin.textContent = "Entrando...";
+
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
+
+      if(!email || !password){
+        btnLogin.disabled = false;
+        btnLogin.textContent = "Entrar";
+        return showError("Informe e-mail e senha.");
+      }
 
       const { error } = await sb.auth.signInWithPassword({ email, password });
 
       btnLogin.disabled = false;
       btnLogin.textContent = "Entrar";
-      if (error) return showError("E-mail ou senha inválidos.");
+
+      if (error) {
+        // Mantém mensagem real quando possível (ajuda no debug e em casos como email não confirmado)
+        const msg = (error?.message || "Falha no login.").toLowerCase().includes("invalid")
+          ? "E-mail ou senha inválidos."
+          : (error.message || "Falha no login.");
+        return showError(msg);
+      }
 
       await bootstrap();
     };
@@ -1688,6 +1702,17 @@ const badgeClientes = document.getElementById("badgeClientes");
       await loadWorkingHours();
     };
 
+    async function validateAccess(){
+      // Preferencial: RPC (security definer) que valida status/fatura e retorna perfil+empresa
+      try{
+        const { data, error } = await sb.rpc('validate_access');
+        if(error) throw error;
+        return { ok:true, data };
+      } catch(e){
+        return { ok:false, error:e };
+      }
+    }
+
     async function bootstrap(){
       resetState();
 
@@ -1699,44 +1724,92 @@ const badgeClientes = document.getElementById("badgeClientes");
       state.user = u?.user || null;
       if(!state.user){ showLogin(); return; }
 
-      const { data: prof, error: e1 } = await sb
-        .from("profiles")
-        .select("company_id, role, display_name")
-        .eq("user_id", state.user.id)
-        .maybeSingle();
+      // 1) Tentativa principal: validate_access() (recomendado)
+      const va = await validateAccess();
+      if(va.ok && va.data){
+        const payload = va.data;
 
-      if(e1 || !prof){
-        showError("Usuário sem vínculo no profiles. (Seu SQL já deveria ter criado esse vínculo).");
-        await sb.auth.signOut();
-        resetState();
-        showLogin();
-        return;
+        if(payload.ok !== true){
+          // BLOQUEADO (empresa inativa / fatura vencida)
+          const msg = payload.message || "Acesso bloqueado. Para reativação, entre em contato com o suporte.";
+          showError(msg);
+          await sb.auth.signOut();
+          resetState();
+          showLogin();
+          return;
+        }
+
+        state.profile = payload.profile || null;
+        state.company = payload.company || null;
+        state.role = state.profile?.role || "staff";
+        state.isAdmin = state.role === "admin";
+
+      } else {
+        // 2) Fallback: select direto (se RPC ainda não foi criada)
+        const { data: prof, error: e1 } = await sb
+          .from("profiles")
+          .select("company_id, role, display_name")
+          .eq("user_id", state.user.id)
+          .maybeSingle();
+
+        if(e1 || !prof){
+          showError("Usuário sem vínculo no profiles.");
+          await sb.auth.signOut();
+          resetState();
+          showLogin();
+          return;
+        }
+
+        const { data: comp, error: e2 } = await sb
+          .from("companies")
+          .select("name, slug, status, paid_until")
+          .eq("id", prof.company_id)
+          .maybeSingle();
+
+        if(e2 || !comp){
+          showError("Empresa não encontrada para este usuário.");
+          await sb.auth.signOut();
+          resetState();
+          showLogin();
+          return;
+        }
+
+        // Regras de bloqueio (fallback)
+        const status = String(comp.status || "").toLowerCase();
+        const paidUntil = comp.paid_until ? new Date(comp.paid_until + "T00:00:00") : null;
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        if(status && status !== "active"){
+          showError("Sua fatura venceu ou sua empresa está desativada. Para reativação, entre em contato com o suporte.");
+          await sb.auth.signOut();
+          resetState();
+          showLogin();
+          return;
+        }
+
+        if(paidUntil && paidUntil < today){
+          showError(`Sua fatura venceu (pagamento até ${comp.paid_until}). Para reativação, entre em contato com o suporte.`);
+          await sb.auth.signOut();
+          resetState();
+          showLogin();
+          return;
+        }
+
+        state.profile = prof;
+        state.company = comp;
+        state.role = prof.role || "staff";
+        state.isAdmin = state.role === "admin";
       }
 
-      state.profile = prof;
-      state.role = prof.role || "staff";
-      state.isAdmin = state.role === "admin";
-
+      // Se chegou aqui, está liberado
       roleBox.textContent = state.isAdmin ? "ADMIN" : "STAFF";
 
-      const { data: comp, error: e2 } = await sb
-        .from("companies")
-        .select("name, slug, status, paid_until")
-        .eq("id", prof.company_id)
-        .maybeSingle();
-
-      if(e2 || !comp){
-        showError("Empresa não encontrada para este usuário.");
-        await sb.auth.signOut();
-        resetState();
-        showLogin();
-        return;
-      }
-
-      state.company = comp;
+      const prof = state.profile || {};
+      const comp = state.company || {};
 
       who.textContent = `Usuário: ${prof.display_name || state.user.email} • Perfil: ${state.role}`;
-      companyPill.textContent = `Empresa: ${comp.name}`;
+      companyPill.textContent = `Empresa: ${comp.name || "-"}`;
 
       agendaDate.value = todayISO();
 
