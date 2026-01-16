@@ -927,6 +927,10 @@ tbody tr:hover td{
           <button data-tab="profissionais"><span>Profissionais</span><span class="tag" id="badgePros">—</span></button>
           <button data-tab="servicos"><span>Serviços</span><span class="tag" id="badgeServ">—</span></button>
           <button data-tab="horarios"><span>Horários</span><span class="tag" id="badgeHours">—</span></button>
+
+          <button data-tab="produtos"><span>Produtos</span><span class="tag" id="badgeProdutos">—</span></button>
+          <button data-tab="estoque"><span>Estoque</span><span class="tag" id="badgeEstoque">—</span></button>
+          <button data-tab="pdv"><span>PDV</span><span class="tag" id="badgePDV">—</span></button>
         </div>
 
         <div style="margin-top:14px" class="muted">
@@ -1170,6 +1174,125 @@ tbody tr:hover td{
           </div>
         </section>
 
+
+        <!-- PRODUTOS -->
+        <section id="tab-produtos" class="card section hidden">
+          <h2>Produtos</h2>
+          <p>Cadastre produtos (bebidas, itens, etc.) com preço e código de barras. Este módulo está em <strong>modo local</strong> (salvo no navegador) até conectarmos no Supabase.</p>
+
+          <div class="toolbar">
+            <div class="left">
+              <input class="miniInput" id="prodSearch" placeholder="Buscar por nome/código..." />
+            </div>
+            <div class="right">
+              <button class="btn2" id="btnNewProduct">+ Novo Produto</button>
+              <button class="btn2" id="btnProdReload">Recarregar</button>
+            </div>
+          </div>
+
+          <div style="overflow:auto">
+            <table>
+              <thead>
+                <tr><th>Produto</th><th>Código</th><th>Preço</th><th>Status</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="tbodyProducts"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ESTOQUE -->
+        <section id="tab-estoque" class="card section hidden">
+          <h2>Estoque</h2>
+          <p>Saldo por produto (entrada/saída/ajuste). Em <strong>modo local</strong> até conectarmos no Supabase.</p>
+
+          <div class="toolbar">
+            <div class="left">
+              <input class="miniInput" id="stockSearch" placeholder="Buscar produto..." />
+            </div>
+            <div class="right">
+              <button class="btn2" id="btnStockIn">+ Entrada</button>
+              <button class="btn2" id="btnStockOut">- Saída</button>
+              <button class="btn2" id="btnStockReload">Recarregar</button>
+            </div>
+          </div>
+
+          <div style="overflow:auto">
+            <table>
+              <thead>
+                <tr><th>Produto</th><th>Saldo</th><th>Mínimo</th><th>Status</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="tbodyStock"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- PDV -->
+        <section id="tab-pdv" class="card section hidden">
+          <h2>PDV</h2>
+          <p>Pesquisa de produto, carrinho e total. Você pode vincular a venda a um agendamento do dia. Em <strong>modo local</strong> até conectarmos no Supabase.</p>
+
+          <div class="toolbar">
+            <div class="left" style="gap:10px">
+              <input class="miniInput" id="pdvSearch" placeholder="Buscar produto..." />
+              <select class="miniInput" id="pdvApptLink">
+                <option value="">Vincular a agendamento (opcional)</option>
+              </select>
+            </div>
+            <div class="right">
+              <button class="btn2" id="btnPdvClear">Limpar</button>
+              <button class="btn2" id="btnPdvReload">Recarregar</button>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:0">
+            <div class="card section" style="flex:1;min-width:320px">
+              <div style="font-weight:1000;margin-bottom:10px">Produtos</div>
+              <div style="overflow:auto;max-height:520px">
+                <table>
+                  <thead>
+                    <tr><th>Produto</th><th>Preço</th><th>Estoque</th><th>Ação</th></tr>
+                  </thead>
+                  <tbody id="tbodyPdvProducts"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card section" style="flex:1;min-width:320px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+                <div style="font-weight:1000">Carrinho</div>
+                <div class="pill" id="pdvTotal">Total: —</div>
+              </div>
+
+              <div style="overflow:auto;max-height:420px;margin-top:10px">
+                <table>
+                  <thead>
+                    <tr><th>Item</th><th>Qtd</th><th>Unit</th><th>Total</th><th></th></tr>
+                  </thead>
+                  <tbody id="tbodyPdvCart"></tbody>
+                </table>
+              </div>
+
+              <div class="toolbar" style="margin-top:12px">
+                <div class="left" style="gap:10px">
+                  <select class="miniInput" id="pdvPay">
+                    <option value="dinheiro">Dinheiro</option>
+                    <option value="pix">Pix</option>
+                    <option value="credito">Cartão (Crédito)</option>
+                    <option value="debito">Cartão (Débito)</option>
+                    <option value="outros">Outros</option>
+                  </select>
+                  <input class="miniInput" id="pdvDiscount" type="number" step="0.01" placeholder="Desconto (R$)" style="min-width:160px" />
+                </div>
+                <div class="right">
+                  <button class="btn" id="btnPdvFinalize">Finalizar</button>
+                </div>
+              </div>
+
+              <div class="muted" id="pdvMsg" style="font-size:13px;margin-top:8px">—</div>
+            </div>
+          </div>
+        </section>
+
       </main>
     </div>
   </div>
@@ -1227,6 +1350,9 @@ const badgeClientes = document.getElementById("badgeClientes");
     const badgePros = document.getElementById("badgePros");
     const badgeServ = document.getElementById("badgeServ");
     const badgeHours = document.getElementById("badgeHours");
+    const badgeProdutos = document.getElementById("badgeProdutos");
+    const badgeEstoque = document.getElementById("badgeEstoque");
+    const badgePDV = document.getElementById("badgePDV");
 
     const tbodyNext = document.getElementById("tbodyNext");
     const tbodyAgenda = document.getElementById("tbodyAgenda");
@@ -1278,6 +1404,30 @@ const badgeClientes = document.getElementById("badgeClientes");
     const btnWhDefault = document.getElementById("btnWhDefault");
     const btnWhReload = document.getElementById("btnWhReload");
     const tbodyHours = document.getElementById("tbodyHours");
+    // Produtos / Estoque / PDV (modo local)
+    const prodSearch = document.getElementById("prodSearch");
+    const btnNewProduct = document.getElementById("btnNewProduct");
+    const btnProdReload = document.getElementById("btnProdReload");
+    const tbodyProducts = document.getElementById("tbodyProducts");
+
+    const stockSearch = document.getElementById("stockSearch");
+    const btnStockIn = document.getElementById("btnStockIn");
+    const btnStockOut = document.getElementById("btnStockOut");
+    const btnStockReload = document.getElementById("btnStockReload");
+    const tbodyStock = document.getElementById("tbodyStock");
+
+    const pdvSearch = document.getElementById("pdvSearch");
+    const pdvApptLink = document.getElementById("pdvApptLink");
+    const btnPdvClear = document.getElementById("btnPdvClear");
+    const btnPdvReload = document.getElementById("btnPdvReload");
+    const tbodyPdvProducts = document.getElementById("tbodyPdvProducts");
+    const tbodyPdvCart = document.getElementById("tbodyPdvCart");
+    const pdvTotal = document.getElementById("pdvTotal");
+    const pdvPay = document.getElementById("pdvPay");
+    const pdvDiscount = document.getElementById("pdvDiscount");
+    const btnPdvFinalize = document.getElementById("btnPdvFinalize");
+    const pdvMsg = document.getElementById("pdvMsg");
+
 
     // Modal
     const modalBack = document.getElementById("modalBack");
@@ -1363,6 +1513,9 @@ const badgeClientes = document.getElementById("badgeClientes");
       if(tab==="profissionais") loadProfessionals();
       if(tab==="servicos") loadServices();
       if(tab==="horarios") loadWorkingHours();
+      if(tab==="produtos") loadLocalProducts();
+      if(tab==="estoque") loadLocalStock();
+      if(tab==="pdv") loadPDV();
 
       if(close) closeModal();
     };
@@ -1465,7 +1618,15 @@ const badgeClientes = document.getElementById("badgeClientes");
       pros: [],
       serv: [],
       prosMap: {},
-      servMap: {}
+      servMap: {},
+      servPriceMap: {},
+      local: {
+        products: [],
+        stock: {},
+        movements: [],
+        carts: { pdv: [] },
+        apptItems: {}
+      }
     };
 
     const pad2 = (n)=>String(n).padStart(2,"0");
@@ -1513,7 +1674,14 @@ const badgeClientes = document.getElementById("badgeClientes");
       kpiApptToday.textContent="—"; kpiRevenueToday.textContent="—"; kpiBusiestPro.textContent="—"; kpiBusiestHour.textContent="—";
       alertBadge.textContent="—"; alertsBox.innerHTML = "<div>—</div>";
       badgeToday.textContent="—"; badgeAgenda.textContent="—"; badgeClientes.textContent="—"; badgePros.textContent="—"; badgeServ.textContent="—"; badgeHours.textContent="—";
+      if(badgeProdutos) badgeProdutos.textContent="—";
+      if(badgeEstoque) badgeEstoque.textContent="—";
+      if(badgePDV) badgePDV.textContent="—";
       tbodyNext.innerHTML=""; tbodyAgenda.innerHTML=""; tbodyCustomers.innerHTML=""; tbodyPros.innerHTML=""; tbodyServ.innerHTML=""; tbodyHours.innerHTML="";
+      if(tbodyProducts) tbodyProducts.innerHTML="";
+      if(tbodyStock) tbodyStock.innerHTML="";
+      if(tbodyPdvProducts) tbodyPdvProducts.innerHTML="";
+      if(tbodyPdvCart) tbodyPdvCart.innerHTML="";
       agendaPro.innerHTML=""; whPro.innerHTML="";
       document.querySelectorAll(".menu button").forEach(b=>b.classList.remove("active"));
       document.querySelector('.menu button[data-tab="dash"]').classList.add("active");
@@ -1564,6 +1732,9 @@ const badgeClientes = document.getElementById("badgeClientes");
         if(tab==="profissionais") loadProfessionals();
         if(tab==="servicos") loadServices();
         if(tab==="horarios") loadWorkingHours();
+      if(tab==="produtos") loadLocalProducts();
+      if(tab==="estoque") loadLocalStock();
+      if(tab==="pdv") loadPDV();
       });
     });
 
@@ -1629,6 +1800,22 @@ const badgeClientes = document.getElementById("badgeClientes");
     btnCustomersReload.onclick = loadCustomers;
     btnProsReload.onclick = loadProfessionals;
     btnServReload.onclick = loadServices;
+
+    // Produtos/Estoque/PDV (modo local)
+    btnProdReload && (btnProdReload.onclick = loadLocalProducts);
+    btnNewProduct && (btnNewProduct.onclick = ()=> openProductModal(null));
+    prodSearch && (prodSearch.addEventListener('input', debounce(loadLocalProducts, 250)));
+
+    btnStockReload && (btnStockReload.onclick = loadLocalStock);
+    btnStockIn && (btnStockIn.onclick = ()=> openStockMovement('in'));
+    btnStockOut && (btnStockOut.onclick = ()=> openStockMovement('out'));
+    stockSearch && (stockSearch.addEventListener('input', debounce(loadLocalStock, 250)));
+
+    btnPdvReload && (btnPdvReload.onclick = loadPDV);
+    btnPdvClear && (btnPdvClear.onclick = pdvClear);
+    pdvSearch && (pdvSearch.addEventListener('input', debounce(renderPdvProducts, 200)));
+    pdvDiscount && (pdvDiscount.addEventListener('input', debounce(renderPdvCart, 200)));
+    btnPdvFinalize && (btnPdvFinalize.onclick = pdvFinalize);
 
     btnNewCustomer.onclick = ()=> openCustomerModal();
     btnNewPro.onclick = ()=> openProModal();
@@ -1822,6 +2009,7 @@ const badgeClientes = document.getElementById("badgeClientes");
       await loadDashboard();
       await loadDashboardOverview();
       await fillWorkingHoursPros();
+      loadLocal(); seedLocalIfEmpty(); recalcLocalBadges();
     }
 
     async function loadMaps(){
@@ -1844,6 +2032,7 @@ const badgeClientes = document.getElementById("badgeClientes");
       state.serv = serv || [];
       state.prosMap = Object.fromEntries((pros||[]).map(p=>[p.id, p.name]));
       state.servMap = Object.fromEntries((serv||[]).map(s=>[s.id, s.name]));
+      state.servPriceMap = Object.fromEntries((serv||[]).map(s=>[s.id, Number(s.price_cents||0)]));
 
       agendaPro.innerHTML = `<option value="">Todos os profissionais</option>`;
       (pros||[]).forEach(p=>{ if(p.active) agendaPro.innerHTML += `<option value="${p.id}">${p.name}</option>`; });
@@ -1872,6 +2061,7 @@ const badgeClientes = document.getElementById("badgeClientes");
       badgePros.textContent = cPros ?? "0";
       badgeServ.textContent = cServ ?? "0";
       badgeHours.textContent = cWh ?? "0";
+      loadLocal(); seedLocalIfEmpty(); recalcLocalBadges();
 
       const d = agendaDate.value || todayISO();
       const { start, end } = dayRangeUTC(d);
@@ -2043,6 +2233,8 @@ const badgeClientes = document.getElementById("badgeClientes");
       // filtro local (rápido) para busca na tela sem complicar o SQL
       const aTerm = (agendaSearch?.value || "").trim().toLowerCase();
       let list = data || [];
+      state.__todayAppts = list.slice(0, 80);
+      try { fillPdvAppointmentsOfDay(); } catch(e) {}
       if(aTerm){
         list = list.filter(x =>
           (x.customer_name||"").toLowerCase().includes(aTerm) ||
@@ -2080,6 +2272,7 @@ const badgeClientes = document.getElementById("badgeClientes");
           <td>${tagStatus(a.status)}</td>
           <td>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn2" onclick="openAppointmentComanda(\'${a.id}\')">Comanda</button>
               <button class="btn2" data-act="confirm" data-id="${a.id}">Confirmar</button>
               <button class="btn2" data-act="done" data-id="${a.id}">Finalizar</button>
               <button class="btn2 btnDanger" data-act="cancel" data-id="${a.id}">Cancelar</button>
@@ -2361,6 +2554,7 @@ const badgeClientes = document.getElementById("badgeClientes");
 
       await loadMaps();
       await fillWorkingHoursPros();
+      loadLocal(); seedLocalIfEmpty(); recalcLocalBadges();
     }
 
     async function loadServices(){
@@ -2915,6 +3109,674 @@ const badgeClientes = document.getElementById("badgeClientes");
       await loadSlots();
     }
     window.__closeModal = closeModal;
+
+
+    // =========================
+    // MÓDULO LOCAL: PRODUTOS / ESTOQUE / PDV / COMANDA
+    // - Enquanto não conectamos ao Supabase, tudo fica salvo no navegador (localStorage)
+    // =========================
+    const LS_KEY = "agendapro_local_v1";
+    function loadLocal(){
+      try{
+        const raw = localStorage.getItem(LS_KEY);
+        if(!raw) return;
+        const parsed = JSON.parse(raw);
+        if(parsed && typeof parsed === "object"){
+          state.local = Object.assign(state.local, parsed);
+        }
+      } catch(e){ /* ignore */ }
+    }
+    function saveLocal(){
+      try{ localStorage.setItem(LS_KEY, JSON.stringify(state.local)); } catch(e){ /* ignore */ }
+    }
+    function uid(){
+      try { return crypto.randomUUID(); } catch(e){ return (Date.now().toString(16) + Math.random().toString(16).slice(2)); }
+    }
+    function localMoney(cents){
+      return (Number(cents||0)/100).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+    }
+    function ensureStockRow(product_id){
+      if(!state.local.stock) state.local.stock = {};
+      if(!state.local.stock[product_id]) state.local.stock[product_id] = { qty: 0, min_qty: 0 };
+      return state.local.stock[product_id];
+    }
+    function productById(id){ return (state.local.products||[]).find(p=>p.id===id) || null; }
+    function recalcLocalBadges(){
+      if(badgeProdutos) badgeProdutos.textContent = String((state.local.products||[]).length);
+      if(badgeEstoque) badgeEstoque.textContent = String(Object.keys(state.local.stock||{}).length);
+      if(badgePDV) badgePDV.textContent = String((state.local.carts?.pdv||[]).length);
+    }
+    function seedLocalIfEmpty(){
+      if((state.local.products||[]).length) return;
+      const p1 = { id: uid(), name: "Água com gás", barcode: "789000000001", price_cents: 400, active: true };
+      const p2 = { id: uid(), name: "Refrigerante lata", barcode: "789000000002", price_cents: 600, active: true };
+      const p3 = { id: uid(), name: "Cerveja long neck", barcode: "789000000003", price_cents: 900, active: true };
+      state.local.products = [p1,p2,p3];
+      ensureStockRow(p1.id).qty = 10;
+      ensureStockRow(p2.id).qty = 10;
+      ensureStockRow(p3.id).qty = 10;
+      saveLocal();
+    }
+
+    // ---------- PRODUTOS ----------
+    function loadLocalProducts(){
+      loadLocal(); seedLocalIfEmpty(); recalcLocalBadges();
+      const term = (prodSearch?.value||"").trim().toLowerCase();
+      const list = (state.local.products||[])
+        .filter(p => !term || (p.name||"").toLowerCase().includes(term) || String(p.barcode||"").toLowerCase().includes(term))
+        .sort((a,b)=> (a.name||"").localeCompare(b.name||""));
+      tbodyProducts.innerHTML = "";
+      if(!list.length){
+        tbodyProducts.innerHTML = `<tr><td colspan="5">Nenhum produto cadastrado.</td></tr>`;
+        return;
+      }
+      list.forEach(p=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${esc(p.name||"—")}</td>
+          <td>${esc(p.barcode||"—")}</td>
+          <td>${localMoney(p.price_cents||0)}</td>
+          <td>${p.active ? `<span class="tag ok">Ativo</span>` : `<span class="tag bad">Inativo</span>`}</td>
+          <td>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn2" onclick="openProductModal('${p.id}')">Editar</button>
+              <button class="btn2" onclick="toggleProduct('${p.id}')">${p.active ? "Inativar" : "Ativar"}</button>
+              ${state.isAdmin ? `<button class="btn2 btnDanger" onclick="deleteProduct('${p.id}')">Excluir</button>` : ""}
+            </div>
+          </td>
+        `;
+        tbodyProducts.appendChild(tr);
+      });
+    }
+    function openProductModal(id){
+      loadLocal();
+      const isEdit = !!id;
+      let p = isEdit ? productById(id) : null;
+      p = p || { id:null, name:"", barcode:"", price_cents:0, active:true };
+      openModal(
+        isEdit ? "Editar Produto" : "Novo Produto",
+        `
+          <div class="row2">
+            <div><label>Nome</label><input id="lp_name" value="${esc(p.name)}" /></div>
+            <div><label>Código / Barras</label><input id="lp_barcode" value="${esc(p.barcode||"")}" /></div>
+          </div>
+          <div class="row2" style="margin-top:8px">
+            <div><label>Preço (R$)</label><input id="lp_price" type="number" step="0.01" value="${(Number(p.price_cents||0)/100).toFixed(2)}" /></div>
+            <div>
+              <label>Status</label>
+              <select id="lp_active">
+                <option value="true" ${p.active?"selected":""}>Ativo</option>
+                <option value="false" ${!p.active?"selected":""}>Inativo</option>
+              </select>
+            </div>
+          </div>
+          <div class="muted" style="font-size:13px;margin-top:10px">Estoque é gerenciado na aba <b>Estoque</b>.</div>
+        `,
+        `
+          <button class="btn2" onclick="window.__closeModal()">Cancelar</button>
+          <button class="btn" onclick="saveProduct('${p.id||""}')">${isEdit ? "Salvar" : "Cadastrar"}</button>
+        `
+      );
+    }
+    window.openProductModal = openProductModal;
+
+    function saveProduct(id){
+      const name = (document.getElementById("lp_name").value||"").trim();
+      const barcode = (document.getElementById("lp_barcode").value||"").trim() || null;
+      const price = Number(document.getElementById("lp_price").value||0);
+      const price_cents = Math.round(price*100);
+      const active = document.getElementById("lp_active").value === "true";
+      if(name.length < 2) return toastMsg("err","Nome do produto inválido.");
+      if(price_cents < 0) return toastMsg("err","Preço inválido.");
+      loadLocal();
+      if(id){
+        const idx = (state.local.products||[]).findIndex(p=>p.id===id);
+        if(idx >= 0) state.local.products[idx] = Object.assign({}, state.local.products[idx], { name, barcode, price_cents, active });
+      } else {
+        const newId = uid();
+        state.local.products.push({ id:newId, name, barcode, price_cents, active:true });
+        ensureStockRow(newId);
+      }
+      saveLocal();
+      closeModal();
+      toastMsg("ok", id ? "Produto atualizado." : "Produto cadastrado.");
+      loadLocalProducts();
+      loadLocalStock();
+      renderPdvProducts();
+      recalcLocalBadges();
+    }
+    window.saveProduct = saveProduct;
+
+    function toggleProduct(id){
+      loadLocal();
+      const p = productById(id);
+      if(!p) return;
+      p.active = !p.active;
+      saveLocal();
+      loadLocalProducts();
+      renderPdvProducts();
+    }
+    window.toggleProduct = toggleProduct;
+
+    function deleteProduct(id){
+      if(!state.isAdmin) return toastMsg("err","Apenas ADMIN pode excluir.");
+      if(!confirm("Excluir produto?")) return;
+      loadLocal();
+      state.local.products = (state.local.products||[]).filter(p=>p.id!==id);
+      if(state.local.stock) delete state.local.stock[id];
+      state.local.carts.pdv = (state.local.carts?.pdv||[]).filter(i=>i.product_id!==id);
+      if(state.local.apptItems){
+        Object.keys(state.local.apptItems).forEach(k=>{
+          state.local.apptItems[k] = (state.local.apptItems[k]||[]).filter(i=>i.product_id!==id);
+        });
+      }
+      saveLocal();
+      toastMsg("ok","Produto excluído.");
+      loadLocalProducts();
+      loadLocalStock();
+      renderPdvProducts();
+      renderPdvCart();
+      recalcLocalBadges();
+    }
+    window.deleteProduct = deleteProduct;
+
+    // ---------- ESTOQUE ----------
+    function stockStatusTag(qty, min){
+      if(qty <= 0) return `<span class="tag bad">Sem estoque</span>`;
+      if(qty <= (min||0)) return `<span class="tag warn">Baixo</span>`;
+      return `<span class="tag ok">OK</span>`;
+    }
+    function loadLocalStock(){
+      loadLocal(); seedLocalIfEmpty(); recalcLocalBadges();
+      const term = (stockSearch?.value||"").trim().toLowerCase();
+      const rows = (state.local.products||[])
+        .map(p=>({ p, qty: Number(ensureStockRow(p.id).qty||0), min_qty: Number(ensureStockRow(p.id).min_qty||0) }))
+        .filter(x => !term || (x.p.name||"").toLowerCase().includes(term) || String(x.p.barcode||"").toLowerCase().includes(term))
+        .sort((a,b)=> (a.p.name||"").localeCompare(b.p.name||""));
+      tbodyStock.innerHTML = "";
+      if(!rows.length){
+        tbodyStock.innerHTML = `<tr><td colspan="5">Nenhum item de estoque.</td></tr>`;
+        return;
+      }
+      rows.forEach(r=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${esc(r.p.name||"—")}</td>
+          <td><b>${r.qty}</b></td>
+          <td>${r.min_qty}</td>
+          <td>${stockStatusTag(r.qty, r.min_qty)}</td>
+          <td><button class="btn2" onclick="openStockAdjust('${r.p.id}')">Ajustar</button></td>
+        `;
+        tbodyStock.appendChild(tr);
+      });
+    }
+    function openStockMovement(type){
+      loadLocal();
+      const opts = (state.local.products||[]).filter(p=>p.active).map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");
+      const isIn = type === "in";
+      openModal(
+        isIn ? "Entrada de Estoque" : "Saída de Estoque",
+        `
+          <div class="row2">
+            <div>
+              <label>Produto</label>
+              <select id="sm_prod"><option value="">Selecione</option>${opts}</select>
+            </div>
+            <div>
+              <label>Quantidade</label>
+              <input id="sm_qty" type="number" step="1" min="1" value="1" />
+            </div>
+          </div>
+          <div style="margin-top:8px">
+            <label>Motivo</label>
+            <input id="sm_reason" placeholder="${isIn ? "compra, reposição..." : "consumo, perda..." }" />
+          </div>
+        `,
+        `
+          <button class="btn2" onclick="window.__closeModal()">Cancelar</button>
+          <button class="btn" onclick="saveStockMovement('${type}')">Salvar</button>
+        `
+      );
+    }
+    window.openStockMovement = openStockMovement;
+
+    function saveStockMovement(type){
+      const product_id = document.getElementById("sm_prod").value;
+      const qty = Number(document.getElementById("sm_qty").value||0);
+      const reason = (document.getElementById("sm_reason").value||"").trim() || null;
+      if(!product_id) return toastMsg("err","Selecione um produto.");
+      if(!(qty>0)) return toastMsg("err","Quantidade inválida.");
+      loadLocal();
+      const row = ensureStockRow(product_id);
+      const current = Number(row.qty||0);
+      const next = type==="in" ? (current + qty) : (current - qty);
+      if(type==="out" && next < 0) return toastMsg("err","Saldo insuficiente para saída.");
+      row.qty = next;
+      state.local.movements.push({ id: uid(), type, product_id, qty, reason, created_at: new Date().toISOString() });
+      saveLocal();
+      closeModal();
+      toastMsg("ok","Estoque atualizado.");
+      loadLocalStock();
+      renderPdvProducts();
+    }
+    window.saveStockMovement = saveStockMovement;
+
+    function openStockAdjust(product_id){
+      loadLocal();
+      const p = productById(product_id);
+      const s = ensureStockRow(product_id);
+      openModal(
+        "Ajustar Estoque",
+        `
+          <div style="font-weight:1000">${esc(p?.name||"Produto")}</div>
+          <div class="row2" style="margin-top:10px">
+            <div><label>Saldo atual</label><input disabled value="${Number(s.qty||0)}" /></div>
+            <div><label>Novo saldo</label><input id="sa_qty" type="number" step="1" min="0" value="${Number(s.qty||0)}" /></div>
+          </div>
+          <div class="row2" style="margin-top:8px">
+            <div><label>Mínimo (alerta)</label><input id="sa_min" type="number" step="1" min="0" value="${Number(s.min_qty||0)}" /></div>
+            <div><label>Motivo</label><input id="sa_reason" placeholder="ajuste, inventário..." /></div>
+          </div>
+        `,
+        `
+          <button class="btn2" onclick="window.__closeModal()">Cancelar</button>
+          <button class="btn" onclick="saveStockAdjust('${product_id}')">Salvar</button>
+        `
+      );
+    }
+    window.openStockAdjust = openStockAdjust;
+
+    function saveStockAdjust(product_id){
+      const qty = Number(document.getElementById("sa_qty").value||0);
+      const min_qty = Number(document.getElementById("sa_min").value||0);
+      const reason = (document.getElementById("sa_reason").value||"").trim() || "ajuste";
+      if(qty < 0 || min_qty < 0) return toastMsg("err","Valores inválidos.");
+      loadLocal();
+      const row = ensureStockRow(product_id);
+      const prev = Number(row.qty||0);
+      row.qty = qty;
+      row.min_qty = min_qty;
+      const delta = qty - prev;
+      if(delta !== 0){
+        state.local.movements.push({ id: uid(), type: delta>0 ? "in":"out", product_id, qty: Math.abs(delta), reason, created_at: new Date().toISOString() });
+      }
+      saveLocal();
+      closeModal();
+      toastMsg("ok","Ajuste salvo.");
+      loadLocalStock();
+      renderPdvProducts();
+    }
+    window.saveStockAdjust = saveStockAdjust;
+
+    // ---------- PDV ----------
+    function getCart(){
+      state.local.carts = state.local.carts || { pdv: [] };
+      state.local.carts.pdv = state.local.carts.pdv || [];
+      return state.local.carts.pdv;
+    }
+    function cartTotalCents(cart){ return (cart||[]).reduce((s,i)=> s + Number(i.unit_price_cents||0)*Number(i.qty||0), 0); }
+
+    function cartAdd(product_id, qty=1){
+      loadLocal();
+      const p = productById(product_id);
+      if(!p || !p.active) return toastMsg("err","Produto indisponível.");
+      const stock = ensureStockRow(product_id);
+      if(Number(stock.qty||0) < qty) return toastMsg("err","Estoque insuficiente.");
+      const cart = getCart();
+      const ex = cart.find(i=>i.product_id===product_id);
+      if(ex){
+        if(Number(stock.qty||0) < (ex.qty + qty)) return toastMsg("err","Estoque insuficiente.");
+        ex.qty += qty;
+      } else {
+        cart.push({ product_id, qty, unit_price_cents: Number(p.price_cents||0) });
+      }
+      saveLocal();
+      renderPdvCart();
+      recalcLocalBadges();
+    }
+    function cartRemove(product_id){
+      loadLocal();
+      state.local.carts.pdv = (getCart()||[]).filter(i=>i.product_id!==product_id);
+      saveLocal();
+      renderPdvCart();
+      recalcLocalBadges();
+    }
+    function cartQty(product_id, delta){
+      loadLocal();
+      const cart = getCart();
+      const item = cart.find(i=>i.product_id===product_id);
+      if(!item) return;
+      const stock = ensureStockRow(product_id);
+      const next = item.qty + delta;
+      if(next <= 0) return cartRemove(product_id);
+      if(Number(stock.qty||0) < next) return toastMsg("err","Estoque insuficiente.");
+      item.qty = next;
+      saveLocal();
+      renderPdvCart();
+      recalcLocalBadges();
+    }
+
+    function renderPdvProducts(){
+      if(!tbodyPdvProducts) return;
+      loadLocal(); seedLocalIfEmpty();
+      const term = (pdvSearch?.value||"").trim().toLowerCase();
+      const list = (state.local.products||[])
+        .filter(p=>p.active)
+        .filter(p=> !term || (p.name||"").toLowerCase().includes(term) || String(p.barcode||"").toLowerCase().includes(term))
+        .sort((a,b)=> (a.name||"").localeCompare(b.name||""));
+      tbodyPdvProducts.innerHTML = "";
+      if(!list.length){
+        tbodyPdvProducts.innerHTML = `<tr><td colspan="4">Nenhum produto.</td></tr>`;
+        return;
+      }
+      list.forEach(p=>{
+        const qty = Number(ensureStockRow(p.id).qty||0);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${esc(p.name)}</td>
+          <td>${localMoney(p.price_cents||0)}</td>
+          <td>${qty}</td>
+          <td><button class="btn2" onclick="cartAdd('${p.id}', 1)">Adicionar</button></td>
+        `;
+        tbodyPdvProducts.appendChild(tr);
+      });
+    }
+
+    function renderPdvCart(){
+      if(!tbodyPdvCart) return;
+      loadLocal();
+      const cart = getCart();
+      tbodyPdvCart.innerHTML = "";
+      if(!cart.length){
+        tbodyPdvCart.innerHTML = `<tr><td colspan="5">Carrinho vazio.</td></tr>`;
+        if(pdvTotal) pdvTotal.textContent = "Total: —";
+        if(pdvMsg) pdvMsg.textContent = "—";
+        return;
+      }
+      cart.forEach(i=>{
+        const p = productById(i.product_id);
+        const unit = Number(i.unit_price_cents||0);
+        const total = unit * Number(i.qty||0);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${esc(p?.name||"Produto")}</td>
+          <td>
+            <div style="display:flex;gap:6px;align-items:center">
+              <button class="btn2" style="padding:6px 10px;min-height:auto" onclick="cartQty('${i.product_id}', -1)">-</button>
+              <b>${i.qty}</b>
+              <button class="btn2" style="padding:6px 10px;min-height:auto" onclick="cartQty('${i.product_id}', 1)">+</button>
+            </div>
+          </td>
+          <td>${localMoney(unit)}</td>
+          <td>${localMoney(total)}</td>
+          <td><button class="btn2 btnDanger" onclick="cartRemove('${i.product_id}')">X</button></td>
+        `;
+        tbodyPdvCart.appendChild(tr);
+      });
+      const sub = cartTotalCents(cart);
+      const disc = Math.round(Number(pdvDiscount?.value||0) * 100);
+      const tot = Math.max(0, sub - (disc||0));
+      if(pdvTotal) pdvTotal.textContent = `Total: ${localMoney(tot)}`;
+      if(pdvMsg) pdvMsg.textContent = `Subtotal: ${localMoney(sub)} • Desconto: ${localMoney(disc||0)}`;
+    }
+
+    function fillPdvAppointmentsOfDay(){
+      if(!pdvApptLink) return;
+      pdvApptLink.innerHTML = `<option value="">Vincular a agendamento (opcional)</option>`;
+      const appts = state.__todayAppts || [];
+      appts.forEach(a=>{
+        const label = `${fmtTime(a.starts_at)} • ${a.customer_name||"Cliente"} • ${state.servMap[a.service_id]||"Serviço"}`;
+        const opt = document.createElement("option");
+        opt.value = a.id; opt.textContent = label;
+        pdvApptLink.appendChild(opt);
+      });
+    }
+
+    function loadPDV(){
+      loadLocal(); seedLocalIfEmpty();
+      renderPdvProducts();
+      renderPdvCart();
+      fillPdvAppointmentsOfDay();
+      recalcLocalBadges();
+    }
+    function pdvClear(){
+      loadLocal();
+      state.local.carts.pdv = [];
+      saveLocal();
+      renderPdvCart();
+      recalcLocalBadges();
+    }
+    function pdvFinalize(){
+      loadLocal();
+      const cart = getCart();
+      if(!cart.length) return toastMsg("err","Carrinho vazio.");
+      const disc = Math.round(Number(pdvDiscount?.value||0) * 100);
+      const sub = cartTotalCents(cart);
+      const tot = Math.max(0, sub - (disc||0));
+
+      // valida e baixa estoque
+      for(const item of cart){
+        const row = ensureStockRow(item.product_id);
+        if(Number(row.qty||0) < Number(item.qty||0)) return toastMsg("err","Estoque insuficiente (revalide carrinho).");
+      }
+      for(const item of cart){
+        const row = ensureStockRow(item.product_id);
+        row.qty = Number(row.qty||0) - Number(item.qty||0);
+        state.local.movements.push({ id: uid(), type:"out", product_id:item.product_id, qty:item.qty, reason:"venda", created_at:new Date().toISOString() });
+      }
+
+      const apptId = pdvApptLink?.value || "";
+      if(apptId){
+        state.local.apptItems = state.local.apptItems || {};
+        state.local.apptItems[apptId] = (state.local.apptItems[apptId] || []);
+        cart.forEach(i=>{
+          const ex = state.local.apptItems[apptId].find(x=>x.product_id===i.product_id);
+          if(ex) ex.qty += i.qty;
+          else state.local.apptItems[apptId].push({ product_id:i.product_id, qty:i.qty, unit_price_cents:i.unit_price_cents });
+        });
+      }
+
+      state.local.sales = state.local.sales || [];
+      state.local.sales.push({
+        id: uid(),
+        appointment_id: apptId || null,
+        payment_method: pdvPay?.value || "dinheiro",
+        subtotal_cents: sub,
+        discount_cents: disc,
+        total_cents: tot,
+        items: cart.map(i=>({ ...i })),
+        created_at: new Date().toISOString()
+      });
+
+      state.local.carts.pdv = [];
+      saveLocal();
+
+      toastMsg("ok", "Venda registrada (modo local).");
+      if(pdvDiscount) pdvDiscount.value = "";
+      renderPdvCart();
+      renderPdvProducts();
+      loadLocalStock();
+      recalcLocalBadges();
+    }
+
+    window.cartAdd = cartAdd;
+    window.cartRemove = cartRemove;
+    window.cartQty = cartQty;
+    window.pdvFinalize = pdvFinalize;
+    window.pdvClear = pdvClear;
+
+    // ---------- COMANDA DO AGENDAMENTO ----------
+    async function openAppointmentComanda(id){
+      loadLocal();
+      const companyId = state?.profile?.company_id;
+      if(!companyId) return toastMsg("err","Sessão inválida.");
+
+      const { data: appt, error } = await sb
+        .from("appointments")
+        .select("id, starts_at, status, customer_name, customer_phone, professional_id, service_id")
+        .eq("company_id", companyId)
+        .eq("id", id)
+        .maybeSingle();
+
+      if(error || !appt) return toastMsg("err","Não foi possível abrir a comanda.");
+
+      const serviceName = state.servMap[appt.service_id] || "Serviço";
+      const servicePrice = Number(state.servPriceMap[appt.service_id]||0);
+
+      const items = (state.local.apptItems?.[id] || []);
+      const rows = items.map(i=>{
+        const p = productById(i.product_id);
+        const unit = Number(i.unit_price_cents||0);
+        const total = unit * Number(i.qty||0);
+        return `
+          <tr>
+            <td>${esc(p?.name||"Produto")}</td>
+            <td>${i.qty}</td>
+            <td>${localMoney(unit)}</td>
+            <td>${localMoney(total)}</td>
+            <td><button class="btn2 btnDanger" onclick="comandaRemoveItem('${id}','${i.product_id}')">X</button></td>
+          </tr>
+        `;
+      }).join("");
+
+      const subProducts = items.reduce((s,i)=> s + Number(i.unit_price_cents||0)*Number(i.qty||0), 0);
+      const total = servicePrice + subProducts;
+
+      const productOptions = (state.local.products||[]).filter(p=>p.active)
+        .map(p=>`<option value="${p.id}">${esc(p.name)} • ${localMoney(p.price_cents||0)}</option>`).join("");
+
+      openModal(
+        "Comanda do Atendimento",
+        `
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
+            <div>
+              <div style="font-weight:1000;font-size:16px;color:var(--text)">${esc(appt.customer_name||"Cliente")}</div>
+              <div class="muted" style="font-size:13px;margin-top:4px">Horário: ${fmtDateTime(appt.starts_at)} • Profissional: ${esc(state.prosMap[appt.professional_id]||"—")}</div>
+              <div class="muted" style="font-size:13px;margin-top:4px">Serviço: <b>${esc(serviceName)}</b> (${localMoney(servicePrice)})</div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              ${renderWhatsAppBtn(appt.customer_phone, appt.customer_name, true)}
+              <span class="pill">Total: ${localMoney(total)}</span>
+            </div>
+          </div>
+
+          <div class="toolbar" style="margin-top:12px">
+            <div class="left" style="gap:10px">
+              <select class="miniInput" id="ci_prod">
+                <option value="">Selecione um produto</option>
+                ${productOptions}
+              </select>
+              <input class="miniInput" id="ci_qty" type="number" step="1" min="1" value="1" style="min-width:120px"/>
+            </div>
+            <div class="right">
+              <button class="btn2" onclick="comandaAddItem('${id}')">Adicionar</button>
+            </div>
+          </div>
+
+          <div style="overflow:auto;max-height:340px">
+            <table>
+              <thead>
+                <tr><th>Item</th><th>Qtd</th><th>Unit</th><th>Total</th><th></th></tr>
+              </thead>
+              <tbody>
+                ${rows || `<tr><td colspan="5">Nenhum consumo lançado.</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="muted" style="font-size:13px;margin-top:10px">Obs.: nesta versão, a comanda baixa estoque <b>ao adicionar</b> (modo local). Na integração Supabase, podemos baixar no pagamento.</div>
+        `,
+        `
+          <button class="btn2" onclick="window.__closeModal()">Fechar</button>
+          <button class="btn" onclick="comandaCheckout('${id}')">Finalizar e Receber</button>
+        `
+      );
+    }
+    window.openAppointmentComanda = openAppointmentComanda;
+
+    function comandaAddItem(apptId){
+      const product_id = document.getElementById("ci_prod").value;
+      const qty = Number(document.getElementById("ci_qty").value||0);
+      if(!product_id) return toastMsg("err","Selecione um produto.");
+      if(!(qty>0)) return toastMsg("err","Quantidade inválida.");
+
+      loadLocal();
+      const p = productById(product_id);
+      const stock = ensureStockRow(product_id);
+      if(Number(stock.qty||0) < qty) return toastMsg("err","Estoque insuficiente.");
+
+      stock.qty = Number(stock.qty||0) - qty;
+      state.local.movements.push({ id: uid(), type:"out", product_id, qty, reason:"consumo (comanda)", created_at:new Date().toISOString(), ref: apptId });
+
+      state.local.apptItems = state.local.apptItems || {};
+      state.local.apptItems[apptId] = state.local.apptItems[apptId] || [];
+      const ex = state.local.apptItems[apptId].find(i=>i.product_id===product_id);
+      if(ex) ex.qty += qty;
+      else state.local.apptItems[apptId].push({ product_id, qty, unit_price_cents: Number(p?.price_cents||0) });
+
+      saveLocal();
+      toastMsg("ok","Item adicionado na comanda.");
+      openAppointmentComanda(apptId);
+      loadLocalStock();
+      renderPdvProducts();
+    }
+    window.comandaAddItem = comandaAddItem;
+
+    function comandaRemoveItem(apptId, product_id){
+      loadLocal();
+      const items = state.local.apptItems?.[apptId] || [];
+      const item = items.find(i=>i.product_id===product_id);
+      if(!item) return;
+
+      const row = ensureStockRow(product_id);
+      row.qty = Number(row.qty||0) + Number(item.qty||0);
+      state.local.movements.push({ id: uid(), type:"in", product_id, qty:item.qty, reason:"estorno (comanda)", created_at:new Date().toISOString(), ref: apptId });
+
+      state.local.apptItems[apptId] = items.filter(i=>i.product_id!==product_id);
+      saveLocal();
+      toastMsg("ok","Item removido.");
+      openAppointmentComanda(apptId);
+      loadLocalStock();
+      renderPdvProducts();
+    }
+    window.comandaRemoveItem = comandaRemoveItem;
+
+    async function comandaCheckout(apptId){
+      loadLocal();
+      const items = state.local.apptItems?.[apptId] || [];
+      const serviceId = (await sb.from("appointments").select("service_id, company_id").eq("id", apptId).eq("company_id", state.profile.company_id).maybeSingle()).data?.service_id;
+      const servicePrice = Number(state.servPriceMap[serviceId]||0);
+      const productsTotal = items.reduce((s,i)=> s + Number(i.unit_price_cents||0)*Number(i.qty||0), 0);
+      const total = servicePrice + productsTotal;
+
+      state.local.sales = state.local.sales || [];
+      state.local.sales.push({
+        id: uid(),
+        appointment_id: apptId,
+        payment_method: "dinheiro",
+        subtotal_cents: total,
+        discount_cents: 0,
+        total_cents: total,
+        items: items.map(i=>({ ...i })),
+        created_at: new Date().toISOString()
+      });
+      saveLocal();
+      toastMsg("ok","Recebimento registrado (modo local).");
+      closeModal();
+
+      // opcional: marcar como done no Supabase (se policy permitir)
+      try{
+        await sb.from("appointments").update({ status:"done" }).eq("id", apptId).eq("company_id", state.profile.company_id);
+      } catch(e){ /* ignore */ }
+
+      try{
+        await loadAgenda(); await loadHistory(); await loadDashboard(); await loadDashboardOverview();
+      } catch(e){ /* ignore */ }
+
+      recalcLocalBadges();
+    }
+    window.comandaCheckout = comandaCheckout;
+
 
     // Auto start
     (async ()=>{
