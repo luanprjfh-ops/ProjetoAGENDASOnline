@@ -3115,8 +3115,32 @@ const badgeClientes = document.getElementById("badgeClientes");
     // MÓDULO LOCAL: PRODUTOS / ESTOQUE / PDV / COMANDA
     // - Enquanto não conectamos ao Supabase, tudo fica salvo no navegador (localStorage)
     // =========================
+    
+    function ensureLocal(){
+      if(!state.local || typeof state.local !== "object"){
+        state.local = {
+          products: [],
+          stock: {},
+          movements: [],
+          carts: { pdv: [] },
+          apptItems: {},
+          sales: []
+        };
+      } else {
+        state.local.products = state.local.products || [];
+        state.local.stock = state.local.stock || {};
+        state.local.movements = state.local.movements || [];
+        state.local.carts = state.local.carts || { pdv: [] };
+        state.local.carts.pdv = state.local.carts.pdv || [];
+        state.local.apptItems = state.local.apptItems || {};
+        state.local.sales = state.local.sales || [];
+      }
+      return state.local;
+    }
+
     const LS_KEY = "agendapro_local_v1";
     function loadLocal(){
+      ensureLocal();
       try{
         const raw = localStorage.getItem(LS_KEY);
         if(!raw) return;
@@ -3127,6 +3151,7 @@ const badgeClientes = document.getElementById("badgeClientes");
       } catch(e){ /* ignore */ }
     }
     function saveLocal(){
+      ensureLocal();
       try{ localStorage.setItem(LS_KEY, JSON.stringify(state.local)); } catch(e){ /* ignore */ }
     }
     function uid(){
@@ -3136,6 +3161,7 @@ const badgeClientes = document.getElementById("badgeClientes");
       return (Number(cents||0)/100).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
     }
     function ensureStockRow(product_id){
+      ensureLocal();
       if(!state.local.stock) state.local.stock = {};
       if(!state.local.stock[product_id]) state.local.stock[product_id] = { qty: 0, min_qty: 0 };
       return state.local.stock[product_id];
@@ -3147,7 +3173,20 @@ const badgeClientes = document.getElementById("badgeClientes");
       if(badgePDV) badgePDV.textContent = String((state.local.carts?.pdv||[]).length);
     }
     function seedLocalIfEmpty(){
-      if((state.local.products||[]).length) return;
+      ensureLocal();
+      // IMPORTANTE:
+      // - Os 3 produtos "pré-cadastrados" eram apenas para facilitar o 1º teste.
+      // - Antes, quando você apagava o último produto, essa função "recriava" tudo de novo.
+      // - Agora ela roda NO MÁXIMO 1 vez por navegador (flag persisted).
+      const seededKey = LS_KEY + ":seeded";
+      if(localStorage.getItem(seededKey) === "1") return;
+
+      // Se já existe qualquer produto (criado por você), marca como seeded e sai
+      if((state.local.products||[]).length){
+        try{ localStorage.setItem(seededKey,"1"); }catch(e){}
+        return;
+      }
+
       const p1 = { id: uid(), name: "Água com gás", barcode: "789000000001", price_cents: 400, active: true };
       const p2 = { id: uid(), name: "Refrigerante lata", barcode: "789000000002", price_cents: 600, active: true };
       const p3 = { id: uid(), name: "Cerveja long neck", barcode: "789000000003", price_cents: 900, active: true };
@@ -3155,6 +3194,8 @@ const badgeClientes = document.getElementById("badgeClientes");
       ensureStockRow(p1.id).qty = 10;
       ensureStockRow(p2.id).qty = 10;
       ensureStockRow(p3.id).qty = 10;
+
+      try{ localStorage.setItem(seededKey,"1"); }catch(e){}
       saveLocal();
     }
 
