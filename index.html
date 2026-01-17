@@ -1178,7 +1178,7 @@ tbody tr:hover td{
         <!-- PRODUTOS -->
         <section id="tab-produtos" class="card section hidden">
           <h2>Produtos</h2>
-          <p>Cadastre produtos (bebidas, itens, etc.) com preço e código de barras. Este módulo está em <strong>modo local</strong> (salvo no navegador) até conectarmos no Supabase.</p>
+          <p>Cadastre produtos (bebidas, itens, etc.) com preço e código de barras.</p>
 
           <div class="toolbar">
             <div class="left">
@@ -1203,7 +1203,7 @@ tbody tr:hover td{
         <!-- ESTOQUE -->
         <section id="tab-estoque" class="card section hidden">
           <h2>Estoque</h2>
-          <p>Saldo por produto (entrada/saída/ajuste). Em <strong>modo local</strong> até conectarmos no Supabase.</p>
+          <p>Saldo por produto (entrada/saída/ajuste).</p>
 
           <div class="toolbar">
             <div class="left">
@@ -1229,7 +1229,7 @@ tbody tr:hover td{
         <!-- PDV -->
         <section id="tab-pdv" class="card section hidden">
           <h2>PDV</h2>
-          <p>Pesquisa de produto, carrinho e total. Você pode vincular a venda a um agendamento do dia. Em <strong>modo local</strong> até conectarmos no Supabase.</p>
+          <p>Pesquisa de produto, carrinho e total. Você pode vincular a venda a um agendamento do dia.</p>
 
           <div class="toolbar">
             <div class="left" style="gap:10px">
@@ -2361,7 +2361,9 @@ const badgeClientes = document.getElementById("badgeClientes");
           <td>${t}</td>
           <td>${state.prosMap[a.professional_id] || "—"}</td>
           <td>${state.servMap[a.service_id] || "—"}</td>
-          <td>${a.customer_name || "—"}</td>
+          <td>
+            <button class="linkBtn" onclick="openAppointmentComanda('${a.id}')">${a.customer_name || "—"}</button>
+          </td>
           <td>
             <div class="phoneCell">
               <span>${a.customer_phone || "—"}</span>
@@ -3632,7 +3634,7 @@ const badgeClientes = document.getElementById("badgeClientes");
       state.local.carts.pdv = [];
       saveLocal();
 
-      toastMsg("ok", "Venda registrada (modo local).");
+      toastMsg("ok", "Venda registrada.");
       if(pdvDiscount) pdvDiscount.value = "";
       renderPdvCart();
       renderPdvProducts();
@@ -3725,7 +3727,7 @@ const badgeClientes = document.getElementById("badgeClientes");
             </table>
           </div>
 
-          <div class="muted" style="font-size:13px;margin-top:10px">Obs.: nesta versão, a comanda baixa estoque <b>ao adicionar</b> (modo local). Na integração Supabase, podemos baixar no pagamento.</div>
+          <div class="muted" style="font-size:13px;margin-top:10px">Obs.: a comanda baixa estoque <b>ao adicionar</b>. Se preferir, podemos baixar somente no pagamento.</div>
         `,
         `
           <button class="btn2" onclick="window.__closeModal()">Fechar</button>
@@ -3802,7 +3804,7 @@ const badgeClientes = document.getElementById("badgeClientes");
         created_at: new Date().toISOString()
       });
       saveLocal();
-      toastMsg("ok","Recebimento registrado (modo local).");
+      toastMsg("ok","Recebimento registrado.");
       closeModal();
 
       // opcional: marcar como done no Supabase (se policy permitir)
@@ -3811,8 +3813,14 @@ const badgeClientes = document.getElementById("badgeClientes");
       } catch(e){ /* ignore */ }
 
       try{
-        await loadAgenda(); await loadHistory(); await loadDashboard(); await loadDashboardOverview();
+        await loadAgenda();
+        await loadHistory();
+        await loadDashboard();
+        await loadDashboardOverview();
       } catch(e){ /* ignore */ }
+
+      // Após finalizar, leva para o Histórico e mantém a comanda disponível ao clicar no cliente.
+      try{ selectTab('historico'); }catch(e){}
 
       recalcLocalBadges();
     }
