@@ -931,6 +931,7 @@ tbody tr:hover td{
           <button data-tab="produtos"><span>Produtos</span><span class="tag" id="badgeProdutos">—</span></button>
           <button data-tab="estoque"><span>Estoque</span><span class="tag" id="badgeEstoque">—</span></button>
           <button data-tab="pdv"><span>PDV</span><span class="tag" id="badgePDV">—</span></button>
+          <button data-tab="vendas"><span>Histórico de vendas</span><span class="tag" id="badgeVendas">—</span></button>
         </div>
 
         <div style="margin-top:14px" class="muted">
@@ -1142,9 +1143,15 @@ tbody tr:hover td{
           <p>Defina dias e horários disponíveis por profissional.</p>
 
           <div class="toolbar">
-            <div class="left" style="gap:10px">
+            <div class="left" style="gap:10px; flex-wrap:wrap">
               <select class="miniInput" id="whPro"></select>
-              <select id="whWeekday" class="miniInput">
+
+              <select id="whMode" class="miniInput" title="Modo de lançamento">
+                <option value="weekday">Recorrente (dia da semana)</option>
+                <option value="date">Por data (ex.: hoje/amanhã)</option>
+              </select>
+
+              <select id="whWeekday" class="miniInput" title="Dia da semana">
                 <option value="0">Domingo</option>
                 <option value="1">Segunda</option>
                 <option value="2">Terça</option>
@@ -1153,12 +1160,18 @@ tbody tr:hover td{
                 <option value="5">Sexta</option>
                 <option value="6">Sábado</option>
               </select>
+
+              <input id="whDate" class="miniInput" type="date" title="Data (modo por data)" style="display:none" />
+              <input id="whDateEnd" class="miniInput" type="date" title="Data fim (opcional)" style="display:none" />
+
               <input id="whStart" class="miniInput" type="time" value="09:00" />
               <input id="whEnd" class="miniInput" type="time" value="18:00" />
-              <input id="whSlot" class="miniInput" type="number" min="10" max="180" value="30" />
+              <input id="whSlot" class="miniInput" type="number" min="5" max="180" value="5" title="Passo (min)" />
             </div>
-            <div class="right">
+            <div class="right" style="flex-wrap:wrap; gap:10px">
               <button class="btn2" id="btnWhAdd">Salvar Horário</button>
+              <button class="btn2" id="btnWhTodayTomorrow">Hoje + Amanhã</button>
+              <button class="btn2" id="btnWhList">Listar do Profissional</button>
               <button class="btn2" id="btnWhDefault">Aplicar Seg–Sex 09:00–18:00</button>
               <button class="btn2" id="btnWhReload">Recarregar</button>
             </div>
@@ -1167,7 +1180,7 @@ tbody tr:hover td{
           <div style="overflow:auto">
             <table>
               <thead>
-                <tr><th>Profissional</th><th>Dia</th><th>Início</th><th>Fim</th><th>Slot</th><th>Ações</th></tr>
+                <tr><th>Profissional</th><th>Dia/Data</th><th>Início</th><th>Fim</th><th>Passo</th><th>Tipo</th><th>Ações</th></tr>
               </thead>
               <tbody id="tbodyHours"></tbody>
             </table>
@@ -1293,6 +1306,82 @@ tbody tr:hover td{
           </div>
         </section>
 
+
+        <section id="tab-vendas" class="card section hidden">
+          <div class="row" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <div>
+              <div class="h2">Histórico de vendas</div>
+              <div class="muted">Registros no Supabase. Acesso protegido por senha (2526) no painel.</div>
+            </div>
+            <div class="row" style="gap:10px;flex-wrap:wrap">
+              <button class="btn" id="btnVendasReload">Recarregar</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:14px">
+            <div class="row" style="gap:12px;flex-wrap:wrap;align-items:end">
+              <div class="field" style="min-width:180px">
+                <label>Data início</label>
+                <input type="date" id="salesStart" />
+              </div>
+              <div class="field" style="min-width:180px">
+                <label>Data fim</label>
+                <input type="date" id="salesEnd" />
+              </div>
+              <div class="field" style="min-width:220px">
+                <label>Forma de pagamento</label>
+                <select id="salesPayFilter">
+                  <option value="">Todas</option>
+                  <option value="dinheiro">Dinheiro</option>
+                  <option value="pix">Pix</option>
+                  <option value="cartao">Cartão</option>
+                  <option value="debito">Débito</option>
+                  <option value="credito">Crédito</option>
+                  <option value="outros">Outros</option>
+                </select>
+              </div>
+              <button class="btn primary" id="btnSalesApply">Aplicar filtro</button>
+              <button class="btn" id="btnSalesClear">Limpar</button>
+            </div>
+
+            <div class="row" style="gap:12px;flex-wrap:wrap;margin-top:14px">
+              <div class="kpi">
+                <div class="muted">Total vendido</div>
+                <div class="big" id="kpiSalesTotal">—</div>
+              </div>
+              <div class="kpi">
+                <div class="muted">Quantidade de vendas</div>
+                <div class="big" id="kpiSalesCount">—</div>
+              </div>
+              <div class="kpi">
+                <div class="muted">Ticket médio</div>
+                <div class="big" id="kpiSalesAvg">—</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:14px">
+            <div class="tableWrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Data/Hora</th>
+                    <th>Pagamento</th>
+                    <th>Subtotal</th>
+                    <th>Desconto</th>
+                    <th>Total</th>
+                    <th>Agendamento</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodySales">
+                  <tr><td colspan="6" class="muted">Carregue as vendas para visualizar o histórico.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
       </main>
     </div>
   </div>
@@ -1353,6 +1442,7 @@ const badgeClientes = document.getElementById("badgeClientes");
     const badgeProdutos = document.getElementById("badgeProdutos");
     const badgeEstoque = document.getElementById("badgeEstoque");
     const badgePDV = document.getElementById("badgePDV");
+    const badgeVendas = document.getElementById("badgeVendas");
 
     const tbodyNext = document.getElementById("tbodyNext");
     const tbodyAgenda = document.getElementById("tbodyAgenda");
@@ -1361,6 +1451,18 @@ const badgeClientes = document.getElementById("badgeClientes");
     const histEnd = document.getElementById("histEnd");
     const histPro = document.getElementById("histPro");
     const histSearch = document.getElementById("histSearch");
+
+    // VENDAS (Histórico)
+    const btnVendasReload = document.getElementById("btnVendasReload");
+    const salesStart = document.getElementById("salesStart");
+    const salesEnd = document.getElementById("salesEnd");
+    const salesPayFilter = document.getElementById("salesPayFilter");
+    const btnSalesApply = document.getElementById("btnSalesApply");
+    const btnSalesClear = document.getElementById("btnSalesClear");
+    const tbodySales = document.getElementById("tbodySales");
+    const kpiSalesTotal = document.getElementById("kpiSalesTotal");
+    const kpiSalesCount = document.getElementById("kpiSalesCount");
+    const kpiSalesAvg = document.getElementById("kpiSalesAvg");
     const btnHistToday = document.getElementById("btnHistToday");
     const btnHist7 = document.getElementById("btnHist7");
     const btnHist30 = document.getElementById("btnHist30");
@@ -1396,15 +1498,28 @@ const badgeClientes = document.getElementById("badgeClientes");
 
     // Working Hours refs
     const whPro = document.getElementById("whPro");
+    const whMode = document.getElementById("whMode");
     const whWeekday = document.getElementById("whWeekday");
+    const whDate = document.getElementById("whDate");
+    const whDateEnd = document.getElementById("whDateEnd");
     const whStart = document.getElementById("whStart");
     const whEnd = document.getElementById("whEnd");
     const whSlot = document.getElementById("whSlot");
     const btnWhAdd = document.getElementById("btnWhAdd");
+    const btnWhTodayTomorrow = document.getElementById("btnWhTodayTomorrow");
+    const btnWhList = document.getElementById("btnWhList");
     const btnWhDefault = document.getElementById("btnWhDefault");
     const btnWhReload = document.getElementById("btnWhReload");
     const tbodyHours = document.getElementById("tbodyHours");
+
+    // Modal (Listar horários do profissional)
+    const modalHoursList = document.getElementById("modalHoursList");
+    const btnCloseHoursList = document.getElementById("btnCloseHoursList");
+    const hoursListTitle = document.getElementById("hoursListTitle");
+    const tbodyHoursList = document.getElementById("tbodyHoursList");
+
     // Produtos / Estoque / PDV (modo local)
+    // Produtos / Estoque / PDV (modo local) (modo local)
     const prodSearch = document.getElementById("prodSearch");
     const btnNewProduct = document.getElementById("btnNewProduct");
     const btnProdReload = document.getElementById("btnProdReload");
@@ -1500,6 +1615,10 @@ const badgeClientes = document.getElementById("badgeClientes");
     }
 
     window.selectTab = (tab, close=true)=>{
+      if(tab==="vendas" && !state.salesUnlocked){
+        openSalesGate();
+        return;
+      }
       document.querySelectorAll(".menu button").forEach(b=>b.classList.remove("active"));
       const btn = document.querySelector(`.menu button[data-tab="${tab}"]`);
       if(btn) btn.classList.add("active");
@@ -1516,9 +1635,142 @@ const badgeClientes = document.getElementById("badgeClientes");
       if(tab==="produtos") loadLocalProducts();
       if(tab==="estoque") loadLocalStock();
       if(tab==="pdv") loadPDV();
+      if(tab==="vendas") loadSalesHistory();
 
       if(close) closeModal();
     };
+
+
+    function openSalesGate(){
+      const body = `
+        <div class="muted" style="margin-bottom:10px">Digite a senha do proprietário para acessar o Histórico de Vendas.</div>
+        <div class="field">
+          <label>Senha</label>
+          <input id="salesPassInput" type="password" placeholder="••••" autocomplete="off" />
+        </div>
+      `;
+      const footer = `
+        <button class="btn" onclick="window.__closeModal()">Cancelar</button>
+        <button class="btn primary" id="btnSalesPassOk">Entrar</button>
+      `;
+      openModal("Acesso restrito", body, footer);
+      setTimeout(()=>{
+        const inp = document.getElementById("salesPassInput");
+        const ok = document.getElementById("btnSalesPassOk");
+        inp?.focus();
+        const submit = ()=>{
+          const v = String(inp?.value||"").trim();
+          if(v === "2526"){
+            state.salesUnlocked = true;
+            toastMsg("ok","Acesso liberado.");
+            window.__closeModal();
+            selectTab("vendas", false);
+          }else{
+            toastMsg("err","Senha incorreta.");
+          }
+        };
+        ok?.addEventListener("click", submit);
+        inp?.addEventListener("keydown", (e)=>{ if(e.key==="Enter") submit(); });
+      }, 50);
+    }
+
+    function setSalesDefaultDates(){
+      if(!salesStart || !salesEnd) return;
+      const t = todayISO();
+      salesStart.value = t;
+      salesEnd.value = t;
+    }
+
+    async function loadSalesHistory(){
+      if(!tbodySales) return;
+
+      // defaults
+      if(!salesStart?.value || !salesEnd?.value) setSalesDefaultDates();
+
+      const companyId = state?.profile?.company_id;
+      if(!companyId){
+        tbodySales.innerHTML = `<tr><td colspan="6" class="muted">Sessão inválida.</td></tr>`;
+        return;
+      }
+
+      tbodySales.innerHTML = `<tr><td colspan="6" class="muted">Carregando…</td></tr>`;
+
+      try{
+        const s = salesStart?.value || "";
+        const e = salesEnd?.value || "";
+        const pay = salesPayFilter?.value || "";
+
+        let q = sb.from("sales")
+          .select("id, created_at, payment_method, subtotal_cents, discount_cents, total_cents, appointment_id")
+          .eq("company_id", companyId)
+          .order("created_at", { ascending:false });
+
+        if(s){
+          const r = dayRangeUTC(s);
+          q = q.gte("created_at", r.start);
+        }
+        if(e){
+          const r = dayRangeUTC(e);
+          q = q.lt("created_at", r.end);
+        }
+        if(pay) q = q.eq("payment_method", pay);
+
+        const { data, error } = await q;
+        if(error){
+          console.warn(error);
+          tbodySales.innerHTML = `<tr><td colspan="6" class="muted">Não foi possível carregar vendas (verifique tabela/políticas).</td></tr>`;
+          kpiSalesTotal.textContent = "—";
+          kpiSalesCount.textContent = "—";
+          kpiSalesAvg.textContent = "—";
+          return;
+        }
+
+        const rows = data || [];
+        const sum = rows.reduce((a,x)=>a + Number(x.total_cents||0), 0);
+        const cnt = rows.length;
+        const avg = cnt ? Math.round(sum/cnt) : 0;
+
+        if(kpiSalesTotal) kpiSalesTotal.textContent = fmtMoney(sum);
+        if(kpiSalesCount) kpiSalesCount.textContent = String(cnt);
+        if(kpiSalesAvg) kpiSalesAvg.textContent = fmtMoney(avg);
+
+        if(badgeVendas) badgeVendas.textContent = String(cnt);
+
+        if(!cnt){
+          tbodySales.innerHTML = `<tr><td colspan="6" class="muted">Nenhuma venda no período.</td></tr>`;
+          return;
+        }
+
+        tbodySales.innerHTML = rows.map(r=>{
+          const dt = new Date(r.created_at);
+          const when = isNaN(dt) ? (r.created_at||"") : dt.toLocaleString();
+          const payLbl = (r.payment_method||"").toUpperCase();
+          return `
+            <tr>
+              <td>${esc(when)}</td>
+              <td>${esc(payLbl || "—")}</td>
+              <td>${fmtMoney(r.subtotal_cents||0)}</td>
+              <td>${fmtMoney(r.discount_cents||0)}</td>
+              <td style="font-weight:900">${fmtMoney(r.total_cents||0)}</td>
+              <td>${r.appointment_id ? `<span class="tag">Vinculado</span>` : `<span class="muted">—</span>`}</td>
+            </tr>
+          `;
+        }).join("");
+      }catch(e){
+        console.warn(e);
+        tbodySales.innerHTML = `<tr><td colspan="6" class="muted">Erro ao carregar vendas.</td></tr>`;
+      }
+    }
+
+    btnVendasReload?.addEventListener("click", loadSalesHistory);
+    btnSalesApply?.addEventListener("click", loadSalesHistory);
+    btnSalesClear?.addEventListener("click", ()=>{
+      if(salesStart) salesStart.value = "";
+      if(salesEnd) salesEnd.value = "";
+      if(salesPayFilter) salesPayFilter.value = "";
+      setSalesDefaultDates();
+      loadSalesHistory();
+    });
 
     btnOpenMenu?.addEventListener("click", openMenuModal);
 
@@ -1626,7 +1878,8 @@ const badgeClientes = document.getElementById("badgeClientes");
         movements: [],
         carts: { pdv: [] },
         apptItems: {}
-      }
+      },
+      salesUnlocked: false
     };
 
     const pad2 = (n)=>String(n).padStart(2,"0");
@@ -1833,6 +2086,52 @@ const badgeClientes = document.getElementById("badgeClientes");
     // Working hours actions
     btnWhReload.onclick = loadWorkingHours;
 
+    // Horários: alternar modo (recorrente x por data)
+    function syncWhModeUI(){
+      const mode = (whMode?.value || 'weekday');
+      const isDate = mode === 'date';
+      if(whWeekday) whWeekday.style.display = isDate ? 'none' : '';
+      if(whDate) whDate.style.display = isDate ? '' : 'none';
+      if(whDateEnd) whDateEnd.style.display = isDate ? '' : 'none';
+
+      // defaults úteis
+      if(isDate && whDate && !whDate.value){
+        const d = new Date();
+        const iso = d.toISOString().slice(0,10);
+        whDate.value = iso;
+      }
+      if(!isDate && whDateEnd){
+        whDateEnd.value = '';
+      }
+    }
+    whMode?.addEventListener('change', syncWhModeUI);
+    syncWhModeUI();
+
+    // Hoje + Amanhã (modo por data)
+    btnWhTodayTomorrow && (btnWhTodayTomorrow.onclick = ()=>{
+      if(!whMode) return;
+      whMode.value = 'date';
+      syncWhModeUI();
+      const today = new Date();
+      const tomorrow = new Date();
+      tomorrow.setDate(today.getDate()+1);
+      const t1 = today.toISOString().slice(0,10);
+      const t2 = tomorrow.toISOString().slice(0,10);
+      if(whDate) whDate.value = t1;
+      if(whDateEnd) whDateEnd.value = t2;
+    });
+
+    // Listar horários do profissional (recorrentes + por data)
+    btnWhList && (btnWhList.onclick = async ()=>{
+      const professional_id = whPro?.value;
+      if(!professional_id) return toastMsg('err','Selecione um profissional.');
+      await openHoursListModal(professional_id);
+    });
+
+    btnCloseHoursList && (btnCloseHoursList.onclick = ()=>{
+      if(modalHoursList) modalHoursList.style.display = 'none';
+    });
+
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // IMPORTANTÍSSIMO MULTI-EMPRESA:
     // Todos inserts/updates usam state.profile.company_id
@@ -1840,19 +2139,58 @@ const badgeClientes = document.getElementById("badgeClientes");
 
     btnWhAdd.onclick = async ()=>{
       const professional_id = whPro.value;
-      const weekday = Number(whWeekday.value);
       const start_time = whStart.value;
       const end_time = whEnd.value;
-      const slot_minutes = Number(whSlot.value || 30);
+      const slot_minutes = Number(whSlot.value || 5); // passo (min)
 
       if(!professional_id) return toastMsg("err","Selecione um profissional.");
       if(!start_time || !end_time) return toastMsg("err","Informe início e fim.");
       if(start_time >= end_time) return toastMsg("err","Início deve ser menor que fim.");
-      if(slot_minutes < 10 || slot_minutes > 180) return toastMsg("err","Slot inválido.");
+      if(slot_minutes < 5 || slot_minutes > 180) return toastMsg("err","Passo inválido.");
       if(!state?.profile?.company_id) return toastMsg("err","Sessão inválida (sem company_id).");
 
+      const company_id = state.profile.company_id;
+      const mode = (whMode?.value || 'weekday');
+
+      // 1) Por data (ex.: hoje/amanhã)
+      if(mode === 'date'){
+        const date_start = whDate?.value;
+        const date_end = whDateEnd?.value || date_start;
+        if(!date_start) return toastMsg('err','Informe a data.');
+        if(date_end && date_end < date_start) return toastMsg('err','Data fim deve ser maior/igual à data.');
+
+        // gera datas (inclusive)
+        const dates=[];
+        let cur = new Date(date_start + 'T00:00:00');
+        const last = new Date((date_end||date_start) + 'T00:00:00');
+        while(cur <= last){
+          dates.push(cur.toISOString().slice(0,10));
+          cur.setDate(cur.getDate()+1);
+        }
+
+        const payload = dates.map(d=>({
+          company_id,
+          professional_id,
+          date: d,
+          start_time,
+          end_time,
+          slot_minutes
+        }));
+
+        const { error } = await sb.from('working_hours_dates').upsert(payload, { onConflict: 'company_id,professional_id,date,start_time,end_time' });
+        if(error){
+          console.error(error);
+          return toastMsg('err','Erro ao salvar horário por data. Verifique se a tabela working_hours_dates existe.');
+        }
+        toastMsg('ok', `Horário por data salvo (${dates.length} dia(s)).`);
+        await loadWorkingHours();
+        return;
+      }
+
+      // 2) Recorrente (dia da semana)
+      const weekday = Number(whWeekday.value);
       const payload = {
-        company_id: state.profile.company_id,
+        company_id,
         professional_id,
         weekday,
         start_time,
@@ -1860,9 +2198,12 @@ const badgeClientes = document.getElementById("badgeClientes");
         slot_minutes
       };
 
-      const { error } = await sb.from("working_hours").insert(payload);
-      if(error) return toastMsg("err", "Erro ao salvar horário.");
-      toastMsg("ok","Horário salvo.");
+      const { error } = await sb.from('working_hours').insert(payload);
+      if(error){
+        console.error(error);
+        return toastMsg('err', 'Erro ao salvar horário.');
+      }
+      toastMsg('ok','Horário salvo.');
       await loadWorkingHours();
     };
 
@@ -1871,21 +2212,40 @@ const badgeClientes = document.getElementById("badgeClientes");
       if(!professional_id) return toastMsg("err","Selecione um profissional.");
       if(!state?.profile?.company_id) return toastMsg("err","Sessão inválida (sem company_id).");
 
-      const ok = confirm("Aplicar padrão Seg–Sex 09:00–18:00 (slot 30) para este profissional? Isso adiciona novos horários.");
-      if(!ok) return;
+      const company_id = state.profile.company_id;
+      const start_time = "09:00";
+      const end_time = "18:00";
+      const slot_minutes = 5;
 
+      // Seg(1) a Sex(5)
       const rows = [1,2,3,4,5].map(weekday=>({
-        company_id: state.profile.company_id,
+        company_id,
         professional_id,
         weekday,
-        start_time: "09:00",
-        end_time: "18:00",
-        slot_minutes: 30
+        start_time,
+        end_time,
+        slot_minutes
       }));
 
-      const { error } = await sb.from("working_hours").insert(rows);
-      if(error) return toastMsg("err","Erro ao aplicar padrão (talvez duplicado).");
-      toastMsg("ok","Padrão aplicado.");
+      // Remove existentes seg-sex e insere novamente (evita duplicação)
+      const { error: delErr } = await sb.from('working_hours')
+        .delete()
+        .eq('company_id', company_id)
+        .eq('professional_id', professional_id)
+        .in('weekday', [1,2,3,4,5]);
+
+      if(delErr){
+        console.error(delErr);
+        return toastMsg('err','Erro ao limpar horários seg-sex.');
+      }
+
+      const { error } = await sb.from('working_hours').insert(rows);
+      if(error){
+        console.error(error);
+        return toastMsg('err','Erro ao aplicar padrão seg-sex.');
+      }
+
+      toastMsg('ok','Padrão seg-sex aplicado.');
       await loadWorkingHours();
     };
 
@@ -2592,44 +2952,97 @@ const badgeClientes = document.getElementById("badgeClientes");
 
       await loadMaps();
     }
-
     async function loadWorkingHours(){
+      const company_id = state.profile.company_id;
       const proId = whPro.value;
 
-      let q = sb
+      const q1 = sb
         .from("working_hours")
         .select("id, professional_id, weekday, start_time, end_time, slot_minutes")
-        .eq("company_id", state.profile.company_id)
+        .eq("company_id", company_id)
         .order("professional_id",{ascending:true})
         .order("weekday",{ascending:true})
         .order("start_time",{ascending:true});
 
-      if(proId) q = q.eq("professional_id", proId);
+      const q2 = sb
+        .from("working_hours_dates")
+        .select("id, professional_id, date, start_time, end_time, slot_minutes")
+        .eq("company_id", company_id)
+        .order("professional_id",{ascending:true})
+        .order("date",{ascending:true})
+        .order("start_time",{ascending:true});
 
-      const { data, error } = await q;
+      if(proId){ q1.eq("professional_id", proId); q2.eq("professional_id", proId); }
+
+      const [{ data: wh, error: e1 }, { data: wd, error: e2 }] = await Promise.all([q1, q2]);
 
       tbodyHours.innerHTML = "";
-      if(error){
-        tbodyHours.innerHTML = `<tr><td colspan="6">Erro ao carregar horários.</td></tr>`;
+
+      if(e1 && String(e1.message||'').toLowerCase().includes('relation') ){
+        console.error(e1);
+      }
+      if(e2 && String(e2.message||'').toLowerCase().includes('relation') ){
+        console.error(e2);
+      }
+
+      const rows=[];
+      (wh||[]).forEach(w=>rows.push({
+        kind:'weekday',
+        id:w.id,
+        professional_id:w.professional_id,
+        day_label: weekdayLabel(w.weekday),
+        start_time:w.start_time,
+        end_time:w.end_time,
+        slot_minutes:w.slot_minutes,
+        type_label:'Recorrente'
+      }));
+      (wd||[]).forEach(w=>rows.push({
+        kind:'date',
+        id:w.id,
+        professional_id:w.professional_id,
+        day_label: fmtDate(w.date),
+        start_time:w.start_time,
+        end_time:w.end_time,
+        slot_minutes:w.slot_minutes,
+        type_label:'Por data'
+      }));
+
+      // ordena por profissional + tipo + dia
+      rows.sort((a,b)=>{
+        const pa=(state.prosMap[a.professional_id]||'').toLowerCase();
+        const pb=(state.prosMap[b.professional_id]||'').toLowerCase();
+        if(pa<pb) return -1; if(pa>pb) return 1;
+        if(a.kind!==b.kind) return a.kind==='weekday' ? -1 : 1;
+        return (a.day_label||'').localeCompare(b.day_label||'', 'pt-BR');
+      });
+
+      const colCount = 7;
+      if((e1 && !wh) || (e2 && !wd)){
+        tbodyHours.innerHTML = `<tr><td colspan="${colCount}">Erro ao carregar horários.</td></tr>`;
         return;
       }
-      if(!data.length){
-        tbodyHours.innerHTML = `<tr><td colspan="6">Nenhum horário cadastrado.</td></tr>`;
+      if(!rows.length){
+        tbodyHours.innerHTML = `<tr><td colspan="${colCount}">Nenhum horário cadastrado.</td></tr>`;
+        await loadCounts();
         return;
       }
 
-      data.forEach(w=>{
+      rows.forEach(r=>{
         const tr = document.createElement("tr");
+        const delBtn = state.isAdmin ? `<button class="btn2 btnDanger" onclick="${r.kind==='weekday' ? `deleteWH('${r.id}')` : `deleteWHDate('${r.id}')`}">Excluir</button>` : "";
+        const editBtn = r.kind==='weekday' ? `<button class="btn2" onclick="editWH('${r.id}')">Editar</button>` : `<button class="btn2" onclick="editWHDate('${r.id}')">Editar</button>`;
+
         tr.innerHTML = `
-          <td>${state.prosMap[w.professional_id] || "—"}</td>
-          <td>${weekdayLabel(w.weekday)}</td>
-          <td>${w.start_time}</td>
-          <td>${w.end_time}</td>
-          <td>${w.slot_minutes} min</td>
+          <td>${state.prosMap[r.professional_id] || "—"}</td>
+          <td>${r.day_label}</td>
+          <td>${r.start_time}</td>
+          <td>${r.end_time}</td>
+          <td>${r.slot_minutes} min</td>
+          <td>${r.type_label}</td>
           <td>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn2" onclick="editWH('${w.id}')">Editar</button>
-              ${state.isAdmin ? `<button class="btn2 btnDanger" onclick="deleteWH('${w.id}')">Excluir</button>` : ""}
+              ${editBtn}
+              ${delBtn}
             </div>
           </td>
         `;
@@ -2639,7 +3052,9 @@ const badgeClientes = document.getElementById("badgeClientes");
       await loadCounts();
     }
 
+
     // ----- MODAIS / CRUD -----
+
     function esc(s){
       return String(s||"")
         .replaceAll("&","&amp;")
@@ -2882,7 +3297,7 @@ const badgeClientes = document.getElementById("badgeClientes");
             <div><label>Início</label><input id="wh_e_start" type="time" value="${data.start_time}"/></div>
             <div><label>Fim</label><input id="wh_e_end" type="time" value="${data.end_time}"/></div>
           </div>
-          <div><label>Slot (min)</label><input id="wh_e_slot" type="number" min="10" max="180" value="${data.slot_minutes}"/></div>
+          <div><label>Passo (min)</label><input id="wh_e_slot" type="number" min="5" max="180" value="${data.slot_minutes}"/></div>
         `,
         `
           <button class="btn2" onclick="window.__closeModal()">Cancelar</button>
@@ -2901,7 +3316,7 @@ const badgeClientes = document.getElementById("badgeClientes");
       const slot_minutes = Number(document.getElementById("wh_e_slot").value || 30);
 
       if(start_time >= end_time) return toastMsg("err","Início deve ser menor que fim.");
-      if(slot_minutes < 10 || slot_minutes > 180) return toastMsg("err","Slot inválido.");
+      if(slot_minutes < 5 || slot_minutes > 180) return toastMsg("err","Passo inválido.");
 
       const { error } = await sb.from("working_hours")
         .update({ professional_id, weekday, start_time, end_time, slot_minutes })
@@ -2923,6 +3338,118 @@ const badgeClientes = document.getElementById("badgeClientes");
       await loadWorkingHours();
     };
 
+    // Working hours (por data) edit/delete
+    window.editWHDate = async (id)=>{
+      const { data, error } = await sb.from('working_hours_dates')
+        .select('id, professional_id, date, start_time, end_time, slot_minutes')
+        .eq('company_id', state.profile.company_id)
+        .eq('id', id).maybeSingle();
+
+      if(error || !data) return toastMsg('err','Erro ao abrir horário por data.');
+
+      openModal(
+        'Editar Horário (por data)',
+        `
+          <div class="row2">
+            <div>
+              <label>Profissional</label>
+              <select id="whd_e_pro">
+                ${state.pros.filter(p=>p.active).map(p=>`<option value="${p.id}" ${p.id===data.professional_id?"selected":""}>${p.name}</option>`).join("")}
+              </select>
+            </div>
+            <div>
+              <label>Data</label>
+              <input id="whd_e_date" type="date" value="${data.date}"/>
+            </div>
+          </div>
+          <div class="row2">
+            <div><label>Início</label><input id="whd_e_start" type="time" value="${data.start_time}"/></div>
+            <div><label>Fim</label><input id="whd_e_end" type="time" value="${data.end_time}"/></div>
+          </div>
+          <div><label>Passo (min)</label><input id="whd_e_slot" type="number" min="5" max="180" value="${data.slot_minutes}"/></div>
+        `,
+        `
+          <button class="btn2" onclick="window.__closeModal()">Cancelar</button>
+          <button class="btn" onclick="window.saveWHDate('${data.id}')">Salvar</button>
+        `
+      );
+    };
+
+    window.saveWHDate = async (id)=>{
+      if(!state?.profile?.company_id) return toastMsg('err','Sessão inválida (sem company_id).');
+
+      const professional_id = document.getElementById('whd_e_pro').value;
+      const date = document.getElementById('whd_e_date').value;
+      const start_time = document.getElementById('whd_e_start').value;
+      const end_time = document.getElementById('whd_e_end').value;
+      const slot_minutes = Number(document.getElementById('whd_e_slot').value || 5);
+
+      if(!date) return toastMsg('err','Data inválida.');
+      if(start_time >= end_time) return toastMsg('err','Início deve ser menor que fim.');
+      if(slot_minutes < 5 || slot_minutes > 180) return toastMsg('err','Passo inválido.');
+
+      const { error } = await sb.from('working_hours_dates')
+        .update({ professional_id, date, start_time, end_time, slot_minutes })
+        .eq('id', id)
+        .eq('company_id', state.profile.company_id);
+
+      if(error){
+        console.error(error);
+        return toastMsg('err','Erro ao salvar horário por data.');
+      }
+      toastMsg('ok','Horário por data atualizado.');
+      closeModal();
+      await loadWorkingHours();
+    };
+
+    window.deleteWHDate = async (id)=>{
+      if(!state.isAdmin) return toastMsg('err','Apenas ADMIN pode excluir.');
+      if(!confirm('Excluir horário por data?')) return;
+      const { error } = await sb.from('working_hours_dates')
+        .delete()
+        .eq('id', id)
+        .eq('company_id', state.profile.company_id);
+      if(error){
+        console.error(error);
+        return toastMsg('err','Erro ao excluir horário por data.');
+      }
+      toastMsg('ok','Horário por data excluído.');
+      await loadWorkingHours();
+    };
+
+    async function openHoursListModal(professional_id){
+      if(!modalHoursList) return;
+      tbodyHoursList.innerHTML = '';
+      const proName = state.prosMap[professional_id] || 'Profissional';
+      hoursListTitle.textContent = `Horários cadastrados • ${proName}`;
+
+      const company_id = state.profile.company_id;
+      const [a,b] = await Promise.all([
+        sb.from('working_hours').select('weekday, start_time, end_time, slot_minutes').eq('company_id', company_id).eq('professional_id', professional_id).order('weekday',{ascending:true}).order('start_time',{ascending:true}),
+        sb.from('working_hours_dates').select('date, start_time, end_time, slot_minutes').eq('company_id', company_id).eq('professional_id', professional_id).order('date',{ascending:true}).order('start_time',{ascending:true})
+      ]);
+
+      const wh = a.data || [];
+      const wd = b.data || [];
+
+      const all=[];
+      wh.forEach(x=>all.push({ kind:'Recorrente', day: weekdayLabel(x.weekday), start:x.start_time, end:x.end_time, step:x.slot_minutes }));
+      wd.forEach(x=>all.push({ kind:'Por data', day: fmtDate(x.date), start:x.start_time, end:x.end_time, step:x.slot_minutes }));
+
+      if(!all.length){
+        tbodyHoursList.innerHTML = `<tr><td colspan="5">Nenhum horário cadastrado.</td></tr>`;
+      } else {
+        all.forEach(r=>{
+          const tr=document.createElement('tr');
+          tr.innerHTML = `<td>${r.kind}</td><td>${r.day}</td><td>${r.start}</td><td>${r.end}</td><td>${r.step} min</td>`;
+          tbodyHoursList.appendChild(tr);
+        });
+      }
+
+      modalHoursList.style.display = 'flex';
+    }
+
+
 
     // ----- NOVO AGENDAMENTO (com horários disponíveis por profissional) -----
     function buildOptions(list, valueKey, labelKey, onlyActive=true){
@@ -2936,6 +3463,102 @@ const badgeClientes = document.getElementById("badgeClientes");
     function pickSlotStart(row){
       if(!row) return null;
       return row.slot_start || row.starts_at || row.start || row.slot || row.datetime || row.time || null;
+    }
+
+    function getServiceDurationMinutes(service_id){
+      const s = (state.serv||[]).find(x=>x.id===service_id);
+      const d = Number(s?.duration_minutes || 0);
+      return d>0 ? d : 30;
+    }
+
+    const toMin = (hhmm)=>{
+      if(!hhmm) return 0;
+      const [h,m] = String(hhmm).split(':');
+      return (Number(h)||0)*60 + (Number(m)||0);
+    };
+
+    const minutesToHHMM = (min)=>{
+      const h = String(Math.floor(min/60)).padStart(2,'0');
+      const m = String(min%60).padStart(2,'0');
+      return `${h}:${m}`;
+    };
+
+    async function computeAvailableSlotsFallback({ professional_id, service_id, dateISO }){
+      // Fallback client-side: usa working_hours / working_hours_dates + appointments
+      const company_id = state.profile.company_id;
+      const duration = getServiceDurationMinutes(service_id);
+
+      // 1) Busca horário por data (tem prioridade). Se não existir, usa recorrente (weekday)
+      const weekday = new Date(dateISO + 'T00:00:00').getDay();
+
+      let blocks = [];
+      try{
+        const { data: wd } = await sb
+          .from('working_hours_dates')
+          .select('start_time,end_time,slot_minutes')
+          .eq('company_id', company_id)
+          .eq('professional_id', professional_id)
+          .eq('date', dateISO);
+        if(wd && wd.length){
+          blocks = wd.map(x=>({start:x.start_time, end:x.end_time, step:Number(x.slot_minutes||5)}));
+        }
+      } catch(e){ /* tabela pode não existir */ }
+
+      if(!blocks.length){
+        const { data: wh } = await sb
+          .from('working_hours')
+          .select('start_time,end_time,slot_minutes')
+          .eq('company_id', company_id)
+          .eq('professional_id', professional_id)
+          .eq('weekday', weekday);
+        blocks = (wh||[]).map(x=>({start:x.start_time, end:x.end_time, step:Number(x.slot_minutes||5)}));
+      }
+
+      if(!blocks.length) return [];
+
+      // 2) Busca agendamentos do dia
+      const range = dayRangeISO(dateISO);
+      const { data: appts } = await sb
+        .from('appointments')
+        .select('starts_at, ends_at, status')
+        .eq('company_id', company_id)
+        .eq('professional_id', professional_id)
+        .gte('starts_at', range.start)
+        .lt('starts_at', range.end);
+
+      const busy = (appts||[])
+        .filter(a=>String(a.status||'').toLowerCase() !== 'cancelled')
+        .map(a=>({
+          start: new Date(a.starts_at).getTime(),
+          end: new Date(a.ends_at || a.starts_at).getTime()
+        }));
+
+      const slots=[];
+      const dateBase = new Date(dateISO + 'T00:00:00');
+
+      for(const b of blocks){
+        const step = Math.max(5, Number(b.step||5));
+        const startMin = toMin(b.start);
+        const endMin = toMin(b.end);
+
+        for(let t=startMin; t+duration<=endMin; t+=step){
+          const start = new Date(dateBase);
+          start.setMinutes(t);
+          start.setSeconds(0,0);
+          const end = new Date(start.getTime() + duration*60000);
+
+          const sMs = start.getTime();
+          const eMs = end.getTime();
+
+          const overlaps = busy.some(x => (sMs < x.end) && (eMs > x.start));
+          if(!overlaps){
+            slots.append(start.toISOString());
+          }
+        }
+      }
+
+      // unique + sort
+      return Array.from(new Set(slots)).sort();
     }
 
     async function openNewAppointmentModal(){
@@ -2976,6 +3599,18 @@ const badgeClientes = document.getElementById("badgeClientes");
         </div>
 
         <div style="margin-top:8px">
+          <label>Cliente cadastrado (opcional)</label>
+          <div style="position:relative">
+            <input id="na_cust_search" placeholder="Buscar por nome ou telefone" autocomplete="off" />
+            <div id="na_cust_list" style="position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:60;display:none;max-height:220px;overflow:auto;border-radius:14px;border:1px solid rgba(255,255,255,.14);background: rgba(15,10,20,.98);backdrop-filter: blur(10px);"></div>
+          </div>
+          <div class="muted" style="font-size:12px;margin-top:6px">Selecione um cliente para preencher nome e telefone automaticamente, ou deixe em branco para cadastrar um novo cliente.</div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn2" id="na_use_new" type="button">Cadastrar novo cliente</button>
+          </div>
+        </div>
+
+        <div style="margin-top:8px">
           <label>Nome do cliente</label>
           <input id="na_name" placeholder="Nome completo" />
         </div>
@@ -2983,6 +3618,7 @@ const badgeClientes = document.getElementById("badgeClientes");
         <div class="toolbar" style="margin-top:12px">
           <div class="left" style="gap:10px">
             <div style="font-weight:1000">Horários disponíveis</div>
+            <span id="na_dur" class="muted" style="font-size:13px">Duração do serviço: —</span>
             <span class="muted" style="font-size:13px">selecionar um horário cria o agendamento</span>
           </div>
           <div class="right">
@@ -3006,9 +3642,104 @@ const badgeClientes = document.getElementById("badgeClientes");
       const elDate = document.getElementById("na_date");
       const elName = document.getElementById("na_name");
       const elPhone = document.getElementById("na_phone");
+      const elCustSearch = document.getElementById("na_cust_search");
+      const elCustList = document.getElementById("na_cust_list");
+      const elUseNew = document.getElementById("na_use_new");
+      let selectedCustomer = null;
+
+      function renderCustomerList(items){
+        if(!elCustList) return;
+        if(!items || !items.length){
+          elCustList.style.display = 'none';
+          elCustList.innerHTML = '';
+          return;
+        }
+        elCustList.innerHTML = items.map(c=>{
+          const name = esc(c.full_name || '');
+          const phone = esc(c.phone || '');
+          return `
+            <div class="rowHover" data-id="${c.id}" style="padding:10px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:12px">
+              <div style="font-weight:800">${name}</div>
+              <div class="muted" style="font-size:12px;white-space:nowrap">${phone || '—'}</div>
+            </div>`;
+        }).join('');
+        elCustList.style.display = 'block';
+
+        [...elCustList.querySelectorAll('.rowHover')].forEach(row=>{
+          row.onclick = ()=>{
+            const id = row.getAttribute('data-id');
+            const c = items.find(x=>String(x.id)===String(id));
+            if(!c) return;
+            selectedCustomer = c;
+            if(elCustSearch) elCustSearch.value = `${c.full_name || ''}${c.phone ? ' • ' + c.phone : ''}`;
+            if(elName) elName.value = c.full_name || '';
+            if(elPhone) elPhone.value = c.phone || '';
+            elCustList.style.display = 'none';
+            elCustList.innerHTML = '';
+          };
+        });
+      }
+
+      async function searchCustomersLive(){
+        if(!elCustSearch) return;
+        const term = (elCustSearch.value || '').trim();
+        if(!term || term.length < 2){
+          renderCustomerList([]);
+          return;
+        }
+        const q = term.replace(/[%_]/g, '');
+        const { data, error } = await sb
+          .from('customers')
+          .select('id, full_name, phone')
+          .eq('company_id', state.profile.company_id)
+          .or(`full_name.ilike.%${q}%,phone.ilike.%${q}%`)
+          .order('full_name',{ascending:true})
+          .limit(8);
+        if(error){
+          console.error(error);
+          renderCustomerList([]);
+          return;
+        }
+        renderCustomerList(data || []);
+      }
+
+      const searchCustomersDebounced = debounce(searchCustomersLive, 250);
+      elCustSearch?.addEventListener('input', ()=>{
+        selectedCustomer = null;
+        searchCustomersDebounced();
+      });
+
+      // Fecha lista ao clicar fora
+      document.addEventListener('click', (ev)=>{
+        try{
+          if(!elCustList || elCustList.style.display==='none') return;
+          const t = ev.target;
+          if(t === elCustSearch || elCustList.contains(t)) return;
+          elCustList.style.display='none';
+        }catch(e){}
+      }, { capture: true });
+
+      elUseNew?.addEventListener('click', ()=>{
+        selectedCustomer = null;
+        if(elCustSearch) elCustSearch.value = '';
+        if(elName) elName.value = '';
+        if(elPhone) elPhone.value = '';
+        renderCustomerList([]);
+      });
+
       const elSlots = document.getElementById("na_slots");
       const elMsg = document.getElementById("na_msg");
       const elReload = document.getElementById("na_reload_slots");
+
+      const elDur = document.getElementById("na_dur");
+      function updateDur(){
+        const d = elServ.value ? getServiceDurationMinutes(elServ.value) : null;
+        if(elDur) elDur.textContent = d ? `Duração do serviço: ${d} min` : "Duração do serviço: —";
+      }
+      elServ.addEventListener('change', ()=>{ updateDur(); loadSlots(); });
+      elPro.addEventListener('change', loadSlots);
+      elDate.addEventListener('change', loadSlots);
+      updateDur();
 
       const setMsg = (t)=>{ if(elMsg) elMsg.textContent = t || ""; };
 
@@ -3026,19 +3757,28 @@ const badgeClientes = document.getElementById("badgeClientes");
         }
 
         // RPC: get_available_slots(p_professional_id, p_service_id, p_date)
-        const { data, error } = await sb.rpc("get_available_slots", {
+        let rpcData = null;
+        const rpc = await sb.rpc("get_available_slots", {
           p_professional_id,
           p_service_id,
           p_date
         });
+        rpcData = rpc.data;
 
-        if(error){
-          console.error(error);
-          setMsg("Erro ao buscar horários disponíveis. Verifique se a RPC get_available_slots existe e está liberada no RLS.");
-          return;
+        if(rpc.error){
+          console.error(rpc.error);
+          // Fallback: calcula slots no frontend (não depende de RPC) usando duração do serviço
+          try{
+            rpcData = await computeAvailableSlotsFallback({ professional_id: p_professional_id, service_id: p_service_id, dateISO: p_date });
+            setMsg("RPC get_available_slots indisponível; usando cálculo local (fallback).");
+          } catch(e){
+            console.error(e);
+            setMsg("Erro ao buscar horários disponíveis. Verifique se a RPC get_available_slots existe ou se a tabela working_hours_dates foi criada.");
+            return;
+          }
         }
 
-        const slots = (data||[])
+        const slots = (rpcData||[])
           .map(pickSlotStart)
           .filter(Boolean);
 
@@ -3066,11 +3806,51 @@ const badgeClientes = document.getElementById("badgeClientes");
 
         const p_professional_id = elPro.value;
         const p_service_id = elServ.value;
-        const p_customer_name = (elName.value||"").trim();
-        const p_customer_phone = (elPhone.value||"").trim();
+
+        // Cliente: pode ser selecionado (cadastrado) ou digitado (novo)
+        let p_customer_name = (elName.value||"").trim();
+        let p_customer_phone = (elPhone.value||"").trim();
+
+        if(selectedCustomer){
+          p_customer_name = (selectedCustomer.full_name || p_customer_name || '').trim();
+          p_customer_phone = (selectedCustomer.phone || p_customer_phone || '').trim();
+        }
 
         if(!p_professional_id || !p_service_id) return setMsg("Selecione profissional e serviço.");
         if(!p_customer_name || p_customer_name.length < 2) return setMsg("Informe o nome do cliente.");
+
+        // Garante que cliente novo seja salvo (sem duplicar por telefone)
+        try{
+          if(!selectedCustomer){
+            const phoneKey = (p_customer_phone||'').replace(/\D/g,'');
+            let existing = null;
+            if(phoneKey && phoneKey.length >= 8){
+              const chk = await sb
+                .from('customers')
+                .select('id, full_name, phone')
+                .eq('company_id', state.profile.company_id)
+                .eq('phone', p_customer_phone)
+                .maybeSingle();
+              if(!chk.error) existing = chk.data;
+            }
+            if(existing){
+              selectedCustomer = existing;
+            } else {
+              const payloadCust = {
+                company_id: state.profile.company_id,
+                full_name: p_customer_name,
+                phone: p_customer_phone || null
+              };
+              const insCust = await sb.from('customers').insert(payloadCust).select('id, full_name, phone').single();
+              if(!insCust.error && insCust.data){
+                selectedCustomer = insCust.data;
+              }
+            }
+          }
+        } catch(e){
+          // Não bloqueia o agendamento se o cadastro do cliente falhar (por RLS/colunas), mas registra no console
+          console.error(e);
+        }
         // telefone pode ser vazio, mas é recomendado
         // Desabilita botões para evitar clique duplo
         [...elSlots.querySelectorAll("button")].forEach(b=>b.disabled = true);
@@ -3085,6 +3865,46 @@ const badgeClientes = document.getElementById("badgeClientes");
 
         if(error){
           console.error(error);
+
+          const msg = String(error?.message || '').toLowerCase();
+          const isMissingRpc = msg.includes('function') && msg.includes('create_appointment');
+
+          if(isMissingRpc){
+            // Fallback: inserir direto em appointments (se o RLS permitir)
+            try{
+              const duration = getServiceDurationMinutes(p_service_id);
+              const starts = new Date(p_starts_at);
+              const ends = new Date(starts.getTime() + duration*60000);
+
+              const payload = {
+                company_id: state.profile.company_id,
+                professional_id: p_professional_id,
+                service_id: p_service_id,
+                customer_name: p_customer_name,
+                customer_phone: p_customer_phone || null,
+                starts_at: starts.toISOString(),
+                ends_at: ends.toISOString(),
+                status: 'confirmed'
+              };
+
+              const ins = await sb.from('appointments').insert(payload);
+              if(ins.error) throw ins.error;
+
+              toastMsg('ok','Agendamento criado (fallback).');
+              await loadAgenda();
+              await loadDashboard();
+              await loadDashboardOverview();
+              await loadCounts();
+              await loadSlots();
+              return;
+            } catch(e){
+              console.error(e);
+              toastMsg('err','Não foi possível agendar (fallback). Verifique políticas/RLS e campos da tabela appointments.');
+              [...elSlots.querySelectorAll('button')].forEach(b=>b.disabled = false);
+              return;
+            }
+          }
+
           // Caso clássico: unique violation / slot ocupado no exato momento
           toastMsg("err","Não foi possível agendar: horário pode ter sido ocupado. Recarregue os horários.");
           [...elSlots.querySelectorAll("button")].forEach(b=>b.disabled = false);
@@ -3589,7 +4409,7 @@ const badgeClientes = document.getElementById("badgeClientes");
       renderPdvCart();
       recalcLocalBadges();
     }
-    function pdvFinalize(){
+    async function pdvFinalize(){
       loadLocal();
       const cart = getCart();
       if(!cart.length) return toastMsg("err","Carrinho vazio.");
@@ -3630,6 +4450,33 @@ const badgeClientes = document.getElementById("badgeClientes");
         items: cart.map(i=>({ ...i })),
         created_at: new Date().toISOString()
       });
+      // grava no Supabase (histórico oficial)
+      try{
+        const companyId = state?.profile?.company_id;
+        const userId = state?.user?.id || null;
+        if(companyId){
+          const payload = {
+            company_id: companyId,
+            user_id: userId,
+            appointment_id: apptId || null,
+            payment_method: (pdvPay?.value || "dinheiro"),
+            subtotal_cents: sub,
+            discount_cents: disc,
+            total_cents: tot,
+            items: cart.map(i=>({ ...i })),
+            created_at: new Date().toISOString()
+          };
+          const { error: sErr } = await sb.from("sales").insert(payload);
+          if(sErr){
+            console.warn("sales insert error", sErr);
+            toastMsg("warn","Venda registrada localmente; falha ao salvar no Supabase.");
+          }
+        }
+      }catch(e){
+        console.warn(e);
+        toastMsg("warn","Venda registrada localmente; não foi possível salvar no Supabase.");
+      }
+
 
       state.local.carts.pdv = [];
       saveLocal();
@@ -3838,5 +4685,31 @@ const badgeClientes = document.getElementById("badgeClientes");
       }
     })();
   </script>
+
+
+<!-- MODAL: LISTA DE HORÁRIOS DO PROFISSIONAL -->
+<div class="modalBack" id="modalHoursList" aria-hidden="true">
+  <div class="card modal" style="max-width:920px">
+    <div class="modalHeader">
+      <h3 id="hoursListTitle">Horários do Profissional</h3>
+      <button class="btn2" id="btnCloseHoursList">Fechar</button>
+    </div>
+    <div class="modalBody" style="display:grid; gap:14px">
+      <div class="hint" style="margin:0">
+        Aqui você vê os horários já cadastrados (recorrentes por dia da semana e horários específicos por data).
+      </div>
+
+      <div style="overflow:auto">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Dia/Data</th><th>Início</th><th>Fim</th><th>Passo</th></tr>
+          </thead>
+          <tbody id="tbodyHoursList"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
