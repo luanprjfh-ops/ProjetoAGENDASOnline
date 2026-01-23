@@ -2638,7 +2638,7 @@ const badgeClientes = document.getElementById("badgeClientes");
               <button class="btn2" data-act="confirm" data-id="${a.id}">Confirmar</button>
               <button class="btn2" data-act="done" data-id="${a.id}">Finalizar</button>
               <button class="btn2 btnDanger" data-act="cancel" data-id="${a.id}">Cancelar</button>
-              ${state.isAdmin ? `<button class="btn2 btnDanger" data-act="del" data-id="${a.id}">Excluir</button>` : ""}
+              ${state.isAdmin ? '<button class="btn2 btnDanger" data-act="del" data-id="${a.id}">Excluir</button>' : ""}
             </div>
           </td>
         `;
@@ -2879,7 +2879,7 @@ const badgeClientes = document.getElementById("badgeClientes");
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn2" onclick="openCustomerModal(\'${encodeURIComponent(JSON.stringify(c))}\')">Editar</button>
               <button class="btn2" onclick="openCustomerHistory(\'${encodeURIComponent(JSON.stringify(c))}\')">Histórico</button>
-              ${state.isAdmin ? `<button class="btn2 btnDanger" onclick="deleteCustomer('${c.id}')">Excluir</button>` : ""}
+              ${state.isAdmin ? '<button class="btn2 btnDanger" onclick="deleteCustomer(\'${c.id}\')">Excluir</button>' : ""}
             </div>
           </td>
         `;
@@ -2909,7 +2909,7 @@ const badgeClientes = document.getElementById("badgeClientes");
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn2" onclick="openProModal(\'${encodeURIComponent(JSON.stringify(p))}\')">Editar</button>
               <button class="btn2" onclick="togglePro('${p.id}', ${p.active})">${p.active ? "Inativar" : "Ativar"}</button>
-              ${state.isAdmin ? `<button class="btn2 btnDanger" onclick="deletePro('${p.id}')">Excluir</button>` : ""}
+              ${state.isAdmin ? '<button class="btn2 btnDanger" onclick="deletePro(\'${p.id}\')">Excluir</button>' : ""}
             </div>
           </td>
         `;
@@ -2945,7 +2945,7 @@ const badgeClientes = document.getElementById("badgeClientes");
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn2" onclick="openServiceModal(\'${encodeURIComponent(JSON.stringify(s))}\')">Editar</button>
               <button class="btn2" onclick="toggleService('${s.id}', ${s.active})">${s.active ? "Inativar" : "Ativar"}</button>
-              ${state.isAdmin ? `<button class="btn2 btnDanger" onclick="deleteService('${s.id}')">Excluir</button>` : ""}
+              ${state.isAdmin ? '<button class="btn2 btnDanger" onclick="deleteService(\'${s.id}\')">Excluir</button>' : ""}
             </div>
           </td>
         `;
@@ -4373,18 +4373,7 @@ const badgeClientes = document.getElementById("badgeClientes");
         tbodyPdvProducts.appendChild(tr);
       });
     }
-      list.forEach(p=>{
-        const qty = Number(ensureStockRow(p.id).qty||0);
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${esc(p.name)}</td>
-          <td>${localMoney(p.price_cents||0)}</td>
-          <td>${qty}</td>
-          <td><button class="btn2" onclick="cartAdd('${p.id}', 1)">Adicionar</button></td>
-        `;
-        tbodyPdvProducts.appendChild(tr);
-      });
-    }
+
 
     function renderPdvCart(){
       if(!tbodyPdvCart) return;
