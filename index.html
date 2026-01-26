@@ -263,16 +263,43 @@ input:focus, select:focus{
   padding:16px 18px;
   margin-top:14px;
   gap:10px;
+  position:relative; /* não segue a rolagem por padrão */
+  top:auto;
+  z-index:50;
+  transition: transform .18s ease, opacity .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+/* Opções de layout (persistentes) */
+body.topbarPinned .topbar{
   position:sticky;
   top:14px;
-  z-index:50;
 }
+body.topbarHidden .topbar{
+  transform: translateY(-130%);
+  opacity:0;
+  pointer-events:none;
+}
+
+/* Modo Foco: tela limpa */
+body.appFocus .sidebar{display:none!important;}
+body.appFocus .topbar{
+  position:sticky;
+  top:14px;
+  padding:10px 12px;
+  border-radius:999px;
+  max-width: fit-content;
+  margin-left:auto;
+}
+body.appFocus .topbar .muted{display:none!important;}
+body.appFocus .row{gap:0;}
+body.appFocus .content{min-width:0;}
+
 
 .row{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px}
 
 .sidebar{
-  position:sticky;
-  top:94px;
+  position:relative; /* não segue a rolagem por padrão */
+  top:auto;
   align-self:flex-start;
   width:280px;
   padding:16px;
@@ -282,6 +309,11 @@ input:focus, select:focus{
   box-shadow:var(--shadow);
   backdrop-filter: blur(14px);
 }
+body.menuPinned .sidebar{
+  position:sticky;
+  top:94px;
+}
+
 
 .menu{margin-top:14px;display:flex;flex-direction:column;gap:8px}
 
@@ -465,6 +497,174 @@ tbody tr:hover td{
 @media (max-width:640px){.modalBody .row2{grid-template-columns:1fr}}
 .modalFooter{display:flex;gap:10px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
 
+
+/* Compact controls */
+.ctrlPill{
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.04);
+  padding:10px 12px;
+  min-height:46px;
+  border-radius:999px;
+  cursor:pointer;
+  font-weight:1000;
+  color: var(--text);
+  transition: transform .16s ease, background .16s ease, border-color .16s ease, filter .16s ease;
+}
+.ctrlPill:hover{background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.20); transform: translateY(-1px);}
+.ctrlPill:active{transform: translateY(0px); filter: brightness(.98);}
+.ctrlPill.on{
+  border-color: rgba(192,132,252,.35);
+  background: rgba(192,132,252,.10);
+}
+/* New premium layout controls (2026) */
+.topbarRight{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.topbarActions{display:flex;gap:10px;align-items:center}
+
+.iconBtn{
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.04);
+  width:46px; height:46px;
+  border-radius:999px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  color: var(--text);
+  transition: transform .16s ease, background .16s ease, border-color .16s ease, filter .16s ease;
+}
+.iconBtn.small{width:40px;height:40px;border-radius:14px}
+.iconBtn:hover{background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.20); transform: translateY(-1px);}
+.iconBtn:active{transform: translateY(0px); filter: brightness(.98);}
+.iconBtn .icon{display:inline-flex}
+.iconBtn svg{
+  width:20px;height:20px;
+  stroke: currentColor;
+  fill:none;
+  stroke-width:2.2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  opacity:.92;
+}
+
+.dropdown{position:relative}
+.menuDropdown{
+  position:absolute;
+  right:0;
+  top:54px;
+  min-width:240px;
+  padding:10px;
+  display:none;
+  z-index:9999;
+}
+.dropdown.open .menuDropdown{display:block}
+.ddItem{
+  width:100%;
+  text-align:left;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.03);
+  padding:12px 12px;
+  border-radius:12px;
+  cursor:pointer;
+  color: var(--text);
+  font-weight:900;
+  transition: transform .16s ease, background .16s ease, border-color .16s ease;
+}
+.ddItem:hover{background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.18); transform: translateY(-1px);}
+.ddItem.danger{border-color: rgba(251,113,133,.28); background: rgba(251,113,133,.08);}
+.ddLine{height:1px;background: rgba(255,255,255,.10); margin:10px 2px}
+
+.sidebarOverlay{
+  position:fixed; inset:0;
+  background: rgba(0,0,0,.58);
+  display:none;
+  z-index:9997;
+}
+body.sidebarOpen .sidebarOverlay{display:block;}
+
+.sidebar{
+  transition: width .22s ease, transform .22s ease, opacity .22s ease;
+}
+.sideHeader{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+.sideBrand{display:flex; gap:10px; align-items:center;}
+.sideMark{
+  width:12px;height:12px;border-radius:999px;
+  background: linear-gradient(135deg, var(--accent3), var(--accent2), var(--accent1));
+  box-shadow: 0 0 20px rgba(168,85,247,.22);
+}
+.sideTitle{font-weight:1000; letter-spacing:.2px}
+.sideSub{font-size:12px;color:var(--muted); margin-top:1px}
+
+.sideSearch{
+  margin-top:12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(10,6,14,.55);
+}
+.sideSearch input{
+  border:0;
+  padding:0;
+  margin:0;
+  min-height:unset;
+  background: transparent;
+}
+.sideSearch .icon svg{width:18px;height:18px;opacity:.85}
+
+.menu{margin-top:12px;}
+.menuSep{
+  height:1px;
+  background: rgba(255,255,255,.10);
+  margin:8px 6px;
+  border-radius:999px;
+}
+.menu button{
+  padding:12px 12px;
+}
+.menu button .itemLeft{display:flex;align-items:center;gap:12px}
+.menu button .i{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;opacity:.92}
+.menu button .i svg{
+  width:20px;height:20px;
+  stroke: currentColor;
+  fill:none;
+  stroke-width:2.2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.menu button .label{letter-spacing:.1px}
+.menu button .tag{min-width:32px;display:inline-flex;justify-content:center}
+
+body.menuCollapsed .sidebar{width:92px; padding:14px 10px;}
+body.menuCollapsed .sideTexts,
+body.menuCollapsed .sideSearch,
+body.menuCollapsed .menu button .label,
+body.menuCollapsed .sidebar .muted{display:none!important;}
+body.menuCollapsed .menu button{justify-content:center; padding:12px 10px;}
+body.menuCollapsed .menu button .itemLeft{gap:0;}
+body.menuCollapsed .menu button .tag{display:none!important;}
+body.menuCollapsed .menuSep{margin:10px 8px;}
+body.menuCollapsed .menu button:hover{transform:none}
+
+@media (max-width:760px){
+  .sidebar{
+    position:fixed;
+    left:18px; right:auto;
+    top:86px;
+    bottom:18px;
+    width:min(86vw, 340px);
+    transform: translateX(-125%);
+    z-index:9998;
+  }
+  body.sidebarOpen .sidebar{transform: translateX(0%);}
+}
 /* Accessibility */
 :focus-visible{
   outline: 2px solid rgba(192,132,252,.55);
@@ -910,33 +1110,163 @@ tbody tr:hover td{
         <div class="brand">AgendaPro</div>
         <div class="muted" id="who" style="font-size:13px;margin-top:2px;">—</div>
       </div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+      <div class="topbarRight">
         <span class="pill" id="companyPill">Empresa: —</span>
-        <button class="btn2" id="btnOpenMenu">Menu</button>
-        <button class="btn2" id="btnRefresh">Atualizar</button>
-        <button class="btn2" id="btnLogout">Sair</button>
+
+        <div class="topbarActions">
+          <button class="iconBtn" id="btnSidebar" title="Abrir/fechar menu (Ctrl+M)" aria-label="Abrir/fechar menu">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </span>
+          </button>
+
+          <button class="iconBtn" id="btnFocus" title="Tela limpa (Ctrl+K)" aria-label="Tela limpa">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+            </span>
+          </button>
+
+          <div class="dropdown">
+            <button class="iconBtn" id="btnSettings" title="Configurações de layout" aria-label="Configurações">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm8.9-2.7-.9-.5.1-1.1.1-1.1-1-.6-1-.6-.8.7-.8.7-1-.4-1-.4-.2-1.1-.2-1.1h-2.3l-.2 1.1-.2 1.1-1 .4-1 .4-.8-.7-.8-.7-1 .6-1 .6.1 1.1.1 1.1-.9.5-.9.5v2.2l.9.5.9.5-.1 1.1-.1 1.1 1 .6 1 .6.8-.7.8-.7 1 .4 1 .4.2 1.1.2 1.1h2.3l.2-1.1.2-1.1 1-.4 1-.4.8.7.8.7 1-.6 1-.6-.1-1.1-.1-1.1.9-.5.9-.5v-2.2Z"/></svg>
+              </span>
+            </button>
+
+            <div class="menuDropdown card soft" id="settingsMenu" role="menu" aria-label="Configurações de layout">
+              <button class="ddItem" id="btnPinTopbar" role="menuitem">Fixar barra do topo</button>
+              <button class="ddItem" id="btnPinMenu" role="menuitem">Fixar menu lateral</button>
+              <button class="ddItem" id="btnCollapseMenu" role="menuitem">Recolher/expandir menu</button>
+              <div class="ddLine"></div>
+              <button class="ddItem" id="btnOpenMenu" role="menuitem">Atalhos</button>
+              <button class="ddItem" id="btnRefresh" role="menuitem">Atualizar</button>
+              <button class="ddItem danger" id="btnLogout" role="menuitem">Sair</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
+    <div class="sidebarOverlay" id="sidebarOverlay" aria-hidden="true"></div>
+
     <div class="row">
-      <aside class="sidebar">
-        <div class="pill">Menu</div>
-        <div class="menu">
-          <button class="active" data-tab="dash"><span>Dashboard</span><span class="tag" id="badgeToday">—</span></button>
-          <button data-tab="agenda"><span>Agenda</span><span class="tag" id="badgeAgenda">—</span></button>
-          <button data-tab="historico"><span>Histórico</span><span class="tag" id="badgeHistorico">—</span></button>
-          <button data-tab="clientes"><span>Clientes</span><span class="tag" id="badgeClientes">—</span></button>
-          <button data-tab="profissionais"><span>Profissionais</span><span class="tag" id="badgePros">—</span></button>
-          <button data-tab="servicos"><span>Serviços</span><span class="tag" id="badgeServ">—</span></button>
-          <button data-tab="horarios"><span>Horários</span><span class="tag" id="badgeHours">—</span></button>
+      <aside class="sidebar" aria-label="Menu lateral">
+  <div class="sideHeader">
+    <div class="sideBrand" title="AgendaPro">
+      <span class="sideMark" aria-hidden="true"></span>
+      <div class="sideTexts">
+        <div class="sideTitle">AgendaPro</div>
+        <div class="sideSub">Navegação</div>
+      </div>
+    </div>
 
-          <button data-tab="produtos"><span>Produtos</span><span class="tag" id="badgeProdutos">—</span></button>
-          <button data-tab="estoque"><span>Estoque</span><span class="tag" id="badgeEstoque">—</span></button>
-          <button data-tab="pdv"><span>PDV</span><span class="tag" id="badgePDV">—</span></button>
-          <button data-tab="vendas"><span>Histórico de vendas</span><span class="tag" id="badgeVendas">—</span></button>
-        </div>
+    <button class="iconBtn small" id="btnCollapseMenu2" title="Recolher/expandir menu" aria-label="Recolher/expandir menu">
+      <span class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
+      </span>
+    </button>
+  </div>
 
-        <div style="margin-top:14px" class="muted">
+  <div class="sideSearch">
+    <span class="icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Zm6.2-1.3 4 4"/></svg>
+    </span>
+    <input id="menuSearch" type="search" placeholder="Buscar no menu..." autocomplete="off" />
+  </div>
+
+  <nav class="menu" id="sideMenu">
+    <button class="active" data-tab="dash" data-label="Dashboard">
+      <span class="itemLeft">
+        <span class="i" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 13h7V4H4v9Zm9 7h7V11h-7v9ZM4 20h7v-5H4v5Zm9-11h7V4h-7v5Z"/></svg></span>
+        <span class="label">Dashboard</span>
+      </span>
+      <span class="tag" id="badgeToday">—</span>
+    </button>
+
+    <button data-tab="agenda" data-label="Agenda">
+      <span class="itemLeft">
+        <span class="i" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3v2M17 3v2M4 8h16M6 6h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"/></svg></span>
+        <span class="label">Agenda</span>
+      </span>
+      <span class="tag" id="badgeAgenda">—</span>
+    </button>
+
+    <button data-tab="historico" data-label="Histórico">
+      <span class="itemLeft">
+        <span class="i" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 8v5l3 2M3 12a9 9 0 1 0 3-6.7M3 4v4h4"/></svg></span>
+        <span class="label">Histórico</span>
+      </span>
+      <span class="tag" id="badgeHistorico">—</span>
+    </button>
+
+    <button data-tab="clientes" data-label="Clientes">
+      <span class="itemLeft">
+        <span class="i" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0ZM4 20a8 8 0 0 1 16 0"/></svg></span>
+        <span class="label">Clientes</span>
+      </span>
+      <span class="tag" id="badgeClientes">—</span>
+    </button>
+
+    <button data-tab="profissionais" data-label="Profissionais">
+      <span class="itemLeft">
+        <span class="i" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3l12 12M7 14l-3 7 7-3 10-10a2 2 0 0 0-3-3L8 15Z"/></svg></span>
+        <span class="label">Profissionais</span>
+      </span>
+      <span class="tag" id="badgePros">—</span>
+    </button>
+
+    <button data-tab="servicos" data-label="Serviços">
+      <span class="itemLeft">
+        <span class="i" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6M12 3v9M8 7l4-4 4 4"/></svg></span>
+        <span class="label">Serviços</span>
+      </span>
+      <span class="tag" id="badgeServ">—</span>
+    </button>
+
+    <button data-tab="horarios" data-label="Horários">
+      <span class="itemLeft">
+        <span class="i" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 7v5l3 2M21 12a9 9 0 1 0-9 9 9 9 0 0 0 9-9Z"/></svg></span>
+        <span class="label">Horários</span>
+      </span>
+      <span class="tag" id="badgeHours">—</span>
+    </button>
+
+    <div class="menuSep"></div>
+
+    <button data-tab="produtos" data-label="Produtos">
+      <span class="itemLeft">
+        <span class="i" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v10l9 5 9-5V8Z"/></svg></span>
+        <span class="label">Produtos</span>
+      </span>
+      <span class="tag" id="badgeProdutos">—</span>
+    </button>
+
+    <button data-tab="estoque" data-label="Estoque">
+      <span class="itemLeft">
+        <span class="i" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16v6H4V6Zm0 8h10v4H4v-4Zm12 0h4v4h-4v-4Z"/></svg></span>
+        <span class="label">Estoque</span>
+      </span>
+      <span class="tag" id="badgeEstoque">—</span>
+    </button>
+
+    <button data-tab="pdv" data-label="PDV">
+      <span class="itemLeft">
+        <span class="i" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16v10H4V7Zm3 14h10"/></svg></span>
+        <span class="label">PDV</span>
+      </span>
+      <span class="tag" id="badgePDV">—</span>
+    </button>
+
+    <button data-tab="vendas" data-label="Histórico de vendas">
+      <span class="itemLeft">
+        <span class="i" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3h10v4H7V3Zm-2 6h14v12H5V9Zm4 3h6"/></svg></span>
+        <span class="label">Vendas</span>
+      </span>
+      <span class="tag" id="badgeVendas">—</span>
+    </button>
+  </nav>
+
+  <div style="margin-top:14px" class="muted">
           <div style="font-weight:900;color:var(--text)">Ações rápidas</div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
             <button class="btn2" id="quickNewCustomer">+ Cliente</button>
@@ -1556,7 +1886,20 @@ const badgeClientes = document.getElementById("badgeClientes");
     // Toast
     const toast = document.getElementById("toast");
     // Menu (modal)
+    // Layout controls
+    const btnSidebar = document.getElementById("btnSidebar");
+    const btnPinTopbar = document.getElementById("btnPinTopbar");
+    const btnPinMenu = document.getElementById("btnPinMenu");
+    const btnFocus = document.getElementById("btnFocus");
+    const btnCollapseMenu = document.getElementById("btnCollapseMenu");
+    const btnCollapseMenu2 = document.getElementById("btnCollapseMenu2");
+
+    const btnSettings = document.getElementById("btnSettings");
+    const settingsMenu = document.getElementById("settingsMenu");
+    const sidebarOverlay = document.getElementById("sidebarOverlay");
+
     const btnOpenMenu = document.getElementById("btnOpenMenu");
+    const menuSearch = document.getElementById("menuSearch");
 
     // Agenda search
     const agendaSearch = document.getElementById("agendaSearch");
@@ -1775,6 +2118,110 @@ const badgeClientes = document.getElementById("badgeClientes");
     });
 
     btnOpenMenu?.addEventListener("click", openMenuModal);
+    // Persistência de layout (premium)
+    function setBtnOn(el, on){
+      if(!el) return;
+      el.classList.toggle("on", !!on);
+    }
+
+    function applyLayoutFromStorage(){
+      const topbarPinned = localStorage.getItem("agp_topbarPinned")==="1";
+      const menuPinned = localStorage.getItem("agp_menuPinned")==="1";
+      const focus = localStorage.getItem("agp_focus")==="1";
+      const menuCollapsed = localStorage.getItem("agp_menuCollapsed")==="1";
+
+      document.body.classList.toggle("topbarPinned", topbarPinned);
+      document.body.classList.toggle("menuPinned", menuPinned);
+      document.body.classList.toggle("appFocus", focus);
+      document.body.classList.toggle("menuCollapsed", menuCollapsed);
+
+      setBtnOn(btnPinTopbar, topbarPinned);
+      setBtnOn(btnPinMenu, menuPinned);
+      setBtnOn(btnFocus, focus);
+      setBtnOn(btnCollapseMenu, menuCollapsed);
+      setBtnOn(btnCollapseMenu2, menuCollapsed);
+
+      if(btnPinTopbar) btnPinTopbar.textContent = topbarPinned ? "Barra do topo: fixa" : "Barra do topo: normal";
+      if(btnPinMenu) btnPinMenu.textContent = menuPinned ? "Menu lateral: fixo" : "Menu lateral: normal";
+      if(btnCollapseMenu) btnCollapseMenu.textContent = menuCollapsed ? "Menu: expandir" : "Menu: recolher";
+      if(btnCollapseMenu2) btnCollapseMenu2.setAttribute("aria-pressed", String(!!menuCollapsed));
+      if(btnFocus) btnFocus.setAttribute("aria-pressed", String(!!focus));
+    }
+
+    function toggleClassPersist(cls, key){
+      const on = !document.body.classList.contains(cls);
+      document.body.classList.toggle(cls, on);
+      localStorage.setItem(key, on ? "1" : "0");
+      applyLayoutFromStorage();
+    }
+
+    btnPinTopbar?.addEventListener("click", ()=> toggleClassPersist("topbarPinned", "agp_topbarPinned"));
+    btnPinMenu?.addEventListener("click", ()=> toggleClassPersist("menuPinned", "agp_menuPinned"));
+    btnFocus?.addEventListener("click", ()=> toggleClassPersist("appFocus", "agp_focus"));
+
+    function toggleMenuCollapsed(){
+      const on = !document.body.classList.contains("menuCollapsed");
+      document.body.classList.toggle("menuCollapsed", on);
+      localStorage.setItem("agp_menuCollapsed", on ? "1" : "0");
+      applyLayoutFromStorage();
+    }
+    btnCollapseMenu?.addEventListener("click", toggleMenuCollapsed);
+    btnCollapseMenu2?.addEventListener("click", toggleMenuCollapsed);
+
+    // Sidebar toggle: desktop = collapse; mobile = drawer
+    function toggleSidebar(){
+      const isMobile = window.matchMedia("(max-width:760px)").matches;
+      if(isMobile){
+        document.body.classList.toggle("sidebarOpen");
+      }else{
+        toggleMenuCollapsed();
+      }
+    }
+    btnSidebar?.addEventListener("click", toggleSidebar);
+    sidebarOverlay?.addEventListener("click", ()=> document.body.classList.remove("sidebarOpen"));
+
+    // Settings dropdown
+    function closeSettings(){
+      document.querySelector(".dropdown")?.classList.remove("open");
+    }
+    btnSettings?.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      document.querySelector(".dropdown")?.classList.toggle("open");
+    });
+    document.addEventListener("click", ()=> closeSettings());
+    settingsMenu?.addEventListener("click", (e)=> e.stopPropagation());
+
+    // Close drawer on resize
+    window.addEventListener("resize", ()=>{
+      if(!window.matchMedia("(max-width:760px)").matches){
+        document.body.classList.remove("sidebarOpen");
+      }
+    });
+// Atalhos de teclado
+    window.addEventListener("keydown", (e)=>{
+      if(e.ctrlKey && e.key.toLowerCase()==="k"){ e.preventDefault(); toggleClassPersist("appFocus","agp_focus"); }
+      if(e.ctrlKey && !e.shiftKey && e.key.toLowerCase()==="m"){ e.preventDefault(); toggleSidebar(); }
+      if(e.ctrlKey && e.shiftKey && e.key.toLowerCase()==="m"){ e.preventDefault(); toggleClassPersist("menuPinned","agp_menuPinned"); }
+      if(e.ctrlKey && e.key.toLowerCase()==="b"){ e.preventDefault(); toggleClassPersist("topbarPinned","agp_topbarPinned"); }
+    });
+
+    applyLayoutFromStorage();
+
+
+// Menu search (filtra itens do menu lateral)
+menuSearch?.addEventListener("input", ()=>{
+  const q = (menuSearch.value||"").trim().toLowerCase();
+  const items = document.querySelectorAll("#sideMenu > button[data-tab]");
+  items.forEach(btn=>{
+    const label = (btn.getAttribute("data-label") || "").toLowerCase();
+    btn.style.display = (!q || label.includes(q)) ? "" : "none";
+  });
+  // mantém separadores visíveis somente quando faz sentido
+  document.querySelectorAll("#sideMenu .menuSep").forEach(sep=>{
+    const hasVisible = [...items].some(b=> b.style.display !== "none");
+    sep.style.display = hasVisible ? "" : "none";
+  });
+});
 
     // Debounce agenda search
     let agendaSearchTimer = null;
@@ -4740,6 +5187,430 @@ const badgeClientes = document.getElementById("badgeClientes");
     </div>
   </div>
 </div>
+
+
+<!-- FeNix (Mini-IA) -->
+<div id="fenix-btn" aria-label="Abrir FeNix" title="Abrir FeNix">✨</div>
+
+<div id="fenix-panel" class="fenix-hidden" role="dialog" aria-label="FeNix">
+  <div class="fenix-header" id="fenix-drag-handle" title="Arraste para mover">
+    <div class="fenix-title">
+      <span class="fenix-badge">⚡</span>
+      <strong>FeNix</strong>
+      <span class="fenix-sub">Assistente rápida</span>
+    </div>
+    <div class="fenix-actions">
+      <button id="fenix-pin" type="button" title="Fixar / Desfixar posição" aria-label="Fixar">📌</button>
+      <button id="fenix-clear" type="button" title="Limpar conversa" aria-label="Limpar">🧹</button>
+      <button id="fenix-close" type="button" title="Fechar" aria-label="Fechar">×</button>
+    </div>
+  </div>
+
+  <div class="fenix-body" id="fenix-body" aria-live="polite">
+    <p class="fenix-msg">Olá 👋 Sou a <b>FeNix</b>, sua assistente inteligente. Como posso ajudar?</p>
+
+    <div class="fenix-quick" id="fenix-quick">
+      <button type="button" data-q="agendamento">Como criar um agendamento?</button>
+      <button type="button" data-q="cliente">Como cadastrar um cliente?</button>
+      <button type="button" data-q="servico">Como cadastrar um serviço?</button>
+      <button type="button" data-q="profissional">Como adicionar um profissional?</button>
+      <button type="button" data-q="pdv">Como funciona o PDV?</button>
+      <button type="button" data-q="produto-pdv">Como vender um produto no PDV?</button>
+      <button type="button" data-q="excluir-servico">Como excluir ou desativar um serviço?</button>
+      <button type="button" data-q="excluir-produto">Por que não consigo excluir um produto?</button>
+      <button type="button" data-q="relatorio">Como imprimir relatório de vendas?</button>
+      <button type="button" data-q="senha">Por que pede senha no histórico de vendas?</button>
+      <button type="button" data-q="trocar-empresa">Como trocar de empresa no sistema?</button>
+      <button type="button" data-q="multi">Como funciona o multi-empresa?</button>
+      <button type="button" data-q="faturamento">Como ver meu faturamento do dia?</button>
+      <button type="button" data-q="erro">Erro ao carregar dados, o que fazer?</button>
+      <button type="button" data-q="suporte">Como falar com o suporte?</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* FeNix — widget flutuante premium */
+  #fenix-btn{
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #fff;
+    cursor: pointer;
+    user-select: none;
+    z-index: 99999;
+    background: linear-gradient(135deg, #a855f7, #6d28d9);
+    border: 1px solid rgba(255,255,255,.16);
+    box-shadow: 0 18px 50px rgba(0,0,0,.45), 0 0 26px rgba(168,85,247,.28);
+  }
+  #fenix-btn:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+
+  #fenix-panel{
+    position: fixed;
+    right: 22px;
+    bottom: 90px;
+    width: 380px;
+    max-width: calc(100vw - 18px);
+    max-height: 72vh;
+    display: flex;
+    flex-direction: column;
+    z-index: 99999;
+    border-radius: 18px;
+    overflow: hidden;
+
+    background: rgba(12, 6, 18, .88);
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow: 0 26px 80px rgba(0,0,0,.55), 0 0 30px rgba(168,85,247,.18);
+    backdrop-filter: blur(14px);
+  }
+  #fenix-panel.fenix-dragging{ opacity: .96; }
+  .fenix-hidden{ display: none !important; }
+
+  .fenix-header{
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: linear-gradient(180deg, rgba(168,85,247,.18), rgba(168,85,247,.06));
+    cursor: grab;
+  }
+  #fenix-panel.pinned .fenix-header{ cursor: default; }
+
+  .fenix-title{ display:flex; align-items:center; gap:10px; min-width:0; }
+  .fenix-badge{
+    width: 28px; height: 28px;
+    border-radius: 10px;
+    display:flex; align-items:center; justify-content:center;
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.12);
+  }
+  .fenix-sub{ font-size: 12px; opacity: .72; white-space: nowrap; }
+
+  .fenix-actions{ display:flex; align-items:center; gap:8px; }
+  .fenix-actions button{
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    color:#fff;
+    font-size: 16px;
+    cursor:pointer;
+  }
+  .fenix-actions button:hover{ background: rgba(255,255,255,.10); }
+
+  .fenix-body{
+    padding: 14px;
+    overflow: auto;
+    color: #fff;
+    font-size: 14px;
+  }
+  .fenix-msg{
+    margin: 0 0 10px 0;
+    line-height: 1.35;
+  }
+
+  .fenix-quick{
+    display: grid;
+    gap: 8px;
+  }
+  .fenix-quick button{
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(168,85,247,.18);
+    color: #fff;
+    cursor: pointer;
+    text-align: left;
+    transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  }
+  .fenix-quick button:hover{
+    transform: translateY(-1px);
+    background: rgba(168,85,247,.26);
+    border-color: rgba(255,255,255,.16);
+  }
+
+  /* Mobile */
+  @media (max-width: 520px){
+    #fenix-panel{ width: calc(100vw - 18px); right: 9px; }
+    #fenix-btn{ right: 14px; bottom: 14px; }
+  }
+</style>
+
+<script>
+/* =========================
+   FeNix (Mini-IA local) — Premium
+   - Fecha/minimiza sem perder conversa
+   - Salva estado (aberto/fechado), posição e histórico no localStorage
+   - Arrastar para mover (desative com 📌 Fixar)
+   ========================= */
+
+(function(){
+  const FENIX_LS_KEY = "agendapro_fenix_v1";
+
+  const fenixAnswers = {
+    agendamento: "Vá em Agenda → Novo agendamento → selecione cliente, serviço e horário.",
+    cliente: "Abra Clientes → Novo cliente → preencha os dados e salve.",
+    servico: "Abra Serviços → Novo serviço → defina preço e duração.",
+    profissional: "Abra Profissionais → Adicionar → vincule serviços.",
+    pdv: "O PDV registra vendas e pagamentos de forma rápida.",
+    "produto-pdv": "No PDV, selecione Produto → finalize a venda.",
+    "excluir-servico": "Se o serviço já foi usado em agendamentos, ele não pode ser excluído por integridade. O recomendado é DESATIVAR (active=false).",
+    "excluir-produto": "Produtos usados em vendas podem ficar bloqueados para auditoria. O recomendado é DESATIVAR (active=false).",
+    relatorio: "Abra Histórico de vendas → filtre a data → clique em “Imprimir relatório”.",
+    senha: "O histórico é protegido por senha para segurança financeira e evitar acesso indevido.",
+    "trocar-empresa": "Use o seletor de empresa no topo do painel (Empresa: ...).",
+    multi: "Multi-empresa: cada empresa tem dados isolados por company_id (sem vazamento entre empresas).",
+    faturamento: "Abra Dashboard ou Histórico de vendas e filtre a data de hoje.",
+    erro: "Verifique internet, recarregue a página. Se persistir, saia e faça login novamente.",
+    suporte: "Abra a aba Suporte ou use o contato informado no painel."
+  };
+
+  const fenixBtn   = document.getElementById("fenix-btn");
+  const fenixPanel = document.getElementById("fenix-panel");
+  const fenixBody  = document.getElementById("fenix-body");
+  const btnClose   = document.getElementById("fenix-close");
+  const btnClear   = document.getElementById("fenix-clear");
+  const btnPin     = document.getElementById("fenix-pin");
+  const dragHandle = document.getElementById("fenix-drag-handle");
+
+  if(!fenixBtn || !fenixPanel || !fenixBody || !btnClose || !btnClear || !btnPin || !dragHandle){
+    console.warn("FeNix: elementos não encontrados no DOM.");
+    return;
+  }
+
+  function safeParse(json){
+    try { return JSON.parse(json); } catch(e){ return null; }
+  }
+  function loadState(){
+    const raw = localStorage.getItem(FENIX_LS_KEY);
+    const st = raw ? safeParse(raw) : null;
+    return (st && typeof st === "object") ? st : {};
+  }
+  function saveState(patch){
+    const cur = loadState();
+    const next = Object.assign({}, cur, patch);
+    try{ localStorage.setItem(FENIX_LS_KEY, JSON.stringify(next)); }catch(e){}
+    return next;
+  }
+
+  function setOpen(isOpen){
+    fenixPanel.classList.toggle("fenix-hidden", !isOpen);
+    saveState({ open: !!isOpen });
+  }
+
+  function appendMsg(html){
+    const p = document.createElement("p");
+    p.className = "fenix-msg";
+    p.innerHTML = html;
+    fenixBody.appendChild(p);
+    fenixBody.scrollTop = fenixBody.scrollHeight;
+    saveConversation();
+  }
+
+  function bindQuickButtons(){
+    fenixPanel.querySelectorAll(".fenix-quick button").forEach((b)=>{
+      b.onclick = ()=>{
+        const key = b.dataset.q || "";
+        const ans = fenixAnswers[key] || "Não encontrei essa opção. Tente outra pergunta do menu.";
+        appendMsg("<b>FeNix:</b> " + ans);
+      };
+    });
+  }
+
+  function saveConversation(){
+    try{
+      saveState({ bodyHTML: fenixBody.innerHTML, scrollTop: fenixBody.scrollTop });
+    }catch(e){}
+  }
+
+
+// Snapshot do menu rápido para que "Limpar conversa" nunca apague as opções pré-programadas
+const FENIX_QUICK_TEMPLATE = (() => {
+  const el = document.getElementById("fenix-quick");
+  return el ? el.outerHTML : "";
+})();
+
+function ensureQuickMenu(){
+  if(!FENIX_QUICK_TEMPLATE) return;
+  // remove menus duplicados (caso existam)
+  fenixBody.querySelectorAll("#fenix-quick, .fenix-quick").forEach((n)=>{
+    if(n && n.parentNode) n.parentNode.removeChild(n);
+  });
+  const tmp = document.createElement("div");
+  tmp.innerHTML = FENIX_QUICK_TEMPLATE;
+  const node = tmp.firstElementChild;
+  if(node) fenixBody.appendChild(node);
+  bindQuickButtons();
+}
+
+  function restoreConversation(){
+    const st = loadState();
+    if(st.bodyHTML && typeof st.bodyHTML === "string"){
+      fenixBody.innerHTML = st.bodyHTML;
+    }
+    // garante menu rápido (sempre recriado a partir do template)
+    if(!fenixBody.querySelector("#fenix-quick")){
+      ensureQuickMenu();
+    }else{
+      bindQuickButtons();
+    }
+    // recoloca scroll
+    const st2 = loadState();
+    if(typeof st2.scrollTop === "number"){
+      requestAnimationFrame(()=>{ fenixBody.scrollTop = st2.scrollTop; });
+    }
+  }
+
+  function resetConversation(){
+    fenixBody.innerHTML = '<p class="fenix-msg">Olá 👋 Sou a <b>FeNix</b>, sua assistente inteligente. Como posso ajudar?</p>';
+    ensureQuickMenu();
+    saveState({ bodyHTML: fenixBody.innerHTML, scrollTop: 0 });
+  }
+
+  /* Drag & position */
+  function applySavedPosition(){
+    const st = loadState();
+    if(st && st.pos && typeof st.pos.x === "number" && typeof st.pos.y === "number"){
+      fenixPanel.style.left = st.pos.x + "px";
+      fenixPanel.style.top  = st.pos.y + "px";
+      fenixPanel.style.right = "auto";
+      fenixPanel.style.bottom = "auto";
+    }
+    fenixPanel.classList.toggle("pinned", !!st.pinned);
+  }
+
+  function clampToViewport(x,y){
+    const rect = fenixPanel.getBoundingClientRect();
+    const maxX = Math.max(8, window.innerWidth - rect.width - 8);
+    const maxY = Math.max(8, window.innerHeight - rect.height - 8);
+    return {
+      x: Math.min(Math.max(8, x), maxX),
+      y: Math.min(Math.max(8, y), maxY)
+    };
+  }
+
+  function enableDrag(){
+    let dragging=false, startX=0, startY=0, originX=0, originY=0;
+
+    function onDown(ev){
+      if(fenixPanel.classList.contains("pinned")) return;
+      const t = ev.target;
+      if(t && t.tagName === "BUTTON") return;
+
+      dragging = true;
+      fenixPanel.classList.add("fenix-dragging");
+      const rect = fenixPanel.getBoundingClientRect();
+      originX = rect.left; originY = rect.top;
+      startX = (ev.touches ? ev.touches[0].clientX : ev.clientX);
+      startY = (ev.touches ? ev.touches[0].clientY : ev.clientY);
+
+      fenixPanel.style.right = "auto";
+      fenixPanel.style.bottom = "auto";
+      fenixPanel.style.left = originX + "px";
+      fenixPanel.style.top  = originY + "px";
+
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+      document.addEventListener("touchmove", onMove, { passive:false });
+      document.addEventListener("touchend", onUp);
+    }
+
+    function onMove(ev){
+      if(!dragging) return;
+      if(ev.cancelable) ev.preventDefault();
+      const cx = (ev.touches ? ev.touches[0].clientX : ev.clientX);
+      const cy = (ev.touches ? ev.touches[0].clientY : ev.clientY);
+      const cl = clampToViewport(originX + (cx-startX), originY + (cy-startY));
+      fenixPanel.style.left = cl.x + "px";
+      fenixPanel.style.top  = cl.y + "px";
+    }
+
+    function onUp(){
+      if(!dragging) return;
+      dragging = false;
+      fenixPanel.classList.remove("fenix-dragging");
+      const rect = fenixPanel.getBoundingClientRect();
+      saveState({ pos: { x: Math.round(rect.left), y: Math.round(rect.top) } });
+
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      document.removeEventListener("touchmove", onMove);
+      document.removeEventListener("touchend", onUp);
+    }
+
+    dragHandle.addEventListener("mousedown", onDown);
+    dragHandle.addEventListener("touchstart", onDown, { passive:true });
+  }
+
+  function init(){
+    restoreConversation();
+    bindQuickButtons();
+    applySavedPosition();
+
+    const st = loadState();
+    setOpen(!!st.open);
+
+    fenixBtn.onclick = ()=>{
+      const hidden = fenixPanel.classList.contains("fenix-hidden");
+      setOpen(hidden);
+      if(hidden){
+        // garante dentro da tela
+        const rect = fenixPanel.getBoundingClientRect();
+        if(rect.right > window.innerWidth || rect.bottom > window.innerHeight || rect.left < 0 || rect.top < 0){
+          fenixPanel.style.left = "auto";
+          fenixPanel.style.top = "auto";
+          fenixPanel.style.right = "22px";
+          fenixPanel.style.bottom = "90px";
+          saveState({ pos: null });
+        }
+      }
+    };
+
+    btnClose.onclick = ()=>{
+      saveConversation();
+      setOpen(false);
+    };
+
+    btnClear.onclick = ()=>{
+      if(confirm("Limpar a conversa da FeNix?")){
+        resetConversation();
+      }
+    };
+
+    btnPin.onclick = ()=>{
+      const pinned = !fenixPanel.classList.contains("pinned");
+      fenixPanel.classList.toggle("pinned", pinned);
+      saveState({ pinned });
+    };
+
+    window.addEventListener("beforeunload", saveConversation);
+    window.addEventListener("resize", ()=>{
+      const s = loadState();
+      if(s && s.pos && typeof s.pos.x === "number"){
+        const cl = clampToViewport(s.pos.x, s.pos.y);
+        fenixPanel.style.left = cl.x + "px";
+        fenixPanel.style.top  = cl.y + "px";
+        saveState({ pos: cl });
+      }
+    });
+
+    enableDrag();
+  }
+
+  init();
+})();
+</script>
+
 
 </body>
 </html>
