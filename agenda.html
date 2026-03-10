@@ -621,38 +621,42 @@
   }
 
   async function loadWorkingHours(profId){
-
-  // Buscar horários cadastrados por DATA (tabela working_hours_dates)
-  const { data, error } = await sb
-    .from("working_hours_dates")
-    .select("date,start_time,end_time,slot_minutes,professional_id,company_id")
-    .eq("company_id", COMPANY_ID)
-    .eq("professional_id", profId);
-
-  if(error){
-    throw new Error(
-      "Falha ao carregar horários do profissional. " + (error.message || "")
-    );
-  }
-
-  if(!data || !data.length) return [];
-
-  // converter para formato esperado pelo sistema
-  return data.map(h => {
-    const d = new Date(h.date);
-    const weekday = d.getDay();
-
-    return {
-      weekday: weekday,
-      start_time: h.start_time,
-      end_time: h.end_time,
-      slot_minutes: h.slot_minutes || 45,
-      professional_id: h.professional_id,
-      company_id: h.company_id
+    const result = {
+      recurring: [],
+      byDate: []
     };
-  });
-}
-    return data || [];
+
+    // 1) Horários recorrentes
+    const { data: recurring, error: recurringError } = await sb
+      .from("working_hours")
+      .select("weekday,start_time,end_time,slot_minutes,professional_id,company_id")
+      .eq("company_id", COMPANY_ID)
+      .eq("professional_id", profId);
+
+    if(recurringError && !String(recurringError.message || "").toLowerCase().includes("does not exist")){
+      throw new Error("Falha ao carregar horários recorrentes. " + errDetail(recurringError));
+    }
+
+    if(Array.isArray(recurring)){
+      result.recurring = recurring;
+    }
+
+    // 2) Horários por data
+    const { data: byDate, error: byDateError } = await sb
+      .from("working_hours_dates")
+      .select("date,start_time,end_time,slot_minutes,professional_id,company_id")
+      .eq("company_id", COMPANY_ID)
+      .eq("professional_id", profId);
+
+    if(byDateError){
+      throw new Error("Falha ao carregar horários por data. " + errDetail(byDateError));
+    }
+
+    if(Array.isArray(byDate)){
+      result.byDate = byDate;
+    }
+
+    return result;
   }
 
   async function loadBusyForDay(profId, isoDate){
@@ -687,14 +691,34 @@
 
     const durMin = Number(serviceSel.selectedOptions[0]?.dataset?.duration || 30);
 
-    const wh = await loadWorkingHours(profId);
-    if(!wh.length){ showErr("Este profissional não possui horários cadastrados."); return; }
+    const schedules = await loadWorkingHours(profId);
+    const recurring = schedules.recurring || [];
+    const byDate = schedules.byDate || [];
 
     const [y,m,d] = isoDate.split("-").map(Number);
     const weekday = new Date(y, m-1, d).getDay();
 
-    const todays = wh.filter(x => Number(x.weekday) === Number(weekday));
-    if(!todays.length){ showErr("Sem expediente nesta data."); return; }
+    // Prioridade para horários por data exata
+    let todays = byDate
+      .filter(x => x.date === isoDate)
+      .map(x => ({
+        start_time: x.start_time,
+        end_time: x.end_time,
+        slot_minutes: Number(x.slot_minutes || 30)
+      }));
+
+    // Se não houver por data, usa recorrente
+    if(!todays.length){
+      todays = recurring
+        .filter(x => Number(x.weekday) === Number(weekday))
+        .map(x => ({
+          start_time: x.start_time,
+          end_time: x.end_time,
+          slot_minutes: Number(x.slot_minutes || 30)
+        }));
+    }
+
+    if(!todays.length){ showErr("Este profissional não possui horários cadastrados para esta data."); return; }
 
     const busy = await loadBusyForDay(profId, isoDate);
 
@@ -754,19 +778,37 @@
     if(!COMPANY_ID) { showErr("Empresa inválida."); return; }
     if(!serviceId || !profId) { showErr("Selecione um serviço e um profissional."); return; }
 
-    const wh = await loadWorkingHours(profId);
-    if(!wh.length){ showErr("Este profissional não possui horários cadastrados."); return; }
+    const schedules = await loadWorkingHours(profId);
+    const recurring = schedules.recurring || [];
+    const byDate = schedules.byDate || [];
 
+    if(!recurring.length && !byDate.length){
+      showErr("Este profissional não possui horários cadastrados.");
+      return;
+    }
+
+    const dateSet = new Set();
+
+    // Datas específicas cadastradas
+    for(const row of byDate){
+      if(row.date) dateSet.add(row.date);
+    }
+
+    // Datas futuras derivadas dos horários recorrentes
     const today = new Date();
-    const dates = [];
     for(let i=0;i<daysAhead;i++){
       const d = new Date(today.getFullYear(), today.getMonth(), today.getDate()+i);
       const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
       const weekday = d.getDay();
-      if(!wh.some(x=>Number(x.weekday)===Number(weekday))) continue;
-      dates.push(iso);
-      if(dates.length>=maxDates) break;
+      if(recurring.some(x=>Number(x.weekday)===Number(weekday))){
+        dateSet.add(iso);
+      }
     }
+
+    const dates = Array.from(dateSet)
+      .filter(Boolean)
+      .sort()
+      .slice(0, maxDates);
 
     for(const iso of dates){
       const opt = document.createElement("option");
@@ -779,7 +821,7 @@
       availDateSel.value = dates[0];
       await renderSlotsForDate(dates[0]);
     } else {
-      showErr("Nenhuma data disponível (sem expediente nos próximos dias).");
+      showErr("Nenhuma data disponível para este profissional.");
     }
   }
 
@@ -871,9 +913,9 @@
         showErr(
           "Link inválido: falta o parâmetro da empresa.\n\n" +
           "Use assim:\n" +
-          "?empresa=empresa-1\n\n" +
+          "?empresa=ffranco-html-com\n\n" +
           "Exemplo:\n" +
-          window.location.origin + window.location.pathname + "?empresa=empresa-1"
+          window.location.origin + window.location.pathname + "?empresa=ffranco-html-com"
         );
         return;
       }
