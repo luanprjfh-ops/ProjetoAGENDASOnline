@@ -621,24 +621,37 @@
   }
 
   async function loadWorkingHours(profId){
-    // 1) RPC segura
-    const r = await rpcMaybe("get_working_hours_public", { p_company_id: COMPANY_ID, p_professional_id: profId });
-    if(r.ok) return Array.isArray(r.data) ? r.data : (r.data ? [r.data] : []);
 
-    // 2) Fallback
-    const { data, error } = await sb
-      .from("working_hours")
-      .select("weekday,start_time,end_time,slot_minutes,professional_id,company_id")
-      .eq("company_id", COMPANY_ID)
-      .eq("professional_id", profId);
+  // Buscar horários cadastrados por DATA (tabela working_hours_dates)
+  const { data, error } = await sb
+    .from("working_hours_dates")
+    .select("date,start_time,end_time,slot_minutes,professional_id,company_id")
+    .eq("company_id", COMPANY_ID)
+    .eq("professional_id", profId);
 
-    if(error){
-      throw new Error(
-        "Falha ao carregar horários do profissional.\n" +
-        "Crie a RPC get_working_hours_public.\n" +
-        `Detalhes: ${errDetail(error)}`
-      );
-    }
+  if(error){
+    throw new Error(
+      "Falha ao carregar horários do profissional. " + (error.message || "")
+    );
+  }
+
+  if(!data || !data.length) return [];
+
+  // converter para formato esperado pelo sistema
+  return data.map(h => {
+    const d = new Date(h.date);
+    const weekday = d.getDay();
+
+    return {
+      weekday: weekday,
+      start_time: h.start_time,
+      end_time: h.end_time,
+      slot_minutes: h.slot_minutes || 45,
+      professional_id: h.professional_id,
+      company_id: h.company_id
+    };
+  });
+}
     return data || [];
   }
 
