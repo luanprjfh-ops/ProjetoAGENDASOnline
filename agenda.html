@@ -621,39 +621,27 @@
   }
 
   async function loadWorkingHours(profId){
+    const { data, error } = await sb.rpc("get_working_hours_public", {
+      p_company_id: COMPANY_ID
+    });
+
+    if(error){
+      throw new Error("Erro ao carregar horários: " + (error.message || ""));
+    }
+
     const result = {
       recurring: [],
       byDate: []
     };
 
-    // 1) Horários recorrentes
-    const { data: recurring, error: recurringError } = await sb
-      .from("working_hours")
-      .select("weekday,start_time,end_time,slot_minutes,professional_id,company_id")
-      .eq("company_id", COMPANY_ID)
-      .eq("professional_id", profId);
+    for(const row of (data || [])){
+      if(row.professional_id !== profId) continue;
 
-    if(recurringError && !String(recurringError.message || "").toLowerCase().includes("does not exist")){
-      throw new Error("Falha ao carregar horários recorrentes. " + errDetail(recurringError));
-    }
-
-    if(Array.isArray(recurring)){
-      result.recurring = recurring;
-    }
-
-    // 2) Horários por data
-    const { data: byDate, error: byDateError } = await sb
-      .from("working_hours_dates")
-      .select("date,start_time,end_time,slot_minutes,professional_id,company_id")
-      .eq("company_id", COMPANY_ID)
-      .eq("professional_id", profId);
-
-    if(byDateError){
-      throw new Error("Falha ao carregar horários por data. " + errDetail(byDateError));
-    }
-
-    if(Array.isArray(byDate)){
-      result.byDate = byDate;
+      if(row.date){
+        result.byDate.push(row);
+      } else {
+        result.recurring.push(row);
+      }
     }
 
     return result;
